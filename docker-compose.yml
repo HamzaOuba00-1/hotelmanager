@@ -1,0 +1,18 @@
+
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: hotel_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: hotel_db
+      POSTGRES_USER: hotel
+      POSTGRES_PASSWORD: hotel123
+    ports:
+      - "5432:5432"
+    volumes:
+      - hotel_pgdata:/var/lib/postgresql/data
+
+volumes:
+  hotel_pgdata:
