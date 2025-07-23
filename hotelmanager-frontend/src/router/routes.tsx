@@ -6,9 +6,11 @@ import RegisterManagerPage from '../pages/register/RegisterManagerPage';
 import ManagerDashboard from '../pages/dashboard/ManagerDashboard';
 import EmployeDashboard from '../pages/dashboard/EmployeDashboard';
 import ClientDashboard from '../pages/dashboard/ClientDashboard';
-import UserList from '../pages/user/UserList';
 import PrivateRoute from './PrivateRoute';
-import MePage from '../pages/MePage'; // pour tester /me
+import MePage from '../pages/MePage';
+
+import DashboardAccueil from '../pages/dashboard/components/DashboardAccueil';
+import PlaceholderUtilisateurs from '../pages/dashboard/components/PlaceholderUtilisateurs';
 
 const AppRoutes: React.FC = () => {
   return (
@@ -17,30 +19,34 @@ const AppRoutes: React.FC = () => {
         {/* Routes publiques */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterManagerPage />} />
-
-        {/* Route test /me */}
         <Route path="/me" element={<MePage />} />
 
-        {/* Routes protégées : accès MANAGER */}
+        {/* Routes MANAGER */}
         <Route element={<PrivateRoute allowedRoles={['MANAGER']} />}>
-          <Route path="/dashboard/manager" element={<ManagerDashboard />} />
-          <Route path="/users" element={<UserList />} />
+          <Route path="/dashboard/manager" element={<ManagerDashboard />}>
+            {/* Sous-routes imbriquées du layout Manager */}
+            <Route index element={<DashboardAccueil />} />
+            <Route path="users" element={<PlaceholderUtilisateurs />} />
+          </Route>
         </Route>
 
-        {/* Routes protégées : accès EMPLOYE */}
+        {/* Routes EMPLOYE */}
         <Route element={<PrivateRoute allowedRoles={['EMPLOYE']} />}>
           <Route path="/dashboard/employe" element={<EmployeDashboard />} />
         </Route>
 
-        {/* Routes protégées : accès CLIENT */}
+        {/* Routes CLIENT */}
         <Route element={<PrivateRoute allowedRoles={['CLIENT']} />}>
           <Route path="/dashboard/client" element={<ClientDashboard />} />
         </Route>
 
-        {/* Redirection */}
+        {/* Redirections */}
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="*" element={<div>404 - Page introuvable</div>} />
       </Routes>
+
+      <Route path="/test" element={<div style={{ color: 'green' }}>Test direct OK</div>} />
+
     </Router>
   );
 };

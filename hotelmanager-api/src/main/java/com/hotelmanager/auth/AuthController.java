@@ -3,20 +3,22 @@ package com.hotelmanager.auth;
 import com.hotelmanager.auth.payload.AuthRequest;
 import com.hotelmanager.auth.payload.RegisterManagerRequest;
 import com.hotelmanager.auth.payload.AuthResponse;
-import com.hotelmanager.auth.AuthService;
-import lombok.RequiredArgsConstructor;
+import com.hotelmanager.user.User;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
-import com.hotelmanager.user.User;
-
 
 @RestController
 @RequestMapping("/auth")
-@RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
+
+    // Remplacement de @RequiredArgsConstructor
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
 
     @PostMapping("/register/manager")
     public ResponseEntity<AuthResponse> registerManager(@RequestBody RegisterManagerRequest request) {
@@ -33,5 +35,4 @@ public class AuthController {
         User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok("Bonjour " + user.getFirstName() + " (" + user.getRole() + ")");
     }
-
 }

@@ -9,14 +9,13 @@ import com.hotelmanager.user.Role;
 import com.hotelmanager.user.User;
 import com.hotelmanager.user.UserRepository;
 import com.hotelmanager.config.JwtUtil;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -25,25 +24,36 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
 
+    // Remplacement de @RequiredArgsConstructor
+    public AuthService(UserRepository userRepository,
+                       HotelRepository hotelRepository,
+                       PasswordEncoder passwordEncoder,
+                       JwtUtil jwtUtil,
+                       AuthenticationManager authenticationManager) {
+        this.userRepository = userRepository;
+        this.hotelRepository = hotelRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
+        this.authenticationManager = authenticationManager;
+    }
+
     public AuthResponse registerManager(RegisterManagerRequest request) {
         Hotel hotel = hotelRepository.findByCode(request.getHotelCode())
                 .orElseGet(() -> {
-                    Hotel newHotel = Hotel.builder()
-                            .name(request.getHotelName())
-                            .code(request.getHotelCode())
-                            .build();
+                    Hotel newHotel = new Hotel();
+                    newHotel.setName(request.getHotelName());
+                    newHotel.setCode(request.getHotelCode());
                     return hotelRepository.save(newHotel);
                 });
 
-        User user = User.builder()
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.MANAGER)
-                .hotel(hotel)
-                .enabled(true)
-                .build();
+        User user = new User();
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(Role.MANAGER);
+        user.setHotel(hotel);
+        user.setEnabled(true);
 
         userRepository.save(user);
         String token = jwtUtil.generateToken(user);
