@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  springboot-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: springboot_dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+      - ~/.m2:/root/.m2
+    command: ./mvnw spring-boot:run

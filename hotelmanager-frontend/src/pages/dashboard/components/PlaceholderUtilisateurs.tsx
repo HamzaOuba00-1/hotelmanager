@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { UserRound } from 'lucide-react';
+
 
 interface User {
   id: number;
@@ -55,7 +57,7 @@ const PlaceholderUtilisateurs: React.FC = () => {
                 ${isConnectedUser ? 'border-green-300' : 'border-gray-300'}
               `}
             >
-              <div className="text-4xl mb-2">👤</div>
+              <UserRound className="h-10 w-10 text-green-500 mb-2" />
               <div className="text-sm font-semibold text-center">
                 {user.firstName} {user.lastName}
               </div>
