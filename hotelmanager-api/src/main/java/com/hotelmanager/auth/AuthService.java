@@ -9,59 +9,81 @@ import com.hotelmanager.user.Role;
 import com.hotelmanager.user.User;
 import com.hotelmanager.user.UserRepository;
 import com.hotelmanager.config.JwtUtil;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 public class AuthService {
 
-    private final UserRepository userRepository;
-    private final HotelRepository hotelRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
-    private final AuthenticationManager authenticationManager;
+        private final UserRepository userRepository;
+        private final HotelRepository hotelRepository;
+        private final PasswordEncoder passwordEncoder;
+        private final JwtUtil jwtUtil;
+        private final AuthenticationManager authenticationManager;
 
-    public AuthResponse registerManager(RegisterManagerRequest request) {
-        Hotel hotel = hotelRepository.findByCode(request.getHotelCode())
-                .orElseGet(() -> {
-                    Hotel newHotel = Hotel.builder()
-                            .name(request.getHotelName())
-                            .code(request.getHotelCode())
-                            .build();
-                    return hotelRepository.save(newHotel);
-                });
+        // Remplacement de @RequiredArgsConstructor
+        public AuthService(UserRepository userRepository,
+                        HotelRepository hotelRepository,
+                        PasswordEncoder passwordEncoder,
+                        JwtUtil jwtUtil,
+                        AuthenticationManager authenticationManager) {
+                this.userRepository = userRepository;
+                this.hotelRepository = hotelRepository;
+                this.passwordEncoder = passwordEncoder;
+                this.jwtUtil = jwtUtil;
+                this.authenticationManager = authenticationManager;
+        }
 
-        User user = User.builder()
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.MANAGER)
-                .hotel(hotel)
-                .enabled(true)
-                .build();
+        public AuthResponse registerManager(RegisterManagerRequest request) {
+                Hotel hotel = hotelRepository.findByCode(request.getHotelCode())
+                                .orElseGet(() -> {
+                                        Hotel newHotel = new Hotel();
+                                        newHotel.setName(request.getHotelName());
+                                        newHotel.setCode(request.getHotelCode());
+                                        return hotelRepository.save(newHotel);
+                                });
 
-        userRepository.save(user);
-        String token = jwtUtil.generateToken(user);
-        return new AuthResponse(token);
-    }
+                User user = new User();
+                user.setFirstName(request.getFirstName());
+                user.setLastName(request.getLastName());
+                user.setEmail(request.getEmail());
+                user.setPassword(passwordEncoder.encode(request.getPassword()));
+                user.setRole(Role.MANAGER);
+                user.setHotel(hotel);
+                user.setEnabled(true);
 
-    public AuthResponse login(AuthRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
+                userRepository.save(user);
+                String token = jwtUtil.generateToken(user);
+                Hotel hotelForResponse = user.getHotel();
+                return new AuthResponse(
+                        token,
+                        hotelForResponse != null ? hotelForResponse.getId() : null,
+                        hotelForResponse != null ? hotelForResponse.getName() : null,
+                        user.getEmail());
+        }
 
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+        public AuthResponse login(AuthRequest request) {
+                authenticationManager.authenticate(
+                                new UsernamePasswordAuthenticationToken(
+                                                request.getEmail(),
+                                                request.getPassword()));
 
-        String token = jwtUtil.generateToken(user);
-        return new AuthResponse(token);
-    }
+                User user = userRepository.findByEmail(request.getEmail())
+                                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+
+                String token = jwtUtil.generateToken(user);
+
+                Hotel hotel = user.getHotel(); // Assure-toi que `User` a bien un champ `Hotel`
+
+                return new AuthResponse(
+                                token,
+                                hotel != null ? hotel.getId() : null,
+                                hotel != null ? hotel.getName() : null,
+                                user.getEmail()
+                                );
+        }
+
 }

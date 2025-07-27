@@ -11,9 +11,14 @@ export const registerManager = async (data: any): Promise<AuthResponse> => {
 };
 
 
+// types.ts
 export interface AuthResponse {
   token: string;
-};
+  hotelId: number;
+  hotelName: string;
+  email: string;
+}
+
 
 
 export async function login(

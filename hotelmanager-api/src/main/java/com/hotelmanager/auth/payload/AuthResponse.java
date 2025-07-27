@@ -7,4 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 public class AuthResponse {
     private String token;
+    private Long hotelId;
+    private String hotelName;
+    private String email;
 }

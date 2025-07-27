@@ -51,6 +51,9 @@ const RegisterManagerPage: React.FC = () => {
     try {
       const res = await registerManager(payload);
       localStorage.setItem("token", res.token);
+      localStorage.setItem("hotelId", res.hotelId.toString());
+      localStorage.setItem("hotelName", res.hotelName);
+      localStorage.setItem("email", res.email.toLowerCase());
       alert("Inscription réussie !");
       navigate("/dashboard/manager");
     } catch (err) {

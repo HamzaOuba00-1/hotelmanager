@@ -36,9 +36,13 @@ const LoginPage: React.FC = () => {
     setLoading(true);
 
     try {
-      const { token } = await login(credentials);
+      const { token, hotelId, hotelName } = await login(credentials);
       localStorage.setItem("token", token);
-      localStorage.setItem("email", credentials.email);
+      localStorage.setItem("hotelId", String(hotelId));
+      localStorage.setItem("hotelName", hotelName ?? "");
+      localStorage.setItem("email", credentials.email.toLowerCase());
+      
+      
 
       
 

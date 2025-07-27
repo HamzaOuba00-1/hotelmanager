@@ -6,4 +6,7 @@ export interface Credentials {
 
 export interface AuthResponseDTO {
   token: string;
+  hotelId: number;
+  hotelName: string;
 }
+
