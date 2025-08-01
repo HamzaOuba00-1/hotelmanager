@@ -11,42 +11,45 @@ import MePage from '../pages/MePage';
 
 import DashboardAccueil from '../pages/dashboard/components/DashboardAccueil';
 import PlaceholderUtilisateurs from '../pages/dashboard/components/PlaceholderUtilisateurs';
+import HotelConfigPage from '../pages/dashboard/components/HotelConfigPage';
 
 const AppRoutes: React.FC = () => {
   return (
     <Router>
       <Routes>
-        {/* Routes publiques */}
+        {/* Public */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterManagerPage />} />
         <Route path="/me" element={<MePage />} />
 
-        {/* Routes MANAGER */}
+        {/* MANAGER */}
         <Route element={<PrivateRoute allowedRoles={['MANAGER']} />}>
-          <Route path="/dashboard/manager" element={<ManagerDashboard />}>
-            {/* Sous-routes imbriquées du layout Manager */}
+          <Route path="/dashboard/manager/*" element={<ManagerDashboard />}>
             <Route index element={<DashboardAccueil />} />
             <Route path="users" element={<PlaceholderUtilisateurs />} />
+            <Route path="configuration" element={<HotelConfigPage />} />
+            {/* 404 local à la section manager (optionnel mais utile) */}
+            <Route path="*" element={<div>Section Manager : page introuvable</div>} />
           </Route>
         </Route>
 
-        {/* Routes EMPLOYE */}
+        {/* EMPLOYE */}
         <Route element={<PrivateRoute allowedRoles={['EMPLOYE']} />}>
           <Route path="/dashboard/employe" element={<EmployeDashboard />} />
         </Route>
 
-        {/* Routes CLIENT */}
+        {/* CLIENT */}
         <Route element={<PrivateRoute allowedRoles={['CLIENT']} />}>
           <Route path="/dashboard/client" element={<ClientDashboard />} />
         </Route>
 
-        {/* Redirections */}
+        {/* Test / Démo */}
+        <Route path="/test" element={<div style={{ color: 'green' }}>Test direct OK</div>} />
+
+        {/* Fallback global */}
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="*" element={<div>404 - Page introuvable</div>} />
       </Routes>
-
-      <Route path="/test" element={<div style={{ color: 'green' }}>Test direct OK</div>} />
-
     </Router>
   );
 };

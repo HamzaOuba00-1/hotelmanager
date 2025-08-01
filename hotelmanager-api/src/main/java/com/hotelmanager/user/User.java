@@ -4,6 +4,8 @@ import com.hotelmanager.hotel.Hotel;
 import jakarta.persistence.*;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import java.util.Collection;
@@ -119,7 +121,7 @@ public class User implements UserDetails {
     // Implémentation UserDetails
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(() -> this.role.name());
+        return List.of(new SimpleGrantedAuthority("ROLE_" + this.role.name()));
     }
 
     @Override

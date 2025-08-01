@@ -40,7 +40,7 @@ public class UserController {
     /* ──────────────── GET ──────────────── */
 
     @GetMapping
-    @PreAuthorize("hasAuthority('MANAGER')")
+    @PreAuthorize("hasRole('MANAGER')")
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll()
                 .stream()
@@ -49,7 +49,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('MANAGER')")
+    @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         return userRepository.findById(id)
                 .map(UserResponse::from)
@@ -58,13 +58,13 @@ public class UserController {
     }
 
     @GetMapping("/my-hotel")
-    @PreAuthorize("hasAuthority('MANAGER')")
+    @PreAuthorize("hasRole('MANAGER')")
     public List<UserResponse> getUsersFromMyHotel(@AuthenticationPrincipal User manager) {
         return userService.getUsersByHotel(manager.getHotel().getId());
     }
 
     @GetMapping("/hotel/{hotelId}")
-    @PreAuthorize("hasAuthority('MANAGER')")
+    @PreAuthorize("hasRole('MANAGER')")
     public List<UserResponse> getUsersByHotel(@PathVariable Long hotelId) {
         return userService.getUsersByHotel(hotelId);
     }
@@ -79,7 +79,7 @@ public class UserController {
     /* ──────────────── POST ──────────────── */
 
     @PostMapping
-    @PreAuthorize("hasAuthority('MANAGER')")
+    @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<UserCreatedResponse> createEmployee(
             @RequestBody EmployeeRequest request,
             @AuthenticationPrincipal User manager) {
@@ -96,7 +96,7 @@ public class UserController {
     /* ──────────────── DELETE ──────────────── */
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('MANAGER')")
+    @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         if (!userRepository.existsById(id)) {
             return ResponseEntity.notFound().build();

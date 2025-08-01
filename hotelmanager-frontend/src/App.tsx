@@ -12,6 +12,7 @@ import ClientDashboard from './pages/dashboard/ClientDashboard';
 import PrivateRoute from './router/PrivateRoute';
 import DashboardAccueil from './pages/dashboard/components/DashboardAccueil';
 import PlaceholderUtilisateurs from './pages/dashboard/components/PlaceholderUtilisateurs';
+import HotelConfigPage from './pages/dashboard/components/HotelConfigPage';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/dashboard/manager" element={<ManagerDashboard />}>
           <Route index element={<DashboardAccueil />} />
           <Route path="users" element={<PlaceholderUtilisateurs />} />
+          <Route path="configuration" element={<HotelConfigPage />} />
         </Route>
       </Route>
 

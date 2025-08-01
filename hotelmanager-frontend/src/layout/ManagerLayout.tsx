@@ -53,6 +53,10 @@ const Sidebar: React.FC<{ logoSrc?: string }> = ({ logoSrc }) => (
       <SidebarLink to="/dashboard/manager/users"  icon={<Users size={18} />}>
         Utilisateurs
       </SidebarLink>
+      <SidebarLink to="/dashboard/manager/configuration" icon={<LayoutDashboard size={18} />}>
+        Configuration
+      </SidebarLink>
+
     </nav>
 
   </aside>
