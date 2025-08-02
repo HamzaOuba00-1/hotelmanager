@@ -8,9 +8,9 @@ import EmployeDashboard from '../pages/dashboard/EmployeDashboard';
 import ClientDashboard from '../pages/dashboard/ClientDashboard';
 import PrivateRoute from './PrivateRoute';
 import MePage from '../pages/MePage';
-
 import DashboardAccueil from '../pages/dashboard/components/DashboardAccueil';
 import PlaceholderUtilisateurs from '../pages/dashboard/components/PlaceholderUtilisateurs';
+import RoomsPage from "../pages/rooms/RoomsPage";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -27,17 +27,24 @@ const AppRoutes: React.FC = () => {
             {/* Sous-routes imbriquées du layout Manager */}
             <Route index element={<DashboardAccueil />} />
             <Route path="users" element={<PlaceholderUtilisateurs />} />
+            <Route path="rooms" element={<RoomsPage/>}/> {/* Access: /dashboard/manager/rooms */}
           </Route>
         </Route>
 
-        {/* Routes EMPLOYE */}
+        {/* EMPLOYE Routes - RoomsPage is nested within EmployeDashboard */}
         <Route element={<PrivateRoute allowedRoles={['EMPLOYE']} />}>
-          <Route path="/dashboard/employe" element={<EmployeDashboard />} />
+          <Route path="/dashboard/employe" element={<EmployeDashboard />}>
+            <Route index element={<DashboardAccueil />} /> {/* Optional default for /dashboard/employe */}
+            <Route path="rooms" element={<RoomsPage/>}/> {/* Access: /dashboard/employe/rooms */}
+          </Route>
         </Route>
 
-        {/* Routes CLIENT */}
+        {/* CLIENT Routes - RoomsPage is nested within ClientDashboard */}
         <Route element={<PrivateRoute allowedRoles={['CLIENT']} />}>
-          <Route path="/dashboard/client" element={<ClientDashboard />} />
+          <Route path="/dashboard/client" element={<ClientDashboard />}>
+            <Route index element={<DashboardAccueil />} /> {/* Optional default for /dashboard/client */}
+            <Route path="rooms" element={<RoomsPage/>}/> {/* Access: /dashboard/client/rooms */}
+          </Route>
         </Route>
 
         {/* Redirections */}
