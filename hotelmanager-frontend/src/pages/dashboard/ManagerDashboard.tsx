@@ -68,6 +68,10 @@ const Sidebar: React.FC<{ logoSrc?: string }> = ({ logoSrc }) => (
       <SidebarLink to="/dashboard/manager/users" icon={<Users size={18} />}>
         Utilisateurs
       </SidebarLink>
+        <SidebarLink to="/dashboard/manager/rooms" icon={<span role="img" aria-label="Bed">🛏</span>}> {/* Or use an icon from lucide-react if available */}
+            Chambres
+        </SidebarLink>
+
     </nav>
   </aside>
 );

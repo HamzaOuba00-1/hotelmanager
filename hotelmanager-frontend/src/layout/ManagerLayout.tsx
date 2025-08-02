@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import React from "react";
-import { Search, LayoutDashboard, Users } from "lucide-react";
+import { Search, LayoutDashboard, Users, Bed } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 /* sidebar + topbar vus plus haut */
@@ -53,6 +53,10 @@ const Sidebar: React.FC<{ logoSrc?: string }> = ({ logoSrc }) => (
       <SidebarLink to="/dashboard/manager/users"  icon={<Users size={18} />}>
         Utilisateurs
       </SidebarLink>
+
+        <SidebarLink to="/dashboard/manager/rooms"  icon={<Bed size={18} />}>
+            Chambres
+        </SidebarLink>
     </nav>
 
   </aside>
