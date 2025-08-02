@@ -11,23 +11,26 @@ import PlaceholderUtilisateurs from './pages/dashboard/components/PlaceholderUti
 import {AuthProvider} from "./auth/authContext";
 import RoomsPage from "./pages/rooms/RoomsPage";
 
+import HotelConfigPage from './pages/dashboard/components/HotelConfigPage';
 
 function App() {
-    return (
-        <AuthProvider>
-            <Routes>
-                {/* Routes publiques */}
-                <Route path="/login" element={<LoginPage/>}/>
-                <Route path="/register" element={<RegisterManagerPage/>}/>
+  return (
+      <AuthProvider>
+      <Routes>
+      {/* Routes publiques */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterManagerPage />} />
 
-                {/* Routes protégées - Manager */}
-                <Route element={<PrivateRoute allowedRoles={['MANAGER']}/>}>
-                    <Route path="/dashboard/manager" element={<ManagerDashboard/>}>
-                        <Route index element={<DashboardAccueil/>}/>
-                        <Route path="users" element={<PlaceholderUtilisateurs/>}/>
-                        <Route path="rooms" element={<RoomsPage />} /> {/* Full path: /dashboard/manager/rooms */}
-                    </Route>
-                </Route>
+      {/* Routes protégées - Manager */}
+      <Route element={<PrivateRoute allowedRoles={['MANAGER']} />}>
+        <Route path="/dashboard/manager" element={<ManagerDashboard />}>
+          <Route index element={<DashboardAccueil />} />
+          <Route path="users" element={<PlaceholderUtilisateurs />} />
+          <Route path="configuration" element={<HotelConfigPage />} />
+          <Route path="rooms" element={<RoomsPage />} /> {/* Full path: /dashboard/manager/rooms */}
+
+        </Route>
+      </Route>
 
                 {/* Routes protégées - Employé */}
                 <Route element={<PrivateRoute allowedRoles={['EMPLOYE']}/>}>

@@ -11,6 +11,7 @@ import MePage from '../pages/MePage';
 import DashboardAccueil from '../pages/dashboard/components/DashboardAccueil';
 import PlaceholderUtilisateurs from '../pages/dashboard/components/PlaceholderUtilisateurs';
 import RoomsPage from "../pages/rooms/RoomsPage";
+import HotelConfigPage from '../pages/dashboard/components/HotelConfigPage';
 
 const AppRoutes: React.FC = () => {
   return (
@@ -28,10 +29,13 @@ const AppRoutes: React.FC = () => {
             <Route index element={<DashboardAccueil />} />
             <Route path="users" element={<PlaceholderUtilisateurs />} />
             <Route path="rooms" element={<RoomsPage/>}/> {/* Access: /dashboard/manager/rooms */}
+            <Route path="configuration" element={<HotelConfigPage />} />
+            {/* 404 local à la section manager (optionnel mais utile) */}
+            <Route path="*" element={<div>Section Manager : page introuvable</div>} />
           </Route>
         </Route>
 
-        {/* EMPLOYE Routes - RoomsPage is nested within EmployeDashboard */}
+        {/* Routes EMPLOYE */}
         <Route element={<PrivateRoute allowedRoles={['EMPLOYE']} />}>
           <Route path="/dashboard/employe" element={<EmployeDashboard />}>
             <Route index element={<DashboardAccueil />} /> {/* Optional default for /dashboard/employe */}
@@ -39,7 +43,7 @@ const AppRoutes: React.FC = () => {
           </Route>
         </Route>
 
-        {/* CLIENT Routes - RoomsPage is nested within ClientDashboard */}
+        {/* Routes CLIENT */}
         <Route element={<PrivateRoute allowedRoles={['CLIENT']} />}>
           <Route path="/dashboard/client" element={<ClientDashboard />}>
             <Route index element={<DashboardAccueil />} /> {/* Optional default for /dashboard/client */}
@@ -47,7 +51,10 @@ const AppRoutes: React.FC = () => {
           </Route>
         </Route>
 
-        {/* Redirections */}
+        {/* Test / Démo */}
+        <Route path="/test" element={<div style={{ color: 'green' }}>Test direct OK</div>} />
+
+        {/* Fallback global */}
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="*" element={<div>404 - Page introuvable</div>} />
       </Routes>
