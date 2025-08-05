@@ -1,5 +1,6 @@
 package com.hotelmanager.config;
 
+import com.hotelmanager.config.JwtUtil;
 import com.hotelmanager.user.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

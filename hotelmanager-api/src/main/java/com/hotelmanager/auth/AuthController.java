@@ -1,16 +1,14 @@
 package com.hotelmanager.auth;
 
 import com.hotelmanager.auth.payload.AuthRequest;
-import com.hotelmanager.auth.payload.RegisterManagerRequest;
-import com.hotelmanager.hotel.Hotel;
 import com.hotelmanager.auth.payload.AuthResponse;
-import com.hotelmanager.auth.AuthService;
+import com.hotelmanager.auth.payload.RegisterManagerRequest;
+import com.hotelmanager.hotel.HotelRepository;
+import com.hotelmanager.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
-import com.hotelmanager.user.User;
-import com.hotelmanager.hotel.HotelRepository;
+import org.springframework.web.bind.annotation.*;
 
 
 @RestController
@@ -36,7 +34,6 @@ public class AuthController {
         User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok("Bonjour " + user.getFirstName() + " (" + user.getRole() + ")");
     }
-
 
 
 }

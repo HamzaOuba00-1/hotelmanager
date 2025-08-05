@@ -31,7 +31,7 @@ public class JwtUtil {
                 .compact();
     }
 
-    
+
 
     public String extractUsername(String token) {
         return extractAllClaims(token).getSubject();

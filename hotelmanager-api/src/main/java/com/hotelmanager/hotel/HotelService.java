@@ -2,11 +2,11 @@ package com.hotelmanager.hotel;
 
 import com.hotelmanager.hotel.dto.HotelConfigRequest;
 import com.hotelmanager.user.User;
+import com.hotelmanager.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
-import com.hotelmanager.user.UserRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +28,6 @@ public class HotelService {
                 .orElseThrow(() -> new NoSuchElementException("Hôtel introuvable"));
     }
 
-    
 
     public Hotel updateHotel(User manager, HotelConfigRequest req) {
         Hotel h = getHotelOf(manager);
@@ -84,7 +83,7 @@ public class HotelService {
         if (req.acceptedPayments() != null) h.getAcceptedPayments().addAll(req.acceptedPayments());
 
         h.setActive(req.active() != null ? req.active() : Boolean.TRUE);
-        
+
 
         return hotelRepository.save(h);
     }

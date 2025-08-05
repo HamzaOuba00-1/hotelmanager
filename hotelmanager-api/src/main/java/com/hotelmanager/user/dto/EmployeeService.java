@@ -1,12 +1,10 @@
 package com.hotelmanager.user.dto;
 
-import com.hotelmanager.user.dto.EmployeeRequest;
-import com.hotelmanager.user.User;
-import com.hotelmanager.user.Role;
-import com.hotelmanager.user.UserRepository;
 import com.hotelmanager.email.EmailService;
+import com.hotelmanager.user.Role;
+import com.hotelmanager.user.User;
+import com.hotelmanager.user.UserRepository;
 import com.hotelmanager.util.PasswordUtil;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,7 +1,7 @@
-import React, { useState, useEffect, FormEvent, ChangeEvent } from "react";
+import React, {ChangeEvent, FormEvent, useEffect, useState} from "react";
 import axios from "axios";
-import { useAuth } from "../../auth/authContext";
-import { Bed, PlusCircle, List, Trash2 } from "lucide-react";
+import {useAuth} from "../../auth/authContext";
+import {Bed, List, PlusCircle, Trash2} from "lucide-react";
 
 type Room = {
     id: number;
@@ -20,7 +20,7 @@ type RoomForm = {
 };
 
 const RoomsPage: React.FC = () => {
-    const { user } = useAuth();
+    const {user} = useAuth();
     const token = localStorage.getItem("token");
 
     const [rooms, setRooms] = useState<Room[]>([]);
@@ -38,14 +38,14 @@ const RoomsPage: React.FC = () => {
     const fetchRooms = async () => {
         if (!token) return;
 
-        const headers = { Authorization: `Bearer ${token}` };
+        const headers = {Authorization: `Bearer ${token}`};
         let url = "http://localhost:8080/api/rooms";
 
         if (isClient) {
             url = "http://localhost:8080/api/rooms/my-room";
         }
         try {
-            const res = await axios.get<Room | Room[]>(url, { headers });
+            const res = await axios.get<Room | Room[]>(url, {headers});
             console.log("Rooms fetched:", res.data);
             const data = Array.isArray(res.data) ? res.data : [res.data];
             setRooms(data);
@@ -65,7 +65,7 @@ const RoomsPage: React.FC = () => {
 
         try {
             await axios.post("http://localhost:8080/api/rooms", form, {
-                headers: { Authorization: `Bearer ${token}` },
+                headers: {Authorization: `Bearer ${token}`},
             });
             window.location.reload();
         } catch (error) {
@@ -77,7 +77,7 @@ const RoomsPage: React.FC = () => {
         if (!isManager) return;
         try {
             await axios.delete(`http://localhost:8080/api/rooms/${roomId}`, {
-                headers: { Authorization: `Bearer ${token}` },
+                headers: {Authorization: `Bearer ${token}`},
             });
             await fetchRooms();
         } catch (error) {
@@ -92,8 +92,8 @@ const RoomsPage: React.FC = () => {
                 `http://localhost:8080/api/rooms/${roomId}/state`,
                 null,
                 {
-                    params: { state: newEtat },
-                    headers: { Authorization: `Bearer ${token}` },
+                    params: {state: newEtat},
+                    headers: {Authorization: `Bearer ${token}`},
                 }
             );
             await fetchRooms();
@@ -105,7 +105,7 @@ const RoomsPage: React.FC = () => {
     const handleInputChange = (
         e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
     ) => {
-        const { name, value } = e.target;
+        const {name, value} = e.target;
         setForm((prevForm) => ({
             ...prevForm,
             [name]: value,
@@ -127,14 +127,14 @@ const RoomsPage: React.FC = () => {
 
             <div className="container mx-auto p-6 grid gap-6 animate-fadeIn">
                 <h1 className="text-2xl font-semibold mb-6 flex items-center justify-center gap-2">
-                    <Bed className="w-8 h-8 text-blue-600" />
+                    <Bed className="w-8 h-8 text-blue-600"/>
                     Gestion des chambres
                 </h1>
 
                 {isManager && (
                     <div>
                         <h3 className="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-800">
-                            <PlusCircle className="w-6 h-6 text-green-600" /> Ajouter une chambre
+                            <PlusCircle className="w-6 h-6 text-green-600"/> Ajouter une chambre
                         </h3>
                         <form onSubmit={handleCreate} className="grid gap-6 md:grid-cols-2">
                             <input
@@ -183,7 +183,7 @@ const RoomsPage: React.FC = () => {
                 )}
 
                 <h3 className="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-800">
-                    <List className="w-6 h-6 text-gray-700" /> Liste des chambres
+                    <List className="w-6 h-6 text-gray-700"/> Liste des chambres
                 </h3>
 
                 <div className="overflow-x-auto">
@@ -224,7 +224,7 @@ const RoomsPage: React.FC = () => {
                                                 onClick={() => handleDelete(room.id)}
                                                 className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition flex items-center gap-1"
                                             >
-                                                <Trash2 className="w-4 h-4" /> Supprimer
+                                                <Trash2 className="w-4 h-4"/> Supprimer
                                             </button>
                                         )}
                                     </td>

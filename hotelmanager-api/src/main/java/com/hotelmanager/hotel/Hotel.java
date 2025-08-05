@@ -1,20 +1,29 @@
 package com.hotelmanager.hotel;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "hotel")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Hotel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     // identification
-    @NotBlank @Size(max = 255)
+    @NotBlank
+    @Size(max = 255)
     private String name;
 
     @Column(unique = true, nullable = false, length = 64)
@@ -27,7 +36,8 @@ public class Hotel {
     @Size(max = 50)
     private String phone;
 
-    @Email @Size(max = 255)
+    @Email
+    @Size(max = 255)
     private String email;
 
     @Size(max = 1024)
@@ -80,7 +90,6 @@ public class Hotel {
     // 6) Security & Access
     private Boolean active = true;
 
-    
 
     // Relation inverse si besoin
     // @OneToMany(mappedBy = "hotel")
@@ -88,7 +97,8 @@ public class Hotel {
 
     // Embeddables
     @Embeddable
-    @Getter @Setter
+    @Getter
+    @Setter
     public static class Services {
         private Boolean hasRestaurant = false;
         private Boolean hasLaundry = false;
@@ -99,7 +109,8 @@ public class Hotel {
     }
 
     @Embeddable
-    @Getter @Setter
+    @Getter
+    @Setter
     public static class Season {
         private String fromDate; // yyyy-MM-dd
         private String toDate;   // yyyy-MM-dd

@@ -1,12 +1,11 @@
 package com.hotelmanager.user;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.hotelmanager.hotel.Hotel;
 import jakarta.persistence.*;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
@@ -38,7 +37,8 @@ public class User implements UserDetails {
     private Hotel hotel;
 
     // Constructeurs
-    public User() {}
+    public User() {
+    }
 
     public User(Long id, String firstName, String lastName, String email, String password,
                 Role role, boolean enabled, Hotel hotel) {

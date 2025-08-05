@@ -1,8 +1,7 @@
 package com.hotelmanager.user;
 
-import com.hotelmanager.user.dto.UserResponse;
-import com.hotelmanager.hotel.Hotel;
 import com.hotelmanager.user.dto.EmployeeRequest;
+import com.hotelmanager.user.dto.UserResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -45,13 +44,11 @@ public class UserService {
         user.setEmail(request.getEmail());
         user.setRole(request.getRole());
         user.setHotel(manager.getHotel());
-        
+
 
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         return userRepository.save(user); // Re-save avec password crypté
     }
-
-
 
 
     /**
@@ -62,7 +59,7 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
     }
 
-    
+
 }
 
 

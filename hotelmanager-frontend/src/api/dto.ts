@@ -1,12 +1,12 @@
 // src/api/dto.ts
 export interface Credentials {
-  email: string;
-  password: string;
+    email: string;
+    password: string;
 }
 
 export interface AuthResponseDTO {
-  token: string;
-  hotelId: number;
-  hotelName: string;
+    token: string;
+    hotelId: number;
+    hotelName: string;
 }
 

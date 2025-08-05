@@ -4,6 +4,7 @@ import com.hotelmanager.hotel.Hotel;
 import com.hotelmanager.hotel.dto.HotelConfigRequest;
 import com.hotelmanager.hotel.dto.HotelConfigResponse;
 import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 
 @Component
@@ -23,7 +24,7 @@ public class HotelManualMapper {
                 h.getCheckInHour(), h.getCheckOutHour(), new ArrayList<>(h.getClosedDays()),
                 h.getHighSeason() == null ? null
                         : new HotelConfigResponse.SeasonDTO(
-                                h.getHighSeason().getFromDate(), h.getHighSeason().getToDate()),
+                        h.getHighSeason().getFromDate(), h.getHighSeason().getToDate()),
                 h.getCancellationPolicy(), h.getMinAge(), h.getPetsAllowed(),
                 new ArrayList<>(h.getAcceptedPayments()), h.getActive());
     }
