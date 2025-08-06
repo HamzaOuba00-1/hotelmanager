@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { UserRound, ChevronDown, ChevronRight } from 'lucide-react';
-import AddUserModal from './AddUserModal';
+import AddUserModal from './AddUserComponents/AddUserModal';
 
 interface User {
   id: number;

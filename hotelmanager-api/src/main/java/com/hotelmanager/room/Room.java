@@ -1,11 +1,8 @@
 package com.hotelmanager.room;
 
+import com.hotelmanager.hotel.Hotel;
 import com.hotelmanager.user.User;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,6 +12,7 @@ import java.time.LocalDateTime;
 @Setter
 @Entity
 public class Room {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -30,4 +28,10 @@ public class Room {
 
     @ManyToOne
     private User client; // Nullable
+
+    // 🔹 Relation vers Hotel
+    @ManyToOne
+    @JoinColumn(name = "hotel_id")
+    private Hotel hotel;
 }
+ 

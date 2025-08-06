@@ -27,18 +27,29 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors.configure(http)) // ✅ CORS actif
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/uploads/**").permitAll()
-                .requestMatchers("/auth/**").permitAll()
-                .requestMatchers("/", "/index.html", "/swagger-ui/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/hotels/me").hasRole("MANAGER")
-                .requestMatchers(HttpMethod.PUT, "/hotels/me").hasRole("MANAGER")
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .cors(cors -> cors.configure(http)) // ✅ CORS actif
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/uploads/**").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/", "/index.html", "/swagger-ui/**").permitAll()
+
+                        .requestMatchers(HttpMethod.GET, "/hotels/me").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/hotels/me").hasRole("MANAGER")
+
+                        // ✅ Autoriser changement d'état chambre pour Manager et Employé
+                        .requestMatchers(HttpMethod.PATCH, "/api/rooms/*/state")
+                        .hasAnyRole("MANAGER", "EMPLOYE")
+
+                        // ✅ Autoriser création/modification/suppression chambres pour Manager
+                        .requestMatchers(HttpMethod.POST, "/api/rooms").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/api/rooms/**").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/rooms/**").hasRole("MANAGER")
+
+                        .anyRequest().authenticated())
+
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

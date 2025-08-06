@@ -8,10 +8,10 @@ import EmployeDashboard from '../pages/dashboard/EmployeDashboard';
 import ClientDashboard from '../pages/dashboard/ClientDashboard';
 import PrivateRoute from './PrivateRoute';
 import MePage from '../pages/MePage';
-import DashboardAccueil from '../pages/dashboard/components/DashboardAccueil';
-import PlaceholderUtilisateurs from '../pages/dashboard/components/PlaceholderUtilisateurs';
-import RoomsPage from "../pages/rooms/RoomsPage";
-import HotelConfigPage from '../pages/dashboard/components/HotelConfigPage';
+import DashboardAccueil from '../pages/dashboard/ManagerDashboardComponents/DashboardAccueil';
+import PlaceholderUtilisateurs from '../pages/dashboard/ManagerDashboardComponents/Utilisateurs';
+import RoomsPage from "../pages/dashboard/ManagerDashboardComponents/RoomsPage";
+import HotelConfigPage from '../pages/dashboard/ManagerDashboardComponents/HotelConfigPage';
 
 const AppRoutes: React.FC = () => {
   return (
