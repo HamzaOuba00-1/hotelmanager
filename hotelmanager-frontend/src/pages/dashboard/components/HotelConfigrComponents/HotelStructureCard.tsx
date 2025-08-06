@@ -36,13 +36,17 @@ export default function HotelStructureCard({
 
   // Génération automatique des labels si vides
   useEffect(() => {
-    if (!floorLabels.length && floors > 0) {
-      const defaultLabels = Array.from({ length: floors }, (_, i) =>
-        i === 0 ? "RDC" : `${i}e`
+    if (floors > 0) {
+      const current = [...(getValues("floorLabels") ?? [])];
+      const updated = Array.from({ length: floors }, (_, i) =>
+        current[i] ?? (i === 0 ? "RDC" : `Étage ${i}`)
       );
-      setValue("floorLabels", defaultLabels, { shouldDirty: true });
+      setValue("floorLabels", updated, { shouldDirty: true });
     }
-  }, [floors, floorLabels, setValue]);
+  }, [floors, getValues, setValue]);
+
+
+
 
   const updateLabel = (index: number, value: string) => {
     const current = [...(getValues("floorLabels") ?? [])];
@@ -133,8 +137,8 @@ export default function HotelStructureCard({
                   </div>
                   <input
                     type="text"
-                    value={floorLabels[i] ?? ""}
-                    placeholder={`Étage ${i}`}
+                    value={floorLabels[i] ?? (i === 0 ? "RDC" : `Étage ${i}`)}
+                    placeholder={i === 0 ? "RDC" : `Étage ${i}`}
                     onChange={(e) => updateLabel(i, e.target.value)}
                     className="flex-1 px-3 py-1.5 text-sm rounded-md border border-gray-300 bg-white/60 backdrop-blur-sm text-gray-800 placeholder-gray-400 shadow-inner focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
