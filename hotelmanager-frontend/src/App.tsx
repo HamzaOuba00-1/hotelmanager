@@ -6,12 +6,12 @@ import ManagerDashboard from './pages/dashboard/ManagerDashboard';
 import EmployeDashboard from './pages/dashboard/EmployeDashboard';
 import ClientDashboard from './pages/dashboard/ClientDashboard';
 import PrivateRoute from './router/PrivateRoute';
-import DashboardAccueil from './pages/dashboard/components/DashboardAccueil';
-import PlaceholderUtilisateurs from './pages/dashboard/components/PlaceholderUtilisateurs';
+import DashboardAccueil from './pages/dashboard/ManagerDashboardComponents/DashboardAccueil';
+import PlaceholderUtilisateurs from './pages/dashboard/ManagerDashboardComponents/Utilisateurs';
 import {AuthProvider} from "./auth/authContext";
-import RoomsPage from "./pages/rooms/RoomsPage";
+import RoomsPage from "./pages/dashboard/ManagerDashboardComponents/RoomsPage";
 
-import HotelConfigPage from './pages/dashboard/components/HotelConfigPage';
+import HotelConfigPage from './pages/dashboard/ManagerDashboardComponents/HotelConfigPage';
 
 function App() {
   return (

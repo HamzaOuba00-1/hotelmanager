@@ -1,10 +1,10 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
-import { useAuth } from "../../auth/authContext";
+import { useAuth } from "../../../auth/authContext";
 import { BedDouble, List, Plus } from "lucide-react";
-import RoomFormPremium from "./RoomFormPremium";
-import RoomsTable, { Room } from "./RoomsTable";
-import RoomFilterPremium from "./RoomFilterPremium";
+import RoomFormPremium from "./RoomComponents/RoomForm";
+import RoomsTable, { Room } from "./RoomComponents/RoomsTable";
+import RoomFilterPremium from "./RoomComponents/RoomFilter";
 import { createPortal } from "react-dom";
 
 export default function RoomsPage() {
