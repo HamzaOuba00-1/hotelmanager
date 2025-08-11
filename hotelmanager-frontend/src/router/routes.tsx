@@ -12,6 +12,12 @@ import DashboardAccueil from '../pages/dashboard/ManagerDashboardComponents/Dash
 import PlaceholderUtilisateurs from '../pages/dashboard/ManagerDashboardComponents/Utilisateurs';
 import RoomsPage from "../pages/dashboard/ManagerDashboardComponents/RoomsPage";
 import HotelConfigPage from '../pages/dashboard/ManagerDashboardComponents/HotelConfigPage';
+import Planning from '../pages/dashboard/ManagerDashboardComponents/PlanningPage ';
+import Pointage from '../pages/dashboard/ManagerDashboardComponents/PointagePage';
+import PlanningPage from '../pages/dashboard/EmployeDashboardComponents/PlanningPage';
+import PointagePage from '../pages/dashboard/EmployeDashboardComponents/PointagePage';
+import DashboardAccueilEmploye from '../pages/dashboard/EmployeDashboardComponents/DashboardAccueilEmploye';
+
 
 const AppRoutes: React.FC = () => {
   return (
@@ -25,29 +31,31 @@ const AppRoutes: React.FC = () => {
         {/* Routes MANAGER */}
         <Route element={<PrivateRoute allowedRoles={['MANAGER']} />}>
           <Route path="/dashboard/manager" element={<ManagerDashboard />}>
-            {/* Sous-routes imbriquées du layout Manager */}
             <Route index element={<DashboardAccueil />} />
             <Route path="users" element={<PlaceholderUtilisateurs />} />
-            <Route path="rooms" element={<RoomsPage/>}/> {/* Access: /dashboard/manager/rooms */}
+            <Route path="rooms" element={<RoomsPage/>}/> 
             <Route path="configuration" element={<HotelConfigPage />} />
-            {/* 404 local à la section manager (optionnel mais utile) */}
+            <Route path="planning" element={<Planning />} />
+            <Route path="pointage" element={<Pointage />} />
             <Route path="*" element={<div>Section Manager : page introuvable</div>} />
           </Route>
         </Route>
 
         {/* Routes EMPLOYE */}
         <Route element={<PrivateRoute allowedRoles={['EMPLOYE']} />}>
-          <Route path="/dashboard/employe" element={<EmployeDashboard />}>
-            <Route index element={<DashboardAccueil />} /> {/* Optional default for /dashboard/employe */}
-            <Route path="rooms" element={<RoomsPage/>}/> {/* Access: /dashboard/employe/rooms */}
+          <Route path="/dashboard/employe" element={<DashboardAccueilEmploye />}>
+            <Route index element={<DashboardAccueil />} /> 
+            <Route path="planning" element={<PlanningPage />} />   {/* 👈 ajouté */}
+            <Route path="pointage" element={<PointagePage />} />   {/* 👈 ajouté */}
+            <Route path="rooms" element={<RoomsPage/>}/>
           </Route>
         </Route>
 
         {/* Routes CLIENT */}
         <Route element={<PrivateRoute allowedRoles={['CLIENT']} />}>
           <Route path="/dashboard/client" element={<ClientDashboard />}>
-            <Route index element={<DashboardAccueil />} /> {/* Optional default for /dashboard/client */}
-            <Route path="rooms" element={<RoomsPage/>}/> {/* Access: /dashboard/client/rooms */}
+            <Route index element={<DashboardAccueil />} />
+            <Route path="rooms" element={<RoomsPage/>}/>
           </Route>
         </Route>
 
@@ -58,9 +66,6 @@ const AppRoutes: React.FC = () => {
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="*" element={<div>404 - Page introuvable</div>} />
       </Routes>
-
-      <Route path="/test" element={<div style={{ color: 'green' }}>Test direct OK</div>} />
-
     </Router>
   );
 };

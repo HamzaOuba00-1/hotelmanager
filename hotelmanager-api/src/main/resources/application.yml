@@ -26,6 +26,11 @@ spring:
     resources:
       static-locations: file:uploads/
 
+  logging:
+    level:
+      org.springframework.security: DEBUG
+      org.springframework.web: DEBUG
+
 jwt:
   secret: "MaCléTrèsLongueEtSécurisée_AChanger1234567890!@#"
   expiration: 86400000 # 24h en millisecondes

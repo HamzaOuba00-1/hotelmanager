@@ -1,16 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { UserRound, ChevronDown, ChevronRight } from 'lucide-react';
+import CrewSection from './AddUserComponents/CrewSection';
 import AddUserModal from './AddUserComponents/AddUserModal';
-
-interface User {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: 'MANAGER' | 'EMPLOYE';
-  hotel: { id: number };
-}
+import type { User } from '../../../types/User'; // <-- utilise le type partagé
 
 const PlaceholderUtilisateurs: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -26,23 +19,16 @@ const PlaceholderUtilisateurs: React.FC = () => {
 
     axios
       .get<User[]>('http://localhost:8080/users/my-hotel', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
-        if (res.data && Array.isArray(res.data)) {
-          setUsers(res.data);
-        } else {
-          console.error('Format de données inattendu', res);
-        }
+        if (Array.isArray(res.data)) setUsers(res.data);
+        else console.error('Format de données inattendu', res);
       })
       .catch((err) => console.error('Erreur chargement utilisateurs :', err));
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  useEffect(() => { fetchUsers(); }, []);
 
   const renderUserCard = (user: User, isConnected = false) => (
     <div
@@ -57,7 +43,9 @@ const PlaceholderUtilisateurs: React.FC = () => {
       <div className="text-base font-semibold text-gray-800 text-center tracking-wide">
         {user.firstName} {user.lastName}
       </div>
-      <div className="text-[13px] text-gray-500 uppercase mt-1 tracking-widest">{user.role}</div>
+      <div className="text-[13px] text-gray-500 uppercase mt-1 tracking-widest">
+        {user.role}
+      </div>
     </div>
   );
 
@@ -75,7 +63,7 @@ const PlaceholderUtilisateurs: React.FC = () => {
           onClose={() => setShowModal(false)}
           onSuccess={() => {
             setShowModal(false);
-            fetchUsers(); // rechargement propre
+            fetchUsers();
           }}
         />
       )}
@@ -83,10 +71,12 @@ const PlaceholderUtilisateurs: React.FC = () => {
       <div className="flex justify-end mb-8">
         <button
           onClick={() => setShowModal(true)}
-          className="w-12 h-12 flex items-center justify-center text-3xl font-light text-white bg-gradient-to-br from-[#47B881] to-[#34A384] rounded-2xl shadow-lg hover:scale-105 transition-transform"
+          className="px-4 h-12 flex items-center justify-center text-base font-medium text-white
+                    bg-gradient-to-br from-[#47B881] to-[#34A384] rounded-2xl shadow-lg
+                    hover:scale-105 transition-transform"
           aria-label="Ajouter un utilisateur"
         >
-          +
+          Ajouter un utilisateur
         </button>
       </div>
 
@@ -129,6 +119,9 @@ const PlaceholderUtilisateurs: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* === CREWS / SERVICES (sous la liste des employés) === */}
+      <CrewSection allUsers={users} />
     </div>
   );
 };
