@@ -17,6 +17,9 @@ import Planning from "./pages/dashboard/ManagerDashboardComponents/PlanningPage 
 import PlanningPage from "./pages/dashboard/EmployeDashboardComponents/PlanningPage";
 import PointagePage from "./pages/dashboard/EmployeDashboardComponents/PointagePage";
 import DashboardAccueilEmploye from "./pages/dashboard/EmployeDashboardComponents/DashboardAccueilEmploye";
+import Channels from './pages/dashboard/ManagerDashboardComponents/ChannelsPage';
+import EmployeeChatPage from "./pages/dashboard/EmployeDashboardComponents/EmployeeChatPage";
+
 function App() {
   return (
     <AuthProvider>
@@ -35,6 +38,7 @@ function App() {
             {/* Full path: /dashboard/manager/rooms */}
             <Route path="planning" element={<Planning />} />
             <Route path="pointage" element={<Pointage />} />
+            <Route path="channels" element={<Channels />} />
           </Route>
         </Route>
 
@@ -47,6 +51,7 @@ function App() {
             <Route path="pointage" element={<PointagePage />} />{" "}
             {/* 👈 ajouté */}
             <Route path="rooms" element={<RoomsPage />} />
+            <Route path="messages" element={<EmployeeChatPage />} />
           </Route>
         </Route>
 

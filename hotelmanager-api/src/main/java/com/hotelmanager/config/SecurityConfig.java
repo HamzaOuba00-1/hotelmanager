@@ -33,7 +33,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/uploads/**", "/auth/**", "/", "/index.html", "/swagger-ui/**").permitAll()
 
-                .requestMatchers(HttpMethod.GET, "/hotels/me").hasRole("MANAGER")
+                .requestMatchers(HttpMethod.GET, "/hotels/me").hasAnyRole("MANAGER", "EMPLOYE")
                 .requestMatchers(HttpMethod.PUT, "/hotels/me").hasRole("MANAGER")
 
                 .requestMatchers(HttpMethod.PATCH, "/api/rooms/*/state").hasAnyRole("MANAGER","EMPLOYE")
@@ -60,6 +60,16 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST,   "/crews/**").hasRole("MANAGER")
                 .requestMatchers(HttpMethod.PUT,    "/crews/**").hasRole("MANAGER")
                 .requestMatchers(HttpMethod.DELETE, "/crews/**").hasRole("MANAGER")
+
+                // … dans authorizeHttpRequests(auth -> auth …)
+                .requestMatchers(HttpMethod.GET,    "/channels/**").authenticated()
+                .requestMatchers(HttpMethod.POST,   "/channels/**").authenticated()
+                .requestMatchers(HttpMethod.PUT,    "/channels/**").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/channels/**").authenticated()
+                .requestMatchers(HttpMethod.GET,    "/channels/*/messages/**").authenticated()
+                .requestMatchers(HttpMethod.POST,   "/channels/*/messages/**").authenticated()
+                // autoriser handshake WS
+                .requestMatchers("/ws/**").permitAll()
 
                 .anyRequest().authenticated()
             )

@@ -1,52 +1,59 @@
-// src/main/java/com/hotelmanager/common/GlobalExceptionHandler.java
 package com.hotelmanager.common;
 
-import org.springframework.http.*;
-import org.springframework.web.ErrorResponseException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(NotFoundException.class)
+    public ProblemDetail handleNotFound(NotFoundException ex) {
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        pd.setTitle("Resource not found");
+        return pd;
+    }
+
+    @ExceptionHandler(BusinessRuleException.class)
+    public ProblemDetail handleBusiness(BusinessRuleException ex) {
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        pd.setTitle("Business rule violation");
+        return pd;
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleValidation(MethodArgumentNotValidException ex) {
-        var pd = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, "Validation échouée");
-        pd.setType(URI.create("about:blank"));
-        pd.setTitle("Unprocessable Entity");
-        pd.setProperty("errors", ex.getBindingResult().getFieldErrors()
-                .stream().map(fe -> fe.getField()+": "+fe.getDefaultMessage()).toList());
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach(err -> {
+            String field = err instanceof FieldError fe ? fe.getField() : err.getObjectName();
+            String msg = err.getDefaultMessage();
+            errors.put(field, msg);
+        });
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        pd.setTitle("Validation error");
+        pd.setProperty("errors", errors);
         return pd;
     }
 
+    /** ⬇️ Conserver UN SEUL handler pour IllegalArgumentException */
     @ExceptionHandler(IllegalArgumentException.class)
-    public ProblemDetail handleBadRequest(IllegalArgumentException ex) {
-        var pd = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
-        pd.setTitle("Bad Request");
+    public ProblemDetail handleIllegalArgument(IllegalArgumentException ex) {
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        pd.setTitle("Bad request");
         return pd;
     }
 
-    @ExceptionHandler(IllegalStateException.class)
-    public ProblemDetail handleConflict(IllegalStateException ex) {
-        var pd = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
-        pd.setTitle("Conflict");
-        return pd;
-    }
-
-    @ExceptionHandler(ResponseStatusException.class)
-    public ProblemDetail handleResponseStatus(ResponseStatusException ex) {
-        var pd = ProblemDetail.forStatusAndDetail(ex.getStatusCode(), ex.getReason());
-        pd.setTitle(ex.getStatusCode().toString());
-        return pd;
-    }
-
+    // (optionnel) filet de sécurité générique
     @ExceptionHandler(Exception.class)
-    public ProblemDetail handleOther(Exception ex) {
-        var pd = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur interne");
-        pd.setTitle("Internal Server Error");
+    public ProblemDetail handleGeneric(Exception ex) {
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error");
+        pd.setTitle("Internal error");
         return pd;
     }
 }

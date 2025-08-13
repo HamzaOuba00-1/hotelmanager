@@ -3,7 +3,7 @@ import { Crew } from '../../../../types/Crew';
 import { User } from '../../../../types/User';
 import { getCrew, updateCrew, deleteCrew } from '../../../../api/crewApi';
 import {
-  Users, UserRoundPlus, PencilLine, Trash2, X, CheckCircle2,
+UserRound, Users , UserRoundPlus, PencilLine, Trash2, X, CheckCircle2,
   Shield, Hotel, Drill, Utensils, Martini , ConciergeBell, Bubbles, MonitorCog, HandCoins, DoorOpen, Loader2, ChefHat, Network, Bookmark
 } from 'lucide-react';
 import ConfirmModal from '../../../../common/ConfirmModal';
@@ -204,7 +204,7 @@ const CrewDetailsModal: React.FC<Props> = ({ crewId, onClose, onSaved, onDeleted
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                     {crew.members.map(m => (
                       <div key={m.id} className={cardBase}>
-                        <Users className="h-8 w-8 text-emerald-600 mb-2" />
+                        <UserRound className="h-8 w-8 text-emerald-600 mb-2" />
                         <div className="text-sm font-semibold text-gray-800 text-center">{m.firstName} {m.lastName}</div>
                         <div className="text-[11px] text-gray-500 uppercase mt-1 tracking-widest">{m.role}</div>
                       </div>
@@ -220,10 +220,10 @@ const CrewDetailsModal: React.FC<Props> = ({ crewId, onClose, onSaved, onDeleted
                           type="button"
                           key={u.id}
                           onClick={() => toggle(u.id)}
-                          className={`${cardBase} ${active ? 'bg-[#54f1a3] shadow-[0_8px_24px_rgba(71,184,129,0.20)]' : ''}`}
+                          className={`${cardBase} ${active ?'bg-[#5bf8a4]' : ''}`}
                           title={`${u.firstName} ${u.lastName}`}
                         >
-                          <Users className="h-8 w-8 text-emerald-600 mb-2" />
+                          <UserRound className="h-8 w-8 text-emerald-600 mb-2" />
                           <div className="text-sm font-semibold text-gray-800 text-center">{u.firstName} {u.lastName}</div>
                           <div className="text-[11px] text-gray-500 uppercase mt-1 tracking-widest">{u.role}</div>
                         </button>

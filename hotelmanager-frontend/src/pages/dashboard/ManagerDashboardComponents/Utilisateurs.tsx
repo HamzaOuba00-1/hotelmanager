@@ -76,7 +76,7 @@ const PlaceholderUtilisateurs: React.FC = () => {
                     hover:scale-105 transition-transform"
           aria-label="Ajouter un utilisateur"
         >
-          Ajouter un utilisateur
+          Ajouter un membre
         </button>
       </div>
 

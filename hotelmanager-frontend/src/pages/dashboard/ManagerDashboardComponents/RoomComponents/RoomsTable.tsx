@@ -41,6 +41,7 @@ export default function RoomsTable({
   const [deleteRoom, setDeleteRoom] = useState<Room | null>(null);
   const [stateChangeData, setStateChangeData] = useState<{ room: Room; newState: string } | null>(null);
   const [showDeleteBlockedModal, setShowDeleteBlockedModal] = useState(false);
+  const [stateError, setStateError] = useState<string | null>(null)
 
   const handleDelete = async (id: number) => {
     await axios.delete(`http://localhost:8080/api/rooms/${id}`, {
@@ -50,30 +51,90 @@ export default function RoomsTable({
   };
 
   const handleConfirmStateChange = async () => {
-    if (!stateChangeData) return;
-    await axios.patch(`http://localhost:8080/api/rooms/${stateChangeData.room.id}/state`, null, {
-      params: { state: stateChangeData.newState },
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  if (!stateChangeData) return;
+  try {
+    await axios.patch(
+      `http://localhost:8080/api/rooms/${stateChangeData.room.id}/state`,
+      { state: stateChangeData.newState },                  // JSON body (pas query)
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
     setStateChangeData(null);
     onRefresh();
+  } catch (err: any) {
+    const status = err?.response?.status;
+    const pd = err?.response?.data; // ProblemDetail { title, detail, ... }
+    if (status === 409) {
+      setStateError(pd?.detail || "Transition non autorisée.");
+    } else if (status === 400) {
+      setStateError(pd?.detail || pd?.title || "Requête invalide.");
+    } else {
+      setStateError(err?.message || "Erreur inattendue.");
+    }
+  }
+};
+
+  // en haut du fichier RoomsTable.tsx
+  const ALLOWED: Record<string, string[]> = {
+    LIBRE: ["RESERVEE", "CHECKIN", "ROOM_SERVICE"],
+    RESERVEE: ["CHECKIN", "A_VALIDER_LIBRE", "LIBRE"],
+    CHECKIN: ["ROOM_SERVICE", "CHECKOUT"],
+    CHECKOUT: ["A_NETTOYER"],
+    A_NETTOYER: ["EN_NETTOYAGE"],
+    EN_NETTOYAGE: ["A_VALIDER_CLEAN"],
+    A_VALIDER_CLEAN: ["LIBRE", "A_NETTOYER"],
+    ROOM_SERVICE: ["A_NETTOYER", "A_VALIDER_CLEAN", "LIBRE"],
+    A_VALIDER_LIBRE: ["LIBRE"],
   };
 
-  const stateStyles: Record<string, { gradient: string; glow: string; text: string }> = {
+
+  const stateStyles: Record<
+    string,
+    { gradient: string; glow: string; text: string }
+  > = {
     LIBRE: {
       gradient: "bg-gradient-to-br from-emerald-50 to-emerald-100",
       glow: "shadow-[0_4px_25px_rgba(16,185,129,0.25)]",
       text: "text-emerald-700",
     },
-    OCCUPEE: {
+    RESERVEE: {
+      gradient: "bg-gradient-to-br from-indigo-50 to-indigo-100",
+      glow: "shadow-[0_4px_25px_rgba(99,102,241,0.25)]",
+      text: "text-indigo-700",
+    },
+    CHECKIN: {
+      gradient: "bg-gradient-to-br from-blue-50 to-blue-100",
+      glow: "shadow-[0_4px_25px_rgba(59,130,246,0.25)]",
+      text: "text-blue-700",
+    },
+    ROOM_SERVICE: {
+      gradient: "bg-gradient-to-br from-amber-50 to-amber-100",
+      glow: "shadow-[0_4px_25px_rgba(245,158,11,0.25)]",
+      text: "text-amber-700",
+    },
+    CHECKOUT: {
+      gradient: "bg-gradient-to-br from-cyan-50 to-cyan-100",
+      glow: "shadow-[0_4px_25px_rgba(34,211,238,0.25)]",
+      text: "text-cyan-700",
+    },
+    A_VALIDER_LIBRE: {
+      gradient: "bg-gradient-to-br from-lime-50 to-lime-100",
+      glow: "shadow-[0_4px_25px_rgba(132,204,22,0.25)]",
+      text: "text-lime-700",
+    },
+    A_NETTOYER: {
       gradient: "bg-gradient-to-br from-rose-50 to-rose-100",
       glow: "shadow-[0_4px_25px_rgba(244,63,94,0.25)]",
       text: "text-rose-700",
     },
     EN_NETTOYAGE: {
-      gradient: "bg-gradient-to-br from-amber-50 to-amber-100",
-      glow: "shadow-[0_4px_25px_rgba(245,158,11,0.25)]",
-      text: "text-amber-700",
+      gradient: "bg-gradient-to-br from-orange-50 to-orange-100",
+      glow: "shadow-[0_4px_25px_rgba(249,115,22,0.25)]",
+      text: "text-orange-700",
+    },
+    A_VALIDER_CLEAN: {
+      gradient: "bg-gradient-to-br from-teal-50 to-teal-100",
+      glow: "shadow-[0_4px_25px_rgba(20,184,166,0.25)]",
+      text: "text-teal-700",
     },
     DEFAULT: {
       gradient: "bg-gradient-to-br from-gray-50 to-gray-100",
@@ -81,6 +142,7 @@ export default function RoomsTable({
       text: "text-gray-700",
     },
   };
+
 
   const getStateIcon = (state: string) => {
     switch (state) {
@@ -138,6 +200,7 @@ export default function RoomsTable({
                   onRequestStateChange={(newState) => setStateChangeData({ room, newState })}
                   openMenuRoomId={openMenuRoomId}
                   setOpenMenuRoomId={setOpenMenuRoomId}
+                  allowedTargets={ALLOWED[room.roomState] ?? []}
                 />
               )}
 
@@ -165,12 +228,15 @@ export default function RoomsTable({
       {/* Modal d'édition */}
       {editRoom && (
         <RoomEditModal
-          token={token}
-          room={editRoom}
+          room={{
+            ...editRoom!,
+            roomNumber: String(editRoom!.roomNumber),
+            floor: String(editRoom!.floor),
+          }}
           roomTypes={roomTypes}
           onUpdated={onRefresh}
-          onClose={() => setEditRoom(null)}
-        />
+          onClose={() => setEditRoom(null)} token={""}        />
+
       )}
 
       {/* Modal confirmation suppression */}

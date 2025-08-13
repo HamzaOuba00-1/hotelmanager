@@ -106,7 +106,18 @@
 			<version>5.12.0</version>
 			<scope>test</scope>
 		</dependency>
-		
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
+
+		<!-- (optionnel mais recommandé) Sécurité côté WebSocket/STOMP -->
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-messaging</artifactId>
+		</dependency>
+				
 
 	</dependencies>
 

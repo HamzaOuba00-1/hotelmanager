@@ -3,7 +3,7 @@ import { createCrew } from '../../../../api/crewApi';
 import { User } from '../../../../types/User';
 import { ServiceType } from '../../../../types/Crew';
 import {
-  Users, UsersRound, Hotel, Wrench, Utensils, Coffee,
+  Users, UserRound, UsersRound, Hotel, Wrench, Utensils, Coffee,
   ConciergeBell, Bath, Shield, Cpu, HandCoins, UserRoundPlus
 } from 'lucide-react';
 
@@ -101,10 +101,10 @@ const AddCrewModal: React.FC<Props> = ({ onClose, onSuccess, allUsers }) => {
                     border border-white/30 bg-white/50 backdrop-blur-xl
                     shadow-[0_8px_24px_rgba(0,0,0,0.08)] ring-1 ring-white/20 
                     transition-transform duration-200 hover:scale-105 hover:shadow-xl
-                    ${active ? 'bg-[#54f1a3] shadow-[0_8px_24px_rgba(71,184,129,0.20)]' : ''}`}
+                    ${active ? 'bg-[#5bf8a4]' : ''}`}
                   title={`${u.firstName} ${u.lastName}`}
                 >
-                  <Users className="h-8 w-8 text-[#47B881] mb-2" />
+                  <UserRound className="h-8 w-8 text-[#47B881] mb-2" />
                   <div className="text-sm font-semibold text-gray-800 text-center">
                     {u.firstName} {u.lastName}
                   </div>

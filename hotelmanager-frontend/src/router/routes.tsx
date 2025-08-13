@@ -17,6 +17,8 @@ import Pointage from '../pages/dashboard/ManagerDashboardComponents/PointagePage
 import PlanningPage from '../pages/dashboard/EmployeDashboardComponents/PlanningPage';
 import PointagePage from '../pages/dashboard/EmployeDashboardComponents/PointagePage';
 import DashboardAccueilEmploye from '../pages/dashboard/EmployeDashboardComponents/DashboardAccueilEmploye';
+import Channels from '../pages/dashboard/ManagerDashboardComponents/ChannelsPage';
+import EmployeeChatPage from '../pages/dashboard/EmployeDashboardComponents/EmployeeChatPage';
 
 
 const AppRoutes: React.FC = () => {
@@ -37,6 +39,7 @@ const AppRoutes: React.FC = () => {
             <Route path="configuration" element={<HotelConfigPage />} />
             <Route path="planning" element={<Planning />} />
             <Route path="pointage" element={<Pointage />} />
+            <Route path="channels" element={<Channels />} />
             <Route path="*" element={<div>Section Manager : page introuvable</div>} />
           </Route>
         </Route>
@@ -48,6 +51,8 @@ const AppRoutes: React.FC = () => {
             <Route path="planning" element={<PlanningPage />} />   {/* 👈 ajouté */}
             <Route path="pointage" element={<PointagePage />} />   {/* 👈 ajouté */}
             <Route path="rooms" element={<RoomsPage/>}/>
+            <Route path="messages" element={<EmployeeChatPage />} />
+
           </Route>
         </Route>
 

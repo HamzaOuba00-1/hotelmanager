@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Search, LayoutDashboard, Users, Cog,CalendarIcon,DoorClosed, PenLine, QrCode } from "lucide-react";
+import { Search, LayoutDashboard, Users, Cog,CalendarIcon,DoorClosed, PenLine, QrCode, MessageSquare } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { getMyHotel } from "../../api/hotelApi"; // 👈 on utilise ton API
 
@@ -73,6 +73,9 @@ const Sidebar: React.FC<{ logoSrc?: string }> = ({ logoSrc }) => (
         </SidebarLink>
         <SidebarLink to="/dashboard/manager/pointage" icon={<QrCode size={18}/>}>
           Pointage
+        </SidebarLink>
+        <SidebarLink to="/dashboard/manager/channels" icon={<MessageSquare size={18} />}>
+          Chaînes
         </SidebarLink>
 
 
