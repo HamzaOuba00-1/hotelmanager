@@ -1,5 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { Search, LayoutDashboard, Users, Cog,CalendarIcon,DoorClosed, PenLine, QrCode, MessageSquare } from "lucide-react";
+import {
+  Search,
+  LayoutDashboard,
+  Users,
+  Cog,
+  CalendarIcon,
+  DoorClosed,
+  PenLine,
+  QrCode,
+  MessageSquare,
+  CalendarCheck2,
+} from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { getMyHotel } from "../../api/hotelApi"; // 👈 on utilise ton API
 
@@ -56,29 +67,51 @@ const Sidebar: React.FC<{ logoSrc?: string }> = ({ logoSrc }) => (
     </div>
 
     <nav className="space-y-1 flex-1">
-      <SidebarLink to="/dashboard/manager" icon={<LayoutDashboard size={18} />} exact>
+      <SidebarLink
+        to="/dashboard/manager"
+        icon={<LayoutDashboard size={18} />}
+        exact
+      >
         Dashboard
       </SidebarLink>
       <SidebarLink to="/dashboard/manager/users" icon={<Users size={18} />}>
         Utilisateurs
       </SidebarLink>
-      <SidebarLink to="/dashboard/manager/configuration" icon={<Cog size={18} />}>
+      <SidebarLink
+        to="/dashboard/manager/configuration"
+        icon={<Cog size={18} />}
+      >
         Configuration
       </SidebarLink>
-        <SidebarLink to="/dashboard/manager/rooms" icon={<DoorClosed size={18}/>}> {/* Or use an icon from lucide-react if available */}
-            Chambres
-        </SidebarLink>
-        <SidebarLink to="/dashboard/manager/planning" icon={<CalendarIcon size={18}/>}>
-          Planning
-        </SidebarLink>
-        <SidebarLink to="/dashboard/manager/pointage" icon={<QrCode size={18}/>}>
-          Pointage
-        </SidebarLink>
-        <SidebarLink to="/dashboard/manager/channels" icon={<MessageSquare size={18} />}>
-          Chaînes
-        </SidebarLink>
-
-
+      <SidebarLink
+        to="/dashboard/manager/rooms"
+        icon={<DoorClosed size={18} />}
+      >
+        {" "}
+        {/* Or use an icon from lucide-react if available */}
+        Chambres
+      </SidebarLink>
+      <SidebarLink
+        to="/dashboard/manager/reservations"
+        icon={<CalendarCheck2 size={18} />}
+      >
+        Réservations
+      </SidebarLink>
+      <SidebarLink
+        to="/dashboard/manager/planning"
+        icon={<CalendarIcon size={18} />}
+      >
+        Planning
+      </SidebarLink>
+      <SidebarLink to="/dashboard/manager/pointage" icon={<QrCode size={18} />}>
+        Pointage
+      </SidebarLink>
+      <SidebarLink
+        to="/dashboard/manager/channels"
+        icon={<MessageSquare size={18} />}
+      >
+        Chaînes
+      </SidebarLink>
     </nav>
   </aside>
 );

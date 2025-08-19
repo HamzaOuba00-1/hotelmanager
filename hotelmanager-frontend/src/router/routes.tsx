@@ -7,7 +7,7 @@ import ManagerDashboard from '../pages/dashboard/ManagerDashboard';
 import EmployeDashboard from '../pages/dashboard/EmployeDashboard';
 import ClientDashboard from '../pages/dashboard/ClientDashboard';
 import PrivateRoute from './PrivateRoute';
-import MePage from '../pages/MePage';
+import PublicRoomsPage from '../pages/PublicRoomsPage';
 import DashboardAccueil from '../pages/dashboard/ManagerDashboardComponents/DashboardAccueil';
 import PlaceholderUtilisateurs from '../pages/dashboard/ManagerDashboardComponents/Utilisateurs';
 import RoomsPage from "../pages/dashboard/ManagerDashboardComponents/RoomsPage";
@@ -19,7 +19,9 @@ import PointagePage from '../pages/dashboard/EmployeDashboardComponents/Pointage
 import DashboardAccueilEmploye from '../pages/dashboard/EmployeDashboardComponents/DashboardAccueilEmploye';
 import Channels from '../pages/dashboard/ManagerDashboardComponents/ChannelsPage';
 import EmployeeChatPage from '../pages/dashboard/EmployeDashboardComponents/EmployeeChatPage';
+import ReservationsPage from '../pages/dashboard/ManagerDashboardComponents/ReservationsPage';
 
+const DEFAULT_PUBLIC_HOTEL_ID = 1;
 
 const AppRoutes: React.FC = () => {
   return (
@@ -28,7 +30,7 @@ const AppRoutes: React.FC = () => {
         {/* Routes publiques */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterManagerPage />} />
-        <Route path="/me" element={<MePage />} />
+        <Route path="/hotels/:hotelId/rooms" element={<PublicRoomsPage />} />
 
         {/* Routes MANAGER */}
         <Route element={<PrivateRoute allowedRoles={['MANAGER']} />}>
@@ -36,6 +38,7 @@ const AppRoutes: React.FC = () => {
             <Route index element={<DashboardAccueil />} />
             <Route path="users" element={<PlaceholderUtilisateurs />} />
             <Route path="rooms" element={<RoomsPage/>}/> 
+            <Route path="reservations" element={<ReservationsPage />} />
             <Route path="configuration" element={<HotelConfigPage />} />
             <Route path="planning" element={<Planning />} />
             <Route path="pointage" element={<Pointage />} />
@@ -68,7 +71,7 @@ const AppRoutes: React.FC = () => {
         <Route path="/test" element={<div style={{ color: 'green' }}>Test direct OK</div>} />
 
         {/* Fallback global */}
-        <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="/" element={<Navigate to={`/hotels/${DEFAULT_PUBLIC_HOTEL_ID}/rooms`} replace />} />
         <Route path="*" element={<div>404 - Page introuvable</div>} />
       </Routes>
     </Router>

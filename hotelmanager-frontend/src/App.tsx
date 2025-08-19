@@ -19,7 +19,9 @@ import PointagePage from "./pages/dashboard/EmployeDashboardComponents/PointageP
 import DashboardAccueilEmploye from "./pages/dashboard/EmployeDashboardComponents/DashboardAccueilEmploye";
 import Channels from './pages/dashboard/ManagerDashboardComponents/ChannelsPage';
 import EmployeeChatPage from "./pages/dashboard/EmployeDashboardComponents/EmployeeChatPage";
-
+import PublicRoomsPage from "./pages/PublicRoomsPage";
+import ReservationsPage from "./pages/dashboard/ManagerDashboardComponents/ReservationsPage";
+const DEFAULT_PUBLIC_HOTEL_ID = 1;
 function App() {
   return (
     <AuthProvider>
@@ -27,6 +29,7 @@ function App() {
         {/* Routes publiques */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterManagerPage />} />
+        <Route path="/hotels/:hotelId/rooms" element={<PublicRoomsPage />} />
 
         {/* Routes protégées - Manager */}
         <Route element={<PrivateRoute allowedRoles={["MANAGER"]} />}>
@@ -35,6 +38,7 @@ function App() {
             <Route path="users" element={<PlaceholderUtilisateurs />} />
             <Route path="configuration" element={<HotelConfigPage />} />
             <Route path="rooms" element={<RoomsPage />} />{" "}
+            <Route path="reservations" element={<ReservationsPage />} />
             {/* Full path: /dashboard/manager/rooms */}
             <Route path="planning" element={<Planning />} />
             <Route path="pointage" element={<Pointage />} />
@@ -63,7 +67,7 @@ function App() {
         </Route>
 
         {/* Redirections */}
-        <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="/" element={<Navigate to={`/hotels/${DEFAULT_PUBLIC_HOTEL_ID}/rooms`} replace />}/>
         <Route path="*" element={<div>404 - Page introuvable</div>} />
       </Routes>
     </AuthProvider>

@@ -1,34 +1,26 @@
-// src/api/axios.ts
-import axios from 'axios';
-import { AuthResponse } from "./authApi";
+import axios from "axios";
 
-// Création de l'instance Axios avec baseURL
-const instance = axios.create({
-  baseURL: 'http://localhost:8080',
-  headers: {
-    'Content-Type': 'application/json',
-  }
+/** Base URL de ton API Spring */
+const API_BASE = process.env.REACT_APP_API_URL ?? "http://127.0.0.1:8080";
+
+/** Client privé (injecte le JWT si présent) */
+const api = axios.create({
+  baseURL: API_BASE,
+  headers: { "Content-Type": "application/json" },
 });
 
-// ✅ Interceptor : injecte automatiquement le token dans toutes les requêtes
-instance.interceptors.request.use((config) => {
+api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
-  console.log(localStorage.getItem("token"));
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
-}, (error) => {
-  return Promise.reject(error);
 });
 
-export default instance;
+/** Client public (pas d’Authorization) */
+export const publicApi = axios.create({
+  baseURL: API_BASE,
+  headers: { "Content-Type": "application/json" },
+});
 
-// Authentification
-export async function login(credentials: {
-  email: string;
-  password: string;
-}): Promise<AuthResponse> {
-  const response = await instance.post<AuthResponse>("/auth/login", credentials);
-  return response.data;
-}
+export default api;

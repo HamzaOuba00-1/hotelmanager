@@ -12,7 +12,6 @@ import java.util.Set;
 @RequestMapping("/api/rooms")
 @CrossOrigin(origins = "http://localhost:3000")
 public class RoomController {
-
     private final RoomService roomService;
     private final RoomRepository roomRepository;
 
@@ -31,12 +30,18 @@ public class RoomController {
         return ResponseEntity.ok(roomService.findAll());
     }
 
+    // ---- nouveau: la chambre du client connecté
+    @GetMapping("/my-room")
+    public ResponseEntity<Room> myRoom() {
+        return ResponseEntity.ok(roomService.findMyRoom());
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<Room> update(@PathVariable Long id, @Valid @RequestBody Room room) {
         return ResponseEntity.ok(roomService.update(id, room));
     }
 
-    /** Version propre: PATCH JSON { "state": "<ENUM>" } */
+    // PATCH JSON { "state": "<ENUM>" } ou ?state=...
     @PatchMapping("/{id}/state")
     public ResponseEntity<Room> updateStateJson(
             @PathVariable Long id,
@@ -57,8 +62,9 @@ public class RoomController {
         roomService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
     @GetMapping("/{id}/allowed-states")
-        public Set<RoomState> allowedStates(@PathVariable Long id) {
+    public Set<RoomState> allowedStates(@PathVariable Long id) {
         return roomService.allowedTargets(id);
     }
 }

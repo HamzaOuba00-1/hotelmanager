@@ -19,9 +19,9 @@ export default function RoomsPage() {
 
   const isManager = user?.role === "MANAGER";
   const isEmployee = user?.role === "EMPLOYE";
-  const isClient = user?.role === "CLIENT";
+  const isClient  = user?.role === "CLIENT";
 
-  /* ---------- Récupération chambres ---------- */
+  // ---------- Récupération chambres ----------
   const fetchRooms = useCallback(async () => {
     if (!token) return;
     let url = "http://localhost:8080/api/rooms";
@@ -30,32 +30,28 @@ export default function RoomsPage() {
     const { data } = await axios.get<Room | Room[]>(url, {
       headers: { Authorization: `Bearer ${token}` },
     });
-
     setRooms(Array.isArray(data) ? data : [data]);
   }, [token, isClient]);
 
-  /* ---------- Récupération config hôtel ---------- */
+  // ---------- Récupération config hôtel ----------
   const fetchHotelConfig = useCallback(async () => {
-    if (!token) return;
+    if (!token || isClient) return; // les clients n'ont pas accès à /hotels/me
     const { data } = await axios.get<{ roomTypes: string[] }>(
       "http://localhost:8080/hotels/me",
       { headers: { Authorization: `Bearer ${token}` } }
     );
     if (data.roomTypes?.length) setRoomTypes(data.roomTypes);
-  }, [token]);
+  }, [token, isClient]);
 
-  /* ---------- Chargement au montage ---------- */
   useEffect(() => {
     fetchHotelConfig();
     fetchRooms();
   }, [fetchHotelConfig, fetchRooms]);
 
-  /* ---------- Liste des étages dynamiques ---------- */
-  const floorsList = Array.from(new Set(rooms.map((r) => r.floor))).sort();
+  const floorsList = Array.from(new Set(rooms.map((r) => String(r.floor)))).sort();
 
   return (
     <div className="container mx-auto p-6 space-y-8">
-      {/* Titre + bouton centrés */}
       <div className="flex flex-col items-center gap-6">
         <h1 className="text-3xl font-bold flex items-center gap-3 text-gray-800">
           <BedDouble className="w-8 h-8 text-emerald-600" />
@@ -73,7 +69,6 @@ export default function RoomsPage() {
         )}
       </div>
 
-      {/* Liste + Filtre */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-semibold flex items-center gap-2 text-gray-700">
@@ -101,7 +96,6 @@ export default function RoomsPage() {
         />
       </div>
 
-      {/* Modal luxe */}
       {showForm &&
         createPortal(
           <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center px-4">

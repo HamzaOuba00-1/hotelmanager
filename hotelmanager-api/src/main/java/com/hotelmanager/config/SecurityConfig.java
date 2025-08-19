@@ -33,9 +33,16 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/uploads/**", "/auth/**", "/", "/index.html", "/swagger-ui/**").permitAll()
 
+                .requestMatchers(HttpMethod.GET,  "/public/hotels/*/rooms/available").permitAll()
+                .requestMatchers(HttpMethod.POST, "/public/reservations").permitAll()
+
+                
+
+
                 .requestMatchers(HttpMethod.GET, "/hotels/me").hasAnyRole("MANAGER", "EMPLOYE")
                 .requestMatchers(HttpMethod.PUT, "/hotels/me").hasRole("MANAGER")
 
+                .requestMatchers(HttpMethod.GET, "/api/rooms/my-room").hasRole("CLIENT")
                 .requestMatchers(HttpMethod.PATCH, "/api/rooms/*/state").hasAnyRole("MANAGER","EMPLOYE")
                 .requestMatchers(HttpMethod.POST, "/api/rooms").hasRole("MANAGER")
                 .requestMatchers(HttpMethod.PUT, "/api/rooms/**").hasRole("MANAGER")

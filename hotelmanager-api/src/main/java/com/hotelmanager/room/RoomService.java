@@ -31,21 +31,37 @@ public class RoomService {
     private final RoomRepository roomRepository;
     private final UserRepository userRepository;
 
+    @Transactional(readOnly = true)
+    public Room findMyRoom() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getName() == null) {
+            throw new IllegalArgumentException("Utilisateur non authentifié.");
+        }
+        String email = auth.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("Utilisateur introuvable: " + email));
+
+        return roomRepository.findFirstByClientId(user.getId())
+                .orElseThrow(() -> new NotFoundException("Aucune chambre associée à l'utilisateur."));
+    }
+
     /** Graph de transitions autorisées (FSM) */
     private static final Map<RoomState, Set<RoomState>> ALLOWED = Map.ofEntries(
-            Map.entry(LIBRE, Set.of(RESERVEE, CHECKIN, ROOM_SERVICE)),
+            Map.entry(LIBRE, Set.of(RESERVEE, CHECKIN, MAINTENANCE, INACTIVE)),
             Map.entry(RESERVEE, Set.of(CHECKIN, A_VALIDER_LIBRE, LIBRE)),
             Map.entry(CHECKIN, Set.of(ROOM_SERVICE, CHECKOUT)),
-            Map.entry(CHECKOUT, Set.of(A_NETTOYER)),
+            Map.entry(CHECKOUT, Set.of(A_VALIDER_LIBRE, A_NETTOYER)),
             Map.entry(A_NETTOYER, Set.of(EN_NETTOYAGE)),
             Map.entry(EN_NETTOYAGE, Set.of(A_VALIDER_CLEAN)),
             Map.entry(A_VALIDER_CLEAN, Set.of(LIBRE, A_NETTOYER)),
-            Map.entry(ROOM_SERVICE, Set.of(A_NETTOYER, A_VALIDER_CLEAN, LIBRE)),
-            Map.entry(A_VALIDER_LIBRE, Set.of(LIBRE))
+            Map.entry(ROOM_SERVICE, Set.of(CHECKIN, CHECKOUT)),
+            Map.entry(A_VALIDER_LIBRE, Set.of(CHECKIN, A_NETTOYER)),
+            Map.entry(MAINTENANCE, Set.of(LIBRE)),
+            Map.entry(INACTIVE, Set.of(LIBRE))
     );
 
     /** États depuis lesquels on peut supprimer une chambre */
-    private static final Set<RoomState> DELETABLE = Set.of(LIBRE, A_VALIDER_LIBRE);
+    private static final Set<RoomState> DELETABLE = Set.of(LIBRE);
 
     /* ======================= Génération / Nettoyage par hôtel ======================= */
 
@@ -95,10 +111,14 @@ public class RoomService {
     /** Crée une chambre pour l'hôtel de l'utilisateur connecté (manager) */
     public Room create(Room room) {
         Hotel hotel = resolveCurrentUserHotel();
-        room.setHotel(hotel);                         // ⬅️ évite hotel_id NULL
+        room.setHotel(hotel);
         if (room.getRoomState() == null) room.setRoomState(LIBRE);
         room.setActive(true);
         room.setLastUpdated(LocalDateTime.now());
+
+        if (roomRepository.existsByHotelIdAndRoomNumber(hotel.getId(), room.getRoomNumber())) {
+            throw new BusinessRuleException("Numéro de chambre déjà utilisé dans cet hôtel.");
+        }
         return roomRepository.save(room);
     }
 

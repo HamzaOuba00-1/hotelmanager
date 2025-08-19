@@ -11,6 +11,8 @@ public enum RoomState {
     A_VALIDER_LIBRE,
     A_NETTOYER,
     EN_NETTOYAGE,
+    MAINTENANCE,   
+    INACTIVE,
     A_VALIDER_CLEAN;
 
     /** Permet d'accepter "reserve", "room service/maintenance", "a valider (clean)", etc. */
@@ -23,8 +25,7 @@ public enum RoomState {
 
         // synonymes fréquents
         s = s.replace("RESERVE", "RESERVEE")
-             .replace("ROOM_SERVICE/MAINTENANCE", "ROOM_SERVICE")
-             .replace("MAINTENANCE", "ROOM_SERVICE")
+             .replace("ROOM_SERVICE", "ROOM_SERVICE")
              .replace("A_VALIDER_(LIBRE)", "A_VALIDER_LIBRE")
              .replace("A_VALIDER_(CLEAN)", "A_VALIDER_CLEAN")
              .replace("A_NETTOYAGE", "A_NETTOYER");

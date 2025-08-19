@@ -4,14 +4,7 @@ import { Tag, Bed, Layers3, FileText, Activity } from "lucide-react";
 
 interface RoomEditModalProps {
   token: string;
-  room: {
-    id: number;
-    roomNumber: string;
-    roomType: string;
-    floor: string;
-    description: string;
-    roomState: string;
-  };
+  room: { id: number; roomNumber: number; roomType: string; floor: number; description: string; roomState: string };
   roomTypes: string[];
   onUpdated: () => void;
   onClose: () => void;
