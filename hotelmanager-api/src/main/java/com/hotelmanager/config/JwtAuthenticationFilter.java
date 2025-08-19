@@ -1,30 +1,26 @@
 package com.hotelmanager.config;
 
+import com.hotelmanager.user.User;
 import com.hotelmanager.user.UserRepository;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-import com.hotelmanager.*;
-
-
 import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtUtil jwtUtil;
-    private final UserDetailsService userDetailsService;
+    private final JwtUtil jwtUtil;                // ton util existant
+    private final UserRepository userRepository;  // ✅ on charge l'utilisateur + hôtel depuis la DB
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -48,21 +44,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String token = authHeader.substring(7);
         final String email = jwtUtil.extractUsername(token);
 
+        // Ne pas réauthentifier si déjà authentifié dans le contexte
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            var userDetails = userDetailsService.loadUserByUsername(email);
 
-            if (jwtUtil.isTokenValid(token, userDetails)) {
-                var authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
+            // ✅ charge l'utilisateur AVEC son hôtel (fetch join / EntityGraph)
+            var userOpt = userRepository.findOneWithHotelByEmail(email);
 
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
 
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                // Ton JwtUtil doit valider le token par rapport au User (il implémente UserDetails)
+                if (jwtUtil.isTokenValid(token, user)) {
+                    var authToken = new UsernamePasswordAuthenticationToken(
+                            user, // ✅ principal = entité User complète (avec hotel)
+                            null,
+                            user.getAuthorities()
+                    );
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
         }
 

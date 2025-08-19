@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Search, LayoutDashboard, Users, Cog } from "lucide-react";
+import { Search, LayoutDashboard, Users, Cog,CalendarIcon,DoorClosed, PenLine, QrCode, MessageSquare } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { getMyHotel } from "../../api/hotelApi"; // 👈 on utilise ton API
 
@@ -65,9 +65,19 @@ const Sidebar: React.FC<{ logoSrc?: string }> = ({ logoSrc }) => (
       <SidebarLink to="/dashboard/manager/configuration" icon={<Cog size={18} />}>
         Configuration
       </SidebarLink>
-        <SidebarLink to="/dashboard/manager/rooms" icon={<span role="img" aria-label="Bed">🛏</span>}> {/* Or use an icon from lucide-react if available */}
+        <SidebarLink to="/dashboard/manager/rooms" icon={<DoorClosed size={18}/>}> {/* Or use an icon from lucide-react if available */}
             Chambres
         </SidebarLink>
+        <SidebarLink to="/dashboard/manager/planning" icon={<CalendarIcon size={18}/>}>
+          Planning
+        </SidebarLink>
+        <SidebarLink to="/dashboard/manager/pointage" icon={<QrCode size={18}/>}>
+          Pointage
+        </SidebarLink>
+        <SidebarLink to="/dashboard/manager/channels" icon={<MessageSquare size={18} />}>
+          Chaînes
+        </SidebarLink>
+
 
     </nav>
   </aside>

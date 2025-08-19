@@ -22,3 +22,29 @@
     @apply w-full px-4 py-2.5 rounded-xl border border-gray-300 bg-white/90 text-sm text-gray-800 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#47B881] focus:border-transparent;
   }
 }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@font-face {
+  font-family: "NotoSansArabic";
+  src: url("./fonts/NotoSansArabic-Regular.woff2") format("woff2");
+  font-display: swap;
+  unicode-range: U+0600-06FF; /* bloc arabe */
+}
+
+.export-pdf-scope {
+  font-family: "NotoSansArabic", system-ui, sans-serif;
+}
+.pdf-mode .truncate {
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
+}
+
