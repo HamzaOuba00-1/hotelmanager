@@ -37,7 +37,6 @@ export interface HotelConfigDTO {
   active: boolean;
 }
 
-// 🧹 Nettoyage du payload pour éviter les undefined côté backend
 function cleanPayload(payload: HotelConfigDTO): HotelConfigDTO {
   return {
     ...payload,

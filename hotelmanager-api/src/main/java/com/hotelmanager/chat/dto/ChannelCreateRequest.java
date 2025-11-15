@@ -1,4 +1,3 @@
-// src/main/java/com/hotelmanager/chat/dto/ChannelCreateRequest.java
 package com.hotelmanager.chat.dto;
 
 import com.hotelmanager.chat.model.ChannelType;
@@ -11,6 +10,6 @@ public record ChannelCreateRequest(
   @NotBlank String name,
   String service,
   String icon,
-  Long crewId,                // requis si type=CREW
-  List<Long> memberIds        // requis si type=DIRECT (2 ids) ou channel custom
+  Long crewId,                
+  List<Long> memberIds        
 ) {}

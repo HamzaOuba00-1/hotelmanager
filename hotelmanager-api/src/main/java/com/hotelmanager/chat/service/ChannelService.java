@@ -1,4 +1,3 @@
-// src/main/java/com/hotelmanager/chat/service/ChannelService.java
 package com.hotelmanager.chat.service;
 
 import com.hotelmanager.chat.dto.ChannelCreateRequest;
@@ -156,16 +155,16 @@ public class ChannelService {
   public void deleteChannel(Long id, User principal) {
     Channel c = channelRepo.findByIdAndHotelId(id, principal.getHotel().getId())
         .orElseThrow(() -> new EntityNotFoundException("Chaîne introuvable."));
-    // d'abord les membres (si pas de cascade)
+    
     memberRepo.deleteByChannelId(c.getId());
-    channelRepo.delete(c); // ✅ supprimé définitivement en BD
+    channelRepo.delete(c); 
   }
   public void ChannelMemberService(ChannelMemberRepository cmRepo, ChannelService channelService) {
     this.cmRepo = cmRepo; this.channelService = channelService;
   }
 
   public List<UserShortDto> listMembers(Long channelId, User me) {
-    Channel c = channelService.getForHotel(channelId, me); // vérifie l’hôtel
+    Channel c = channelService.getForHotel(channelId, me); 
     return cmRepo.findUsersByChannelId(c.getId()).stream().map(UserShortDto::from).toList();
   }
 }

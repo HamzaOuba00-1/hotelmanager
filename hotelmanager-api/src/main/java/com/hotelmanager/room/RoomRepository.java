@@ -17,7 +17,6 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
     List<Room> findByHotelIdAndActiveTrueAndRoomState(Long hotelId, RoomState state);
 
-    // (garde si tu l'utilises ailleurs)
     @Query(value = """
         SELECT r.*
         FROM rooms r
@@ -34,7 +33,6 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     """, nativeQuery = true)
     List<Room> findAvailableRoomsNative(Long hotelId, OffsetDateTime startAt, OffsetDateTime endAt);
 
-    // ✅ "Strictement LIBRE" + pas de chevauchement de réservation "active"
     @Query(value = """
         SELECT r.*
         FROM rooms r

@@ -1,4 +1,3 @@
-// src/main/java/com/hotelmanager/chat/repo/ReadReceiptRepository.java
 package com.hotelmanager.chat.repo;
 
 import com.hotelmanager.chat.entity.ReadReceipt;

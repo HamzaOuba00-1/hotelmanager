@@ -1,4 +1,3 @@
-// src/main/java/com/hotelmanager/attendance/AttendanceService.java
 package com.hotelmanager.attendance;
 
 import com.hotelmanager.attendance.dto.AttendanceDto;
@@ -26,7 +25,7 @@ public class AttendanceService {
   private final UserRepository userRepository;
   private final AttendanceRepository attendanceRepository;
 
-  private final DailyCodeService dailyCodeService; // 👈 injecte le service, plus le repo
+  private final DailyCodeService dailyCodeService; 
 
   @Transactional
   public Attendance checkIn(User employee, String code, Double lat, Double lng) {
@@ -67,7 +66,6 @@ public class AttendanceService {
         var now = LocalDateTime.now();
         open.setCheckOutAt(now);
 
-        // Force l’écriture immédiate : utile si tu lis la valeur tout de suite derrière
         attRepo.saveAndFlush(open);
 
         return new CheckOutResponse(open.getId(), now);
@@ -75,7 +73,6 @@ public class AttendanceService {
 
   @Transactional
     public AttendanceDto addManualAttendance(User current, ManualAttendanceRequest req) {
-        // Recharger le manager (principal JPA managé)
         User manager = userRepository.findById(current.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur introuvable"));
 
@@ -83,7 +80,6 @@ public class AttendanceService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Manager sans hôtel");
         }
 
-        // Trouver l’employé et vérifier qu’il appartient au même hôtel
         User employee = userRepository.findById(req.getEmployeeId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employé introuvable"));
 
@@ -91,7 +87,6 @@ public class AttendanceService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Employé d’un autre hôtel");
         }
 
-        // Règles simples
         if (req.getCheckOutAt() != null && !req.getCheckOutAt().isAfter(req.getCheckInAt())) {
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Sortie doit être après l’entrée");
         }
@@ -102,18 +97,17 @@ public class AttendanceService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Pointage déjà ouvert pour cet employé");
         }
 
-        // Build & save
         Attendance att = Attendance.builder()
                 .employee(employee)
                 .date(req.getDate())
                 .checkInAt(req.getCheckInAt())
                 .checkOutAt(req.getCheckOutAt())
-                .status(Attendance.Status.valueOf(req.getStatus()))  // String -> enum
+                .status(Attendance.Status.valueOf(req.getStatus())) 
                 .source(req.getSource() == null ? "MANUAL" : req.getSource())
                 .lat(req.getLat())
                 .lng(req.getLng())
                 .createdBy(manager)
-                .createdAt(LocalDateTime.now())                      // évite NOT NULL
+                .createdAt(LocalDateTime.now())                  
                 .build();
 
         Attendance saved = attendanceRepository.save(att);
@@ -128,7 +122,7 @@ public class AttendanceService {
         return attendanceRepository
                 .findByEmployeeHotelIdAndDateBetween(current.getHotel().getId(), start, end)
                 .stream()
-                .map(AttendanceDto::from) // ✅ record immuable
+                .map(AttendanceDto::from) 
                 .toList();
     }
 

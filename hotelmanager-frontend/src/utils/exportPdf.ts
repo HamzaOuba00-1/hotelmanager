@@ -1,4 +1,3 @@
-// utils/exportPdf.ts
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { getMyHotel } from "../api/hotelApi";
@@ -30,7 +29,6 @@ export async function exportElementToPDF(
     headerText,
   } = options;
 
-  // 1) Hotel data
   let hotel: any = null;
   try {
     hotel = await getMyHotel();
@@ -38,12 +36,10 @@ export async function exportElementToPDF(
     console.error("Impossible de récupérer les infos hôtel :", err);
   }
 
-  // 2) Wait webfonts if any
   if ((document as any).fonts?.ready) {
     await (document as any).fonts.ready;
   }
 
-  // 3) Capture the planning DOM node
   const canvas = await html2canvas(element, {
     scale,
     backgroundColor: "#ffffff",
@@ -55,41 +51,32 @@ export async function exportElementToPDF(
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
 
-  // 🎨 5-star palette
-  const charcoal = "#1E1E2F"; // deep header base behind bg image (fallback)
-  const gold = "#C9A227";     // luxe border
+  const charcoal = "#1E1E2F"; 
+  const gold = "#C9A227";     
   const textDark = "#111827";
   const textMuted = "#f0fdf4";
 
-  // 4) Header area
   const headerHeight = 35;
 
-  // (A) Base fill (in case bg fails)
   pdf.setFillColor(charcoal);
   pdf.rect(0, 0, pageWidth, headerHeight, "F");
 
-  // (B) Background image for header (from /public/bg.png)
   try {
-    // Put bg.png inside /public, recommended size: ~1500x200px
     const bgBlob = await fetch("/bg.png", { cache: "no-store" }).then(r => {
       if (!r.ok) throw new Error(`bg.png HTTP ${r.status}`);
       return r.blob();
     });
     const bgDataUrl = await blobToDataURL(bgBlob);
-    // Choose format safely
     const fmt = bgBlob.type.includes("jpeg") || bgBlob.type.includes("jpg") ? "JPEG" : "PNG";
-    // Stretch to full width header (keeps design simple & luxe)
     pdf.addImage(bgDataUrl, fmt as any, 0, 0, pageWidth, headerHeight);
   } catch (e) {
     console.warn("Background header image not added:", e);
   }
 
-  // (C) Thin gold line under header
   pdf.setDrawColor(gold);
   pdf.setLineWidth(0.8);
   pdf.line(0, headerHeight, pageWidth, headerHeight);
 
-  // (D) Logo on the RIGHT
   let logoW = 0;
   let logoH = 0;
   if (hotel?.logoUrl) {
@@ -107,7 +94,6 @@ export async function exportElementToPDF(
     }
   }
 
-  // (E) Hotel info on the LEFT
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(14);
   pdf.setTextColor("#ffffff");
@@ -122,32 +108,29 @@ export async function exportElementToPDF(
   if (hotel?.email)   { pdf.text(hotel.email, marginMm, infoY); infoY += 5; }
   if ((hotel as any)?.website) { pdf.text((hotel as any).website, marginMm, infoY); infoY += 5; }
 
-  // 5) Title centered below header
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(14);
   pdf.setTextColor(textDark);
   pdf.text(headerText ?? "Planning", pageWidth / 2, headerHeight + 10, { align: "center" });
 
-  // 6) Add captured planning image with multi-page slicing
   const usableWidth = pageWidth - marginMm * 2;
   const imgWidth = usableWidth;
   const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-  let y = headerHeight + 15;            // breathing space under title
+  let y = headerHeight + 15;            
   let remainingHeight = imgHeight;
   let offsetMm = 0;
 
   while (remainingHeight > 0) {
     if (offsetMm > 0) {
       pdf.addPage();
-      // tiny gold separator on subsequent pages
       pdf.setDrawColor(gold);
       pdf.setLineWidth(0.4);
       pdf.line(marginMm, marginMm, pageWidth - marginMm, marginMm);
       y = marginMm + 4;
     }
 
-    const availableMm = pageHeight - y - marginMm - 30; // keep room for signature
+    const availableMm = pageHeight - y - marginMm - 30; 
     const drawMm = Math.min(remainingHeight, availableMm);
 
     const mmToPx = (mm: number) => (mm * canvas.width) / imgWidth;
@@ -175,7 +158,6 @@ export async function exportElementToPDF(
     offsetMm += drawMm;
   }
 
-  // 7) Signature & footer
   const signY = pageHeight - 20;
   pdf.setDrawColor(gold);
   pdf.line(marginMm, signY, marginMm + 60, signY);
@@ -195,11 +177,9 @@ export async function exportElementToPDF(
     pageHeight - 5
   );
 
-  // 8) Save
   pdf.save(fileName);
 }
 
-/** Helpers */
 function blobToDataURL(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const fr = new FileReader();

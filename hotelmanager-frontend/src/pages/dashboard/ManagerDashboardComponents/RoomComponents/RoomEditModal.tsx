@@ -70,7 +70,7 @@ export default function RoomEditModal({
             name="roomType"
             value={form.roomType}
             onChange={handleChange}
-            options={roomTypes} // récupère tous les types disponibles
+            options={roomTypes} 
           />
 
           <InputField

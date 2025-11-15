@@ -18,8 +18,8 @@ export type ChatMessage = {
   id: number;
   channelId: number;
   senderId: number;
-  senderFirstName: string;   // ✅ NEW
-  senderLastName: string;    // ✅ NEW
+  senderFirstName: string;   
+  senderLastName: string;    
   type: string;
   content: string;
   createdAt: string;

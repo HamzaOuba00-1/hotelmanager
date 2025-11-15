@@ -1,4 +1,3 @@
-// src/components/AttendanceButtons.tsx
 import React, { useState } from "react";
 import { checkIn, checkOut } from "../../services/attendanceService";
 import { AttendanceDto } from "../../types/AttendanceDto";

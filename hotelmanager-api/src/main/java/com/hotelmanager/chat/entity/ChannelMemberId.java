@@ -1,4 +1,3 @@
-// src/main/java/com/hotelmanager/chat/entity/ChannelMemberId.java
 package com.hotelmanager.chat.entity;
 
 import jakarta.persistence.Embeddable;

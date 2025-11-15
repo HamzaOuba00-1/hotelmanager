@@ -1,5 +1,4 @@
-// src/pages/PointageEmployePage.tsx
-/* eslint-disable react-hooks/exhaustive-deps */
+
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   QrCode, Camera, LogIn, LogOut, Check, X, Clock, RefreshCcw, Copy,
@@ -17,12 +16,10 @@ import {
   type CheckInRequest,
 } from "../../../api/pointage";
 
-// ---- utils
 const pad2 = (n: number) => String(n).padStart(2, "0");
 const toHM = (d: Date) => `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 const todayLocal = format(new Date(), "yyyy-MM-dd"); // local (pas UTC)
 
-// ---- parse QR
 declare global { interface Window { BarcodeDetector?: any; } }
 function parseQrPayload(text: string): { code: string; date?: string } | null {
   try {
@@ -37,42 +34,34 @@ const SS_KEY = "attendance.open";
 const REQUIRE_CODE_FOR_CHECKOUT = true;
 
 export default function PointageEmployePage() {
-  // Code du jour (minuteur)
   const [dailyCode, setDailyCode] = useState<DailyCodeResponse | null>(null);
   const [loadingCode, setLoadingCode] = useState(false);
   const [now, setNow] = useState<Date>(new Date());
 
-  // Saisie / Scan
   const [manualCode, setManualCode] = useState("");
   const [scanned, setScanned] = useState<{ code: string; date?: string } | null>(null);
   const effectiveCode = (scanned?.code || manualCode).trim();
   const [scannerOpen, setScannerOpen] = useState(false);
 
-  // Ouverture en cours
   const [myAttendance, setMyAttendance] = useState<AttendanceDto | null>(null);
   const [meId, setMeId] = useState<number | null>(null);
 
-  // Liste du jour (comme manager)
   const [selectedDate, setSelectedDate] = useState<string>(todayLocal);
   const [statusFilter, setStatusFilter] = useState<"" | "PRESENT" | "RETARD" | "ABSENT">("");
   const [dayRows, setDayRows] = useState<AttendanceDto[]>([]);
   const [loadingDay, setLoadingDay] = useState(false);
 
-  // Chargements
   const [loadingCheckIn, setLoadingCheckIn] = useState(false);
   const [loadingCheckOut, setLoadingCheckOut] = useState(false);
 
-  // Toast
   const [toast, setToast] = useState<string | null>(null);
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 1800); };
 
-  // Ticker
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
 
-  // --- session (ouverture)
   const saveOpenToSession = (att: AttendanceDto | null) => {
     try {
       if (att && !att.checkOutAt) sessionStorage.setItem(SS_KEY, JSON.stringify(att));
@@ -91,7 +80,6 @@ export default function PointageEmployePage() {
     } catch { sessionStorage.removeItem(SS_KEY); }
   };
 
-  // Charger code du jour
   const loadCode = async () => {
     setLoadingCode(true);
     try {
@@ -106,24 +94,21 @@ export default function PointageEmployePage() {
     }
   };
 
-  // Charger ouverture en cours (serveur)
   const loadOpen = async () => {
     try {
-      const att = await getMyOpenAttendance(); // 404 -> null
+      const att = await getMyOpenAttendance(); 
       setMyAttendance(att);
       if (att?.employeeId) setMeId(att.employeeId);
       saveOpenToSession(att);
     } catch (e) { console.error(e); }
   };
 
-  // Charger la liste du jour (manager endpoint -> on filtre par meId si dispo)
   const loadDay = async () => {
     setLoadingDay(true);
     try {
       const res = await listMyAttendance({ start: selectedDate, end: selectedDate });
       setDayRows(res);
     } catch (e: any) {
-      // Si 403 (autorisation MANAGER), on affiche message
       if (e?.response?.status === 403) {
         showToast("Tu n’as pas accès à la liste côté serveur (MANAGER requis).");
       } else {
@@ -142,7 +127,6 @@ export default function PointageEmployePage() {
   }, []);
   useEffect(() => { loadDay(); }, [selectedDate, meId]);
 
-  // Minuteur code du jour
   const { secondsLeft, progressPct, validUntilText } = useMemo(() => {
     if (!dailyCode) return { secondsLeft: 0, progressPct: 0, validUntilText: "--:--" };
     const end = parseISO(dailyCode.validUntil);
@@ -156,7 +140,6 @@ export default function PointageEmployePage() {
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
 
-  // Actions
   const doCheckIn = async () => {
     if (!effectiveCode) { showToast("Scanne ou saisis un code valide."); return; }
     setLoadingCheckIn(true);
@@ -169,7 +152,6 @@ export default function PointageEmployePage() {
       showToast("Pointage effectué ✅");
       setManualCode("");
       setScanned(null);
-      // rafraîchir la liste du jour
       loadDay();
     } catch (e: any) {
       const s = e?.response?.status;
@@ -206,7 +188,6 @@ export default function PointageEmployePage() {
     } finally { setLoadingCheckOut(false); }
   };
 
-  // ---- scanner overlay
   function ScannerOverlay(props: { onClose: () => void; onDetected: (text: string) => void; }) {
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const streamRef = useRef<MediaStream | null>(null);
@@ -258,7 +239,6 @@ export default function PointageEmployePage() {
     );
   }
 
-  // helpers UI
   const codePreview = scanned?.code || manualCode || "—";
   const checkInDisabled = !effectiveCode || loadingCheckIn;
   const canCheckOut = !!myAttendance && !myAttendance.checkOutAt;
@@ -383,7 +363,6 @@ export default function PointageEmployePage() {
           )}
         </section>
 
-        {/* 3) Mes pointages (COMME CHEZ MANAGER) */}
         <section className="bg-white/60 rounded-2xl border shadow p-6 text-left">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
             <h2 className="font-semibold">Mes pointages</h2>

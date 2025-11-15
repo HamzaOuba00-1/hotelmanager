@@ -19,13 +19,12 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtUtil jwtUtil;                // ton util existant
-    private final UserRepository userRepository;  // ✅ on charge l'utilisateur + hôtel depuis la DB
-
+    private final JwtUtil jwtUtil;                
+    private final UserRepository userRepository;  
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        return path.startsWith("/auth"); // Ne filtre pas /auth/*
+        return path.startsWith("/auth"); 
     }
 
     @Override
@@ -44,16 +43,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String token = authHeader.substring(7);
         final String email = jwtUtil.extractUsername(token);
 
-        // Ne pas réauthentifier si déjà authentifié dans le contexte
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            // ✅ charge l'utilisateur AVEC son hôtel (fetch join / EntityGraph)
             var userOpt = userRepository.findOneWithHotelByEmail(email);
 
             if (userOpt.isPresent()) {
                 User user = userOpt.get();
 
-                // Ton JwtUtil doit valider le token par rapport au User (il implémente UserDetails)
                 if (jwtUtil.isTokenValid(token, user)) {
                     var authToken = new UsernamePasswordAuthenticationToken(
                             user, // ✅ principal = entité User complète (avec hotel)

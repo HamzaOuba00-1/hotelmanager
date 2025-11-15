@@ -22,7 +22,7 @@ export default function HotelScheduleCard({
   const addClosedDay = (v: string) => {
     const day = v.trim();
     if (!day) return;
-    if (closedDays.includes(day)) return; // éviter doublons
+    if (closedDays.includes(day)) return; 
     const next = [...closedDays, day];
     setValue("closedDays", next, { shouldDirty: true });
   };
@@ -45,7 +45,6 @@ export default function HotelScheduleCard({
       </header>
 
       <div className="p-8 grid gap-8">
-        {/* Check-in & check-out */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <label className={labelClass}>
             <div className="flex items-center gap-2">
@@ -64,7 +63,6 @@ export default function HotelScheduleCard({
           </label>
         </div>
 
-        {/* Jours fermés */}
         <div className="grid gap-3">
           <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
             <CircleX className="w-4 h-4 text-emerald-500" />

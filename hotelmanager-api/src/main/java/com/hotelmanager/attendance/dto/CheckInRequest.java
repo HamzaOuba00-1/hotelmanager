@@ -1,4 +1,3 @@
-// src/main/java/com/hotelmanager/attendance/dto/CheckInRequest.java
 package com.hotelmanager.attendance.dto;
 
 import jakarta.validation.constraints.Pattern;

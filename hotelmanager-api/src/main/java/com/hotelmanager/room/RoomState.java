@@ -15,15 +15,12 @@ public enum RoomState {
     INACTIVE,
     A_VALIDER_CLEAN;
 
-    /** Permet d'accepter "reserve", "room service/maintenance", "a valider (clean)", etc. */
     public static RoomState parse(String raw) {
         if (raw == null) throw new IllegalArgumentException("state is required");
         String s = raw.trim().toUpperCase(Locale.ROOT)
                 .replace('-', '_')
                 .replace(' ', '_')
-                .replace("É", "E"); // au cas où
-
-        // synonymes fréquents
+                .replace("É", "E"); 
         s = s.replace("RESERVE", "RESERVEE")
              .replace("ROOM_SERVICE", "ROOM_SERVICE")
              .replace("A_VALIDER_(LIBRE)", "A_VALIDER_LIBRE")

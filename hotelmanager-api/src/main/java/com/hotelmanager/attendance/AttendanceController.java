@@ -1,4 +1,3 @@
-// src/main/java/com/hotelmanager/attendance/AttendanceController.java
 package com.hotelmanager.attendance;
 
 import com.hotelmanager.attendance.dto.*;

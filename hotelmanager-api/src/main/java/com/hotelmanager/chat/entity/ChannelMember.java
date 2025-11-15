@@ -1,4 +1,3 @@
-// src/main/java/com/hotelmanager/chat/ChannelMember.java
 package com.hotelmanager.chat.entity;
 
 import com.hotelmanager.user.User;

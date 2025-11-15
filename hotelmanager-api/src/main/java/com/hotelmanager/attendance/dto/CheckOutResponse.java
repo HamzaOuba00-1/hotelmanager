@@ -1,4 +1,3 @@
-// src/main/java/com/hotelmanager/attendance/dto/CheckOutResponse.java
 package com.hotelmanager.attendance.dto;
 
 import java.time.LocalDateTime;

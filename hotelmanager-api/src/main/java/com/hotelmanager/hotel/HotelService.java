@@ -21,7 +21,6 @@ public class HotelService {
     private final RoomService roomService;
 
     public Hotel getHotelOf(User manager) {
-        // Recharge l'utilisateur depuis la BDD pour avoir un lien hôtel à jour
         var freshUser = userRepository.findById(manager.getId())
                 .orElseThrow(() -> new IllegalStateException("Utilisateur introuvable"));
 
@@ -36,13 +35,11 @@ public class HotelService {
     public Hotel updateHotel(User manager, HotelConfigRequest req, boolean forceRegen) {
         Hotel h = getHotelOf(manager);
 
-        // Sauvegarder l'ancienne structure AVANT modifications
         Integer oldFloors = h.getFloors();
         Integer oldRoomsPerFloor = h.getRoomsPerFloor();
         List<String> oldFloorLabels = new ArrayList<>(h.getFloorLabels());
         List<String> oldRoomTypes = new ArrayList<>(h.getRoomTypes());
 
-        // --- Mise à jour des infos générales ---
         h.setName(req.name());
         h.setAddress(req.address());
         h.setPhone(req.phone());
@@ -51,7 +48,6 @@ public class HotelService {
         h.setLatitude(req.latitude());
         h.setLongitude(req.longitude());
 
-        // --- Structure ---
         h.setFloors(req.floors());
         h.setRoomsPerFloor(req.roomsPerFloor());
 
@@ -63,7 +59,6 @@ public class HotelService {
         if (req.roomTypes() != null)
             h.getRoomTypes().addAll(req.roomTypes());
 
-        // --- Services ---
         if (req.services() != null) {
             Hotel.Services s = h.getServices() == null ? new Hotel.Services() : h.getServices();
             s.setHasRestaurant(Boolean.TRUE.equals(req.services().hasRestaurant()));
@@ -75,16 +70,13 @@ public class HotelService {
             h.setServices(s);
         }
 
-        // --- Horaires ---
         h.setCheckInHour(req.checkInHour());
         h.setCheckOutHour(req.checkOutHour());
 
-        // --- Jours fermés ---
         h.getClosedDays().clear();
         if (req.closedDays() != null)
             h.getClosedDays().addAll(req.closedDays());
 
-        // --- Haute saison ---
         if (req.highSeason() != null) {
             Hotel.Season season = h.getHighSeason() == null ? new Hotel.Season() : h.getHighSeason();
             season.setFromDate(req.highSeason().from());
@@ -107,10 +99,8 @@ public class HotelService {
         // --- Statut ---
         h.setActive(req.active() != null ? req.active() : Boolean.TRUE);
 
-        // 🔹 Sauvegarde l’hôtel
         Hotel saved = hotelRepository.save(h);
 
-        // 🔹 Détection changement structure (ou forceRegen true)
         boolean structureChanged = !Objects.equals(oldFloors, req.floors()) ||
                 !Objects.equals(oldRoomsPerFloor, req.roomsPerFloor()) ||
                 !Objects.equals(oldRoomTypes, req.roomTypes()) ||

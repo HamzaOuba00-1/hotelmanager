@@ -1,4 +1,3 @@
-// RoomPublicService.java
 package com.hotelmanager.room;
 
 import com.hotelmanager.common.BusinessRuleException;
@@ -47,12 +46,10 @@ public class RoomPublicService {
             throw new BusinessRuleException("Chambre non disponible.");
         }
 
-        // 1) créer (ou retrouver) le compte client
         String email = buildEmail(firstName, lastName, slugify(hotel.getName()));
         email = ensureUniqueEmail(email);
-        String rawPassword = generatePassword(firstName, lastName); // ≥12 chars
-        String encoded = passwordEncoder.encode(rawPassword);       // bcrypt (déjà configuré)
-
+        String rawPassword = generatePassword(firstName, lastName); 
+        String encoded = passwordEncoder.encode(rawPassword);       
         User client = new User();
         client.setFirstName(cap(firstName));
         client.setLastName(cap(lastName));
@@ -64,7 +61,6 @@ public class RoomPublicService {
 
         client = userRepository.save(client);
 
-        // 2) réserver: affecter client + changer état
         room.setClient(client);
         room.setRoomState(RESERVEE);
         roomRepository.save(room);

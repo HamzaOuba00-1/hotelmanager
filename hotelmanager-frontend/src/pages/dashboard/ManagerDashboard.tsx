@@ -12,11 +12,8 @@ import {
   CalendarCheck2,
 } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
-import { getMyHotel } from "../../api/hotelApi"; // 👈 on utilise ton API
+import { getMyHotel } from "../../api/hotelApi";
 
-// ---------------------------------------------------------------------------
-// UI PRIMITIVES
-// ---------------------------------------------------------------------------
 
 const Logo: React.FC<{ src?: string; alt?: string }> = ({ src, alt }) => (
   <div className="w-full h-14 flex items-center justify-center rounded-lg bg-white shadow overflow-hidden">
@@ -32,7 +29,6 @@ const Logo: React.FC<{ src?: string; alt?: string }> = ({ src, alt }) => (
   </div>
 );
 
-// 👇 Composant de lien latéral réutilisable
 const SidebarLink: React.FC<{
   to: string;
   icon?: React.ReactNode;
@@ -56,9 +52,7 @@ const SidebarLink: React.FC<{
   </NavLink>
 );
 
-// ---------------------------------------------------------------------------
-// Layout Components
-// ---------------------------------------------------------------------------
+
 
 const Sidebar: React.FC<{ logoSrc?: string }> = ({ logoSrc }) => (
   <aside className="w-64 shrink-0 bg-[#F6F8F7] h-screen p-6 flex flex-col">
@@ -137,9 +131,7 @@ const Topbar: React.FC<{ avatarSrc?: string }> = ({ avatarSrc }) => (
   </header>
 );
 
-// ---------------------------------------------------------------------------
-// Main Layout
-// ---------------------------------------------------------------------------
+
 
 const ManagerDashboard: React.FC = () => {
   const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined);

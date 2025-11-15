@@ -93,7 +93,6 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
-    // CORS côté MVC (réutilisé par Spring Security via .cors(withDefaults()))
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {

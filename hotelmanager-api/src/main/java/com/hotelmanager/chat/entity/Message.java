@@ -1,4 +1,3 @@
-// src/main/java/com/hotelmanager/chat/Message.java
 package com.hotelmanager.chat.entity;
 
 import com.hotelmanager.user.User;
@@ -37,11 +36,6 @@ public class Message {
     @Column(nullable = false, length = 32)
     private MessageType type = MessageType.TEXT;
 
-    // getters/setters
-
-
-
-  // getters/setters…
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public Channel getChannel() { return channel; }

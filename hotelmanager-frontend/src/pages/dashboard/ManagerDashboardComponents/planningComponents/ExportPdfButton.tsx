@@ -3,7 +3,6 @@ import { FileDown } from "lucide-react";
 import { exportElementToPDF } from "../../../../utils/exportPdf";
 
 type Props = {
-  // match avec useRef<HTMLDivElement>(null)
   targetRef: React.MutableRefObject<HTMLDivElement | null>;
   fileName: string;
   headerText?: string;

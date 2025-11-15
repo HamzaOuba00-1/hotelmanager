@@ -1,4 +1,3 @@
-// src/main/java/com/hotelmanager/chat/Channel.java
 package com.hotelmanager.chat.entity;
 
 import com.hotelmanager.crew.Crew;
@@ -45,7 +44,6 @@ public class Channel {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    // ✅ Supprime messages et membres automatiquement quand on supprime le channel
     @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Message> messages = new ArrayList<>();
 

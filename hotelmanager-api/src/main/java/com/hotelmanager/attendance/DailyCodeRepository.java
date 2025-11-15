@@ -35,7 +35,6 @@ public interface DailyCodeRepository extends JpaRepository<DailyCode, Long> {
     """, nativeQuery = true)
     Optional<DailyCode> findActive(@Param("hotelId") Long hotelId, @Param("now") LocalDateTime now);
 
-    // 🔎 Renvoie tous les codes actifs (pour révocation avant régénération)
     @Query(value = """
       select * from daily_codes d
        where d.hotel_id = :hotelId

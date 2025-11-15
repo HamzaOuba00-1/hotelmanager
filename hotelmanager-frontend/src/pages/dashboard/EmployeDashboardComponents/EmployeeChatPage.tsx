@@ -1,4 +1,3 @@
-// src/pages/employee/EmployeeChatPage.tsx
 import React, { JSX, useEffect, useMemo, useRef, useState } from "react";
 import {
   MessageSquare, Users, Hash, Megaphone, Search, Send, X, Plus
@@ -11,25 +10,21 @@ import { getCrew } from "../../../api/crewApi";
 import type { Channel, ChatMessage } from "../../../types/Chat";
 import type { User } from "../../../types/User";
 
-// ----- UI helpers -----
 const card = "bg-white/60 rounded-2xl border shadow p-5";
 const btn  = "inline-flex items-center gap-2 px-4 py-2 rounded-xl transition";
 const btnPrimary = `${btn} bg-emerald-600 text-white hover:bg-emerald-700`;
 const btnGhost   = `${btn} bg-white/80 border hover:shadow`;
 const input = "w-full border border-gray-300 p-2 rounded-xl bg-white/80 focus:outline-none";
 
-// ----- icônes services -----
 const iconForChannel = (c: Channel) => {
   if (c.type === "ANNOUNCEMENT") return <Megaphone className="w-4 h-4" />;
   if (c.type === "DIRECT") return <Hash className="w-4 h-4" />;
   return <MessageSquare className="w-4 h-4" />;
 };
 
-// Helper "Prénom Nom"
 const joinName = (fn?: string, ln?: string) =>
   `${fn ?? ""} ${ln ?? ""}`.trim().replace(/\s+/g, " ");
 
-// ✅ type local compatible côté Crew (pas d’email requis ici)
 type MemberLite = {
   id: number;
   firstName: string;
@@ -50,11 +45,9 @@ const EmployeeChatPage: React.FC = () => {
   const [loadingMsgs, setLoadingMsgs] = useState(false);
   const [loadingChannels, setLoadingChannels] = useState(false);
 
-  // users (mapping id -> nom) si jamais senderFirst/Last manquent
   const [users, setUsers] = useState<User[]>([]);
   const usersById = useMemo(() => new Map(users.map(u => [u.id, u])), [users]);
 
-  // Crew & membres
   const myCrewChannels = useMemo(
     () => channels.filter(c => c.type === "CREW"),
     [channels]
@@ -65,15 +58,12 @@ const EmployeeChatPage: React.FC = () => {
   );
   const [crewMembers, setCrewMembers] = useState<MemberLite[]>([]);
 
-  // Cache des membres par canal (pour le picker "channel")
   const [channelMembersCache, setChannelMembersCache] =
     useState<Map<number, MemberLite[]>>(new Map());
 
-  // Toast
   const [toast, setToast] = useState<string | null>(null);
   const showToast = (msg: string) => { setToast(msg); setTimeout(()=>setToast(null), 1800); };
 
-  // Modal "Créer DM" (picker générique)
   const [dmPickerOpen, setDmPickerOpen] = useState(false);
   const [pickerMode, setPickerMode] = useState<PickerMode>("crew");
   const [dmSearch, setDmSearch] = useState("");
@@ -82,7 +72,6 @@ const EmployeeChatPage: React.FC = () => {
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Charger mes canaux + users
   const refresh = async () => {
     setLoadingChannels(true);
     try {
@@ -106,7 +95,6 @@ const EmployeeChatPage: React.FC = () => {
     setFiltered(!q ? channels : channels.filter(c => c.name.toLowerCase().includes(q)));
   }, [query, channels]);
 
-  // Messages du canal actif
   useEffect(() => {
     (async () => {
       if (!active) return;
@@ -118,7 +106,6 @@ const EmployeeChatPage: React.FC = () => {
     })();
   }, [active?.id]);
 
-  // Membres du crew (via channel.crewId)
   useEffect(() => {
     (async () => {
       if (!selectedCrew || selectedCrew.type !== "CREW") { setCrewMembers([]); return; }
@@ -134,7 +121,6 @@ const EmployeeChatPage: React.FC = () => {
     })();
   }, [selectedCrew?.id]);
 
-  // Charger membres d'un canal générique dans le cache
   const ensureChannelMembers = async (c: Channel) => {
     if (channelMembersCache.has(c.id)) return;
     try {
@@ -148,7 +134,6 @@ const EmployeeChatPage: React.FC = () => {
         return next;
       });
     } catch (e) {
-      // si c'est un CREW et que /channels/{id}/members n'existe pas, fallback déjà couvert via crewMembers
       setChannelMembersCache(prev => {
         const next = new Map(prev);
         next.set(c.id, []);
@@ -168,7 +153,6 @@ const EmployeeChatPage: React.FC = () => {
     inputRef.current?.focus();
   };
 
-  // (fallback) nom de l’auteur
   const displaySender = (m: ChatMessage) => {
     const full = joinName((m as any).senderFirstName, (m as any).senderLastName);
     if (full) return full;
@@ -180,7 +164,6 @@ const EmployeeChatPage: React.FC = () => {
     return "Utilisateur";
   };
 
-  // Trouver un DM existant
   const findDMWith = (u: MemberLite) => {
     const fn = (u.firstName || "").toLowerCase();
     const ln = (u.lastName  || "").toLowerCase();
@@ -203,7 +186,6 @@ const EmployeeChatPage: React.FC = () => {
     }
   };
 
-  // Ouvrir le picker en mode CREW
   const openCrewPicker = () => {
     setPickerMode("crew");
     setDmPick(null);
@@ -211,7 +193,6 @@ const EmployeeChatPage: React.FC = () => {
     setDmPickerOpen(true);
   };
 
-  // Ouvrir le picker en mode CHANNEL (membres du canal actif)
   const openChannelPicker = async () => {
     if (!active) return;
     await ensureChannelMembers(active);
@@ -242,7 +223,7 @@ const EmployeeChatPage: React.FC = () => {
       const created = await createChannel({
         type: "DIRECT",
         name: `DM • ${joinName(dmPick.firstName, dmPick.lastName)}`,
-        memberIds: [dmPick.id] // le back ajoute l'utilisateur courant
+        memberIds: [dmPick.id]
       });
       setChannels(prev => [created, ...prev]);
       setFiltered(prev => [created, ...prev]);

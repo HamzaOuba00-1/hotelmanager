@@ -1,4 +1,3 @@
-// src/main/java/com/hotelmanager/chat/web/MessageController.java
 package com.hotelmanager.chat.web;
 
 import com.hotelmanager.chat.dto.MessageResponse;

@@ -1,4 +1,3 @@
-// src/main/java/com/hotelmanager/attendance/DailyCodeController.java
 package com.hotelmanager.attendance;
 
 import com.hotelmanager.attendance.dto.DailyCodeResponse;
@@ -27,7 +26,7 @@ public class DailyCodeController {
       throw new ResponseStatusException(HttpStatus.CONFLICT, "Utilisateur sans hôtel (principal incomplet)");
 
     var dc = service.regenerate(current, Duration.ofHours(6));
-    return new DailyCodeResponse(dc.getCode(), dc.getValidFrom(), dc.getValidUntil()); // ✅ 3 args
+    return new DailyCodeResponse(dc.getCode(), dc.getValidFrom(), dc.getValidUntil());
   }
 
   @GetMapping("/current")
@@ -39,6 +38,6 @@ public class DailyCodeController {
 
     var dc = service.current(hotel.getId())
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pas de code actif"));
-    return new DailyCodeResponse(dc.getCode(), dc.getValidFrom(), dc.getValidUntil()); // ✅ 3 args
+    return new DailyCodeResponse(dc.getCode(), dc.getValidFrom(), dc.getValidUntil());
   }
 }

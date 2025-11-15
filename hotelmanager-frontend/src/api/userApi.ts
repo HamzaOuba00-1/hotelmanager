@@ -1,4 +1,3 @@
-// src/api/userApi.ts
 import axios from './axios';
 import { User, CreateUserPayload } from '../types/User';
 
@@ -31,7 +30,6 @@ export const deleteUser = async (id: number): Promise<void> => {
   await axios.delete(`/users/${id}`, authHeader());
 };
 
-// 👉 AJOUTE ÇA (PUT standard REST) :
 export const updateUser = async (
   id: number,
   payload: Partial<CreateUserPayload> & Partial<User>
@@ -39,9 +37,3 @@ export const updateUser = async (
   const res = await axios.put<User>(`/users/${id}`, payload, authHeader());
   return res.data;
 };
-
-// // Si ton back préfère PATCH, remplace par :
-// export const updateUser = async (id: number, payload: Partial<CreateUserPayload> & Partial<User>): Promise<User> => {
-//   const res = await axios.patch<User>(`/users/${id}`, payload, authHeader());
-//   return res.data;
-// };

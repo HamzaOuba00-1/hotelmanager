@@ -66,9 +66,7 @@ public class HotelController {
         return Map.of("logoUrl", url);
     }
 
-    /**
-     * Convertit un Hotel en HotelConfigResponse attendu par le frontend
-     */
+
     private HotelConfigResponse toResponse(Hotel h) {
         return new HotelConfigResponse(
                 h.getId(),

@@ -1,4 +1,3 @@
-// src/main/java/com/hotelmanager/chat/service/MessageService.java
 package com.hotelmanager.chat.service;
 
 import com.hotelmanager.chat.dto.MessageSendRequest;
@@ -34,7 +33,6 @@ public class MessageService {
   @Transactional
   public Message post(Long channelId, MessageSendRequest req, User me) {
     Channel c = channelService.getForHotel(channelId, me);
-    // ici on suppose que l’appartenance est garantie par @PreAuthorize au contrôleur
     Message m = new Message();
     m.setChannel(c);
     m.setSender(me);
@@ -42,7 +40,6 @@ public class MessageService {
     m.setContent(req.content());
     messageRepo.save(m);
 
-    // broadcast temps réel
     messaging.convertAndSend("/topic/channel." + channelId, MessageResponse.from(m));
     return m;
   }

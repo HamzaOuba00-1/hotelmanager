@@ -5,7 +5,6 @@ import App from './App';
 import { AuthProvider } from './auth/authContext';
 import "./index.css";
 
-// 🛡️ Catch ResizeObserver error AVANT que React démarre
 window.addEventListener('error', (e) => {
   if (e.message?.includes('ResizeObserver loop completed')) {
     e.stopImmediatePropagation();

@@ -29,15 +29,14 @@ public class PublicReservationService {
     private final ReservationRepository reservationRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final RoomReservationSync sync; // ✅ injection de la synchro Room ⇄ Reservation
+    private final RoomReservationSync sync; 
 
     @Transactional(readOnly = true)
     public List<Room> listAvailableRooms(Long hotelId, OffsetDateTime startAt, OffsetDateTime endAt) {
         if (startAt == null || endAt == null || !startAt.isBefore(endAt)) {
             throw new BusinessRuleException("Intervalle de dates invalide.");
         }
-        // ✅ On ne renvoie QUE les chambres dont le state actuel est LIBRE,
-        //    ET qui n'ont pas de réservation active qui chevauche l'intervalle.
+       
         return roomRepository.findAvailableRoomsStrictlyLibre(hotelId, startAt, endAt);
     }
 
@@ -47,13 +46,11 @@ public class PublicReservationService {
         var actives = reservationRepository.findActiveFutureByRoom(roomId, now);
         if (actives.isEmpty()) return;
 
-        // Annule toutes les résas "actives/futures"
         for (var res : actives) {
             res.setStatus(ReservationStatus.CANCELED);
         }
         reservationRepository.saveAll(actives);
 
-        // Libère la chambre si elle était simplement réservée
         var room = actives.get(0).getRoom();
         if (room.getRoomState() == RoomState.RESERVEE) {
             room.setRoomState(RoomState.LIBRE);
@@ -81,13 +78,11 @@ public class PublicReservationService {
             throw new BusinessRuleException("Chambre indisponible.");
         }
 
-        // Check applicatif (la DB protège aussi via contraintes)
         boolean overlaps = reservationRepository.existsOverlapping(roomId, startAt, endAt);
         if (overlaps) {
             throw new BusinessRuleException("Cette chambre est déjà réservée sur l’intervalle.");
         }
 
-        // Créer le compte client
         String hotelSlug = slugify(hotel.getName());
         String email = ensureUniqueEmail(buildEmail(firstName, lastName, hotelSlug));
         String rawPassword = generatePassword(firstName, lastName);
@@ -103,7 +98,6 @@ public class PublicReservationService {
         client.setEnabled(true);
         client = userRepository.save(client);
 
-        // Créer la réservation
         Reservation res = new Reservation();
         res.setHotel(hotel);
         res.setRoom(room);
@@ -116,13 +110,11 @@ public class PublicReservationService {
 
         try {
             res = reservationRepository.save(res);
-            // ✅ UNE SEULE source de vérité : on synchronise l’état de la chambre ici.
             sync.applyStatusToRoom(res);
         } catch (DataIntegrityViolationException e) {
             throw new BusinessRuleException("Conflit : créneau déjà pris pour cette chambre.");
         }
 
-        // ❌ NE PAS refaire un setState manuel ici (déjà géré par sync.applyStatusToRoom)
 
         return new com.hotelmanager.reservation.dto.PublicReservationResponse(
                 res.getId(), email, rawPassword

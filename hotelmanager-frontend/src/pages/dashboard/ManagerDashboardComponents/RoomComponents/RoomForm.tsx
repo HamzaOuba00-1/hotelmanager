@@ -17,7 +17,6 @@ type ProblemDetail = {
 };
 
 const ROOM_STATES = [
-  // ✅ liste alignée avec le backend
   { value: "LIBRE", label: "Libre" },
   { value: "RESERVEE", label: "Réservée" },
   { value: "CHECKIN", label: "Check-in" },
@@ -40,7 +39,7 @@ export default function RoomFormPremium({
     roomType: roomTypes[0] || "Standard",
     floor: "",
     description: "",
-    roomState: "LIBRE", // par défaut
+    roomState: "LIBRE", 
   });
   const [loading, setLoading] = useState(false);
   const [errMsg, setErrMsg] = useState<string | null>(null);
@@ -61,7 +60,6 @@ export default function RoomFormPremium({
     setFieldErrors({});
     setLoading(true);
 
-    // 🔢 conversions & validation minimale côté client
     const roomNumber = Number(form.roomNumber);
     const floor = Number(form.floor);
     if (!Number.isInteger(roomNumber) || roomNumber <= 0) {
@@ -80,7 +78,7 @@ export default function RoomFormPremium({
       floor,
       roomType: form.roomType.trim(),
       description: form.description.trim(),
-      roomState: form.roomState as string, // enum côté backend
+      roomState: form.roomState as string, 
       active: true,
     };
 
@@ -88,7 +86,7 @@ export default function RoomFormPremium({
       await axios.post("http://localhost:8080/api/rooms", payload, {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json", // ✅ force JSON (pas urlencoded)
+          "Content-Type": "application/json", 
         },
       });
       onCreated();
@@ -105,7 +103,6 @@ export default function RoomFormPremium({
       const status = error?.response?.status as number | undefined;
 
       if (status === 409) {
-        // doublon (uk_room_hotel_number)
         setErrMsg(pd?.detail || "Ce numéro de chambre existe déjà pour cet hôtel.");
       } else if (status === 400) {
         if (pd?.errors) setFieldErrors(pd.errors);

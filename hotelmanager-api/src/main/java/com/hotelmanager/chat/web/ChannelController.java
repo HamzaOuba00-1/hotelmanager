@@ -1,4 +1,3 @@
-// src/main/java/com/hotelmanager/chat/web/ChannelController.java
 package com.hotelmanager.chat.web;
 
 import com.hotelmanager.chat.dto.*;
@@ -28,7 +27,7 @@ public class ChannelController {
   }
 
   @PostMapping
-  @PreAuthorize("hasRole('MANAGER')") // création canaux gérée par manager pour V1 (directs plus tard)
+  @PreAuthorize("hasRole('MANAGER')") 
   public ChannelResponse create(@Valid @RequestBody ChannelCreateRequest req,
                                 @AuthenticationPrincipal User me) {
     Channel c = channelService.create(req, me);

@@ -3,7 +3,6 @@ import { z } from "zod";
 export const hhmmRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
 export const ymdRegex = /^\d{4}-\d{2}-\d{2}$/;
 
-/** Accepte le schéma donné OU la chaîne vide "", et rend le champ optional. */
 const emptyable = <S extends z.ZodTypeAny>(schema: S) =>
   schema.or(z.string().length(0)).optional();
 

@@ -1,4 +1,3 @@
-// src/main/java/com/hotelmanager/chat/entity/ReadReceipt.java
 package com.hotelmanager.chat.entity;
 
 import com.hotelmanager.user.User;
@@ -29,7 +28,6 @@ public class ReadReceipt {
   public ReadReceipt(Message m, User u) {
     this.message=m; this.user=u; this.id=new ReadReceiptId(m.getId(), u.getId());
   }
-  // getters/setters…
     public ReadReceiptId getId() { return id; }
     public void setId(ReadReceiptId id) { this.id = id; }
     public Message getMessage() { return message; }

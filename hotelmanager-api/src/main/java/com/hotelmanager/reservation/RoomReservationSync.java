@@ -1,4 +1,3 @@
-// com/hotelmanager/reservation/RoomReservationSync.java
 package com.hotelmanager.reservation;
 
 import com.hotelmanager.room.Room;
@@ -33,7 +32,7 @@ public class RoomReservationSync {
     if (res.getStatus() == ReservationStatus.CANCELED
         || res.getStatus() == ReservationStatus.NO_SHOW
         || res.getStatus() == ReservationStatus.COMPLETED) {
-      room.setClient(null); // on détache le client si séjour fini / annulé
+      room.setClient(null);
     }
     room.setLastUpdated(LocalDateTime.now());
     roomRepository.save(room);

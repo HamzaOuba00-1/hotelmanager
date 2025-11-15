@@ -58,7 +58,6 @@ const TodayTeamSection: React.FC = () => {
         Équipe du jour
       </h2>
 
-      {/* ✅ Cartes carrées stylisées */}
       <div className="flex flex-wrap justify-center gap-6">
         {team.length === 0 ? (
           <p className="text-gray-500 text-center">Aucun shift prévu aujourd’hui.</p>

@@ -13,13 +13,7 @@ interface DecodedToken {
   exp: number;
 }
 
-/**
- * LoginPage – version "haute‑gamme" (glassmorphism)
- * ---------------------------------------------------------------------------
- *   • Fond dégradé subtil et halo translucide
- *   • Carte en verre (bg‑white/40 + backdrop‑blur) + bordure 1px blanche
- *   • Couleurs Emerald pour l'accent principal
- */
+
 
 const LoginPage: React.FC = () => {
   const [credentials, setCredentials] = useState({ email: "", password: "" });
@@ -122,9 +116,7 @@ const LoginPage: React.FC = () => {
   );
 };
 
-// ---------------------------------------------------------------------------
-// Reusable Input component – transparent/glass style
-// ---------------------------------------------------------------------------
+
 interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   icon: React.ComponentType<{ className?: string; size?: number }>;

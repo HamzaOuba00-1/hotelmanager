@@ -41,7 +41,6 @@ public class RoomController {
         return ResponseEntity.ok(roomService.update(id, room));
     }
 
-    // PATCH JSON { "state": "<ENUM>" } ou ?state=...
     @PatchMapping("/{id}/state")
     public ResponseEntity<Room> updateStateJson(
             @PathVariable Long id,

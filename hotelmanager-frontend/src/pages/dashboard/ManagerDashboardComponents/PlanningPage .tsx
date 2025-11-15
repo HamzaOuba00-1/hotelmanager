@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-globals */
 import React, { useEffect, useState, useRef } from "react";
 import { Trash, CalendarDays, Plus, ChevronLeft, ChevronRight, RefreshCcw, RotateCcw, ClipboardCopy, BicepsFlexed } from "lucide-react";
 import { exportElementToPDF } from "../../../utils/exportPdf";
@@ -13,7 +12,7 @@ import {
 } from "../../../api/planningApi";
 import { getUsersFromMyHotel } from "../../../api/userApi";
 import { User } from "../../../types/User";
-import { deleteShift } from "../../../api/planningApi"; // déjà bien exposée
+import { deleteShift } from "../../../api/planningApi"; 
 
 const hours = Array.from({ length: 24 }, (_, i) => i);
 const colors = [
@@ -341,7 +340,6 @@ export default function PlanningPage() {
         })}
       </div>
 
-      {/* ✅ Modal ajout shift */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white/60 rounded-2xl shadow-xl p-8 w-full max-w-md animate-fadeIn">

@@ -21,7 +21,6 @@ export default function RoomsPage() {
   const isEmployee = user?.role === "EMPLOYE";
   const isClient  = user?.role === "CLIENT";
 
-  // ---------- Récupération chambres ----------
   const fetchRooms = useCallback(async () => {
     if (!token) return;
     let url = "http://localhost:8080/api/rooms";

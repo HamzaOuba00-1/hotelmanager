@@ -1,4 +1,3 @@
-// src/main/java/com/hotelmanager/user/dto/UserShortDto.java
 package com.hotelmanager.user.dto;
 
 import com.hotelmanager.user.User;

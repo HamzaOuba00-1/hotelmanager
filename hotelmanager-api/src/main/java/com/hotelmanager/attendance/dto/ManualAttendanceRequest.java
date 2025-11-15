@@ -11,21 +11,21 @@ public class ManualAttendanceRequest {
     private Long employeeId;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate date;                 // ex: 2025-08-08
+    private LocalDate date;                 
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime checkInAt;        // ex: 2025-08-08T08:12:00
+    private LocalDateTime checkInAt;        
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime checkOutAt;       // optionnel
+    private LocalDateTime checkOutAt;       
 
-    /** "PRESENT" | "RETARD" | "ABSENT" */
+  
     private String status;
 
-    /** optionnel (par défaut "MANUAL") */
+  
     private String source;
 
-    /** optionnels */
+ 
     private Double lat;
     private Double lng;
 }

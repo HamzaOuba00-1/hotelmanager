@@ -15,15 +15,12 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // Remplacement de @RequiredArgsConstructor
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    /**
-     * Récupère tous les utilisateurs associés à un hôtel spécifique.
-     */
+  
     public List<UserResponse> getUsersByHotel(Long hotelId) {
         List<User> users = userRepository.findAllByHotelId(hotelId);
         return users.stream()
@@ -31,9 +28,7 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Crée un nouvel employé avec mot de passe crypté.
-     */
+
     public User createEmployee(EmployeeRequest request, User manager) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email déjà utilisé.");
@@ -54,9 +49,7 @@ public class UserService {
 
 
 
-    /**
-     * Récupère un utilisateur par ID.
-     */
+
     public User getUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));

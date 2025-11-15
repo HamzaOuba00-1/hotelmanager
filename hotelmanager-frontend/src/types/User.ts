@@ -1,6 +1,5 @@
 export type Role = 'MANAGER' | 'EMPLOYE' | 'CLIENT';
 
-// Réponses API (lecture) — pas de password
 export interface User {
   id: number;
   firstName: string;
@@ -10,7 +9,6 @@ export interface User {
   hotelId?: number;
 }
 
-// Payload création (écriture) — avec password
 export interface CreateUserPayload {
   firstName: string;
   lastName: string;

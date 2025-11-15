@@ -1,4 +1,3 @@
-// src/main/java/com/hotelmanager/chat/dto/MessageResponse.java
 package com.hotelmanager.chat.dto;
 
 import com.hotelmanager.chat.entity.Message;
@@ -7,8 +6,8 @@ public record MessageResponse(
   Long id,
   Long channelId,
   Long senderId,
-  String senderFirstName,   // ✅ NEW
-  String senderLastName,    // ✅ NEW
+  String senderFirstName,  
+  String senderLastName,    
   String type,
   String content,
   String createdAt,
@@ -20,8 +19,8 @@ public record MessageResponse(
       m.getId(),
       m.getChannel().getId(),
       m.getSender().getId(),
-      m.getSender().getFirstName(),            // ✅
-      m.getSender().getLastName(),             // ✅
+      m.getSender().getFirstName(),           
+      m.getSender().getLastName(),           
       m.getType().name(),
       m.isSoftDeleted() ? "" : m.getContent(),
       m.getCreatedAt().toString(),

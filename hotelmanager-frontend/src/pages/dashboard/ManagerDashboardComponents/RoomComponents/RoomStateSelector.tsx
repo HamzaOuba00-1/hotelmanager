@@ -8,7 +8,7 @@ interface RoomStateSelectorProps {
   openMenuRoomId: number | null;
   setOpenMenuRoomId: (id: number | null) => void;
   allowedTargets?: string[];
-  onOpenMenu?: () => void; // NEW
+  onOpenMenu?: () => void; 
 }
 
 export default function RoomStateSelector({

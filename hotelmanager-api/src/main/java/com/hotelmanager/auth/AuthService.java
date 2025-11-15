@@ -24,7 +24,6 @@ public class AuthService {
         private final JwtUtil jwtUtil;
         private final AuthenticationManager authenticationManager;
 
-        // Remplacement de @RequiredArgsConstructor
         public AuthService(UserRepository userRepository,
                         HotelRepository hotelRepository,
                         PasswordEncoder passwordEncoder,
@@ -76,7 +75,7 @@ public class AuthService {
 
                 String token = jwtUtil.generateToken(user);
 
-                Hotel hotel = user.getHotel(); // Assure-toi que `User` a bien un champ `Hotel`
+                Hotel hotel = user.getHotel(); 
 
                 return new AuthResponse(
                                 token,

@@ -1,4 +1,3 @@
-// src/main/java/com/hotelmanager/chat/dto/ChannelResponse.java
 package com.hotelmanager.chat.dto;
 
 import com.hotelmanager.chat.entity.Channel;

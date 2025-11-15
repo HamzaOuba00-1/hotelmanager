@@ -2,7 +2,7 @@ interface TokenPayload {
   role: 'MANAGER' | 'EMPLOYE' | 'CLIENT';
   sub: string;
   exp: number;
-  [key: string]: any; // pour champs supplémentaires éventuels
+  [key: string]: any; 
 }
 
 export const useAuth = () => {
@@ -10,7 +10,7 @@ export const useAuth = () => {
   if (!token) return null;
 
   try {
-    const base64Url = token.split('.')[1]; // prend la partie payload
+    const base64Url = token.split('.')[1]; 
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
     const jsonPayload = decodeURIComponent(
       atob(base64)

@@ -1,4 +1,3 @@
-// src/main/java/com/hotelmanager/attendance/Attendance.java
 package com.hotelmanager.attendance;
 
 import com.hotelmanager.user.User;
@@ -34,7 +33,7 @@ public class Attendance {
     @Column(nullable = false, length = 16)
     private Status status;
 
-    private String source; // "QR" | "MANUAL"
+    private String source; 
     private Double lat;
     private Double lng;
 

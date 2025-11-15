@@ -34,7 +34,6 @@ export default function HotelStructureCard({
   const floorLabels = watch("floorLabels") ?? [];
   const roomTypes = watch("roomTypes") ?? [];
 
-  // Génération automatique des labels si vides
   useEffect(() => {
     if (floors > 0) {
       const current = [...(getValues("floorLabels") ?? [])];
@@ -56,9 +55,8 @@ export default function HotelStructureCard({
 
   const deleteLabel = (index: number) => {
     const current = [...(getValues("floorLabels") ?? [])];
-    current.splice(index, 1); // Supprime un label
+    current.splice(index, 1);
 
-    // Met à jour `floorLabels` et `floors`
     setValue("floorLabels", current, { shouldDirty: true });
     setValue("floors", current.length, { shouldDirty: true });
   };

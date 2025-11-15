@@ -1,4 +1,3 @@
-// src/api/channelsApi.ts
 import axios from "./axios";
 import type { Channel, ChatMessage, ChannelType } from "../types/Chat";
 import type { User } from "../types/User";
@@ -44,7 +43,6 @@ export async function updateChannel(
   return data;
 }
 
-// ✅ remplacer totalement la liste des membres (pour DIRECT / ANNOUNCEMENT)
 export async function replaceChannelMembers(
   id: number,
   memberIds: number[]
@@ -78,7 +76,6 @@ export async function sendMessage(channelId: number, content: string): Promise<C
   return data;
 }
 
-// ✅ NOUVEAU : récupérer les membres d’un canal (utilisé par EmployeeChatPage pour le crew)
 export async function getChannelMembers(channelId: number): Promise<User[]> {
   const { data } = await axios.get<User[]>(
     `/channels/${channelId}/members`,

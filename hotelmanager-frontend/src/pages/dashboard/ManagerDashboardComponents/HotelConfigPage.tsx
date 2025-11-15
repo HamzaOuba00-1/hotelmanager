@@ -90,7 +90,6 @@ export default function HotelConfigPage() {
 
   const onSubmit = form.handleSubmit(
     async (values) => {
-      // Vérifie changement de structure
       const structureChanged =
         values.floors !== hotelData?.floors ||
         values.roomsPerFloor !== hotelData?.roomsPerFloor ||
@@ -115,7 +114,6 @@ export default function HotelConfigPage() {
     form.setValue("logoUrl", url, { shouldDirty: true });
   };
 
-  // Auto-hide toast
   useEffect(() => {
     if (toast) {
       const timer = setTimeout(() => setToast(null), 3000);
@@ -152,7 +150,6 @@ export default function HotelConfigPage() {
         </div>
       </form>
 
-      {/* Modal avertissement structure */}
       {showStructureWarning && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md animate-fadeIn">

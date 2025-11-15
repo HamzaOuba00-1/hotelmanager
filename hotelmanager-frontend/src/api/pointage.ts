@@ -1,9 +1,8 @@
-// src/api/pointage.ts
 import instance from "./axios";
 
 export type DailyCodeResponse = {
   code: string;
-  validFrom: string;   // 👈 ajouté pour la progression
+  validFrom: string;   
   validUntil: string;
 };
 
@@ -30,12 +29,11 @@ export type AttendanceDto = {
   source?: string;
 };
 
-// --- Ajout pointage manuel (MANAGER) ---
 export type CreateManualAttendanceRequest = {
   employeeId: number;
-  date: string;        // yyyy-MM-dd
-  checkInAt: string;   // ISO datetime (ex: 2025-08-08T08:12:00)
-  checkOutAt?: string; // ISO
+  date: string;        
+  checkInAt: string;   
+  checkOutAt?: string; 
   status: "PRESENT" | "RETARD" | "ABSENT";
   source?: "MANUAL";
   lat?: number;
@@ -49,7 +47,6 @@ export async function createManualAttendance(
   return data;
 }
 
-// --- Codes du jour ---
 export async function getCurrentDailyCode(): Promise<DailyCodeResponse> {
   const { data } = await instance.get<DailyCodeResponse>("/api/attendance/codes/current");
   return data;
@@ -60,7 +57,6 @@ export async function regenerateDailyCode(): Promise<DailyCodeResponse> {
   return data;
 }
 
-// --- Check-in/out perso (si besoin) ---
 export async function checkIn(body: CheckInRequest): Promise<AttendanceDto> {
   const { data } = await instance.post<AttendanceDto>("/api/attendance/check-in", body);
   return data;
@@ -71,7 +67,6 @@ export async function checkOut(): Promise<CheckOutResponse> {
   return data;
 }
 
-// --- Liste (MANAGER) ---
 export async function listAttendance(params: { start: string; end: string; }): Promise<AttendanceDto[]> {
   const { data } = await instance.get<AttendanceDto[]>("/api/attendance", { params });
   return data;
@@ -81,7 +76,7 @@ export async function getMyOpenAttendance(): Promise<AttendanceDto | null> {
     const { data } = await instance.get<AttendanceDto>("/api/attendance/open");
     return data;
   } catch (e: any) {
-    if (e?.response?.status === 404) return null; // pas d’ouverture
+    if (e?.response?.status === 404) return null; 
     throw e;
   }
 }
@@ -92,7 +87,6 @@ export async function checkoutAttendance(attendanceId: number): Promise<Attendan
   return data;
 }
 
-// --- Supprimer un pointage (MANAGER) ---
 export async function deleteAttendance(attendanceId: number): Promise<void> {
   await instance.delete(`/api/attendance/${attendanceId}`);
 }

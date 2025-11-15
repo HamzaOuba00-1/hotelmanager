@@ -27,12 +27,10 @@ const AppRoutes: React.FC = () => {
   return (
     <Router>
       <Routes>
-        {/* Routes publiques */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterManagerPage />} />
         <Route path="/hotels/:hotelId/rooms" element={<PublicRoomsPage />} />
 
-        {/* Routes MANAGER */}
         <Route element={<PrivateRoute allowedRoles={['MANAGER']} />}>
           <Route path="/dashboard/manager" element={<ManagerDashboard />}>
             <Route index element={<DashboardAccueil />} />
@@ -47,7 +45,6 @@ const AppRoutes: React.FC = () => {
           </Route>
         </Route>
 
-        {/* Routes EMPLOYE */}
         <Route element={<PrivateRoute allowedRoles={['EMPLOYE']} />}>
           <Route path="/dashboard/employe" element={<DashboardAccueilEmploye />}>
             <Route index element={<DashboardAccueil />} /> 
@@ -59,7 +56,6 @@ const AppRoutes: React.FC = () => {
           </Route>
         </Route>
 
-        {/* Routes CLIENT */}
         <Route element={<PrivateRoute allowedRoles={['CLIENT']} />}>
           <Route path="/dashboard/client" element={<ClientDashboard />}>
             <Route index element={<DashboardAccueil />} />
@@ -67,10 +63,8 @@ const AppRoutes: React.FC = () => {
           </Route>
         </Route>
 
-        {/* Test / Démo */}
         <Route path="/test" element={<div style={{ color: 'green' }}>Test direct OK</div>} />
 
-        {/* Fallback global */}
         <Route path="/" element={<Navigate to={`/hotels/${DEFAULT_PUBLIC_HOTEL_ID}/rooms`} replace />} />
         <Route path="*" element={<div>404 - Page introuvable</div>} />
       </Routes>

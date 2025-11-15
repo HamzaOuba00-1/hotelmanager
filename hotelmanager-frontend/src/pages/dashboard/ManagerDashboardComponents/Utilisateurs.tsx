@@ -3,7 +3,7 @@ import axios from 'axios';
 import { UserRound, ChevronDown, ChevronRight } from 'lucide-react';
 import CrewSection from './AddUserComponents/CrewSection';
 import AddUserModal from './AddUserComponents/AddUserModal';
-import type { User } from '../../../types/User'; // <-- utilise le type partagé
+import type { User } from '../../../types/User'; 
 
 const PlaceholderUtilisateurs: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -120,7 +120,6 @@ const PlaceholderUtilisateurs: React.FC = () => {
         )}
       </div>
 
-      {/* === CREWS / SERVICES (sous la liste des employés) === */}
       <CrewSection allUsers={users} />
     </div>
   );

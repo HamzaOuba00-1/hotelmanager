@@ -36,7 +36,7 @@
   font-family: "NotoSansArabic";
   src: url("./fonts/NotoSansArabic-Regular.woff2") format("woff2");
   font-display: swap;
-  unicode-range: U+0600-06FF; /* bloc arabe */
+  unicode-range: U+0600-06FF; 
 }
 
 .export-pdf-scope {

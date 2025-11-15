@@ -1,4 +1,3 @@
-// src/main/java/com/hotelmanager/attendance/DailyCode.java
 package com.hotelmanager.attendance;
 
 import com.hotelmanager.hotel.Hotel;

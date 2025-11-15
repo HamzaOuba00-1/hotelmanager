@@ -1,4 +1,3 @@
-// com/hotelmanager/common/ApiExceptionHandler.java
 package com.hotelmanager.common;
 
 import org.springframework.dao.DataIntegrityViolationException;

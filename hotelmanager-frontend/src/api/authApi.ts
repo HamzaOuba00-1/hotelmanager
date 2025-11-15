@@ -1,4 +1,3 @@
-// src/api/authApi.ts
 import axios from './axios';
 import { Credentials, AuthResponseDTO } from './dto';
 
@@ -11,7 +10,6 @@ export const registerManager = async (data: any): Promise<AuthResponse> => {
 };
 
 
-// types.ts
 export interface AuthResponse {
   token: string;
   hotelId: number;
@@ -28,5 +26,5 @@ export async function login(
     '/auth/login',
     credentials,
   );
-  return data;   // data est bien typé 👍
+  return data;  
 }

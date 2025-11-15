@@ -1,4 +1,3 @@
-// src/main/java/com/hotelmanager/chat/security/ChatAuthorization.java
 package com.hotelmanager.chat.security;
 
 import com.hotelmanager.chat.repo.ChannelMemberRepository;

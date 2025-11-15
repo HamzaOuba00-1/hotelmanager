@@ -21,7 +21,7 @@ public class ShiftController {
     @PostMapping
     @PreAuthorize("hasRole('MANAGER')")
     public ShiftDto createShift(@Valid @RequestBody Shift shift, @AuthenticationPrincipal User currentUser) {
-        shift.setCreatedBy(currentUser); // ✅ ici on fixe le créateur
+        shift.setCreatedBy(currentUser); 
         Shift created = shiftService.createShift(shift);
         return ShiftDto.from(created);
     }

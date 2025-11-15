@@ -22,7 +22,6 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ onClose, onSuccess }) => {
   const hotelName = localStorage.getItem('hotelName') || 'HOTELFAKE';
   const hotelId = localStorage.getItem('hotelId') || '123';
 
-  // Substitution "leet"
   const substituteLetters = (input: string) => {
     const map: Record<string, string> = {
       a: 'z', b: 'p', c: 'm', d: 'j', e: 'e', f: 'o', g: 'u', h: 'pm',
@@ -33,7 +32,6 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ onClose, onSuccess }) => {
     return input.split('').map(c => map[c.toLowerCase()] || c).join('');
   };
 
-  // Nettoyage du nom d'hôtel (pour l'email)
   const normalizeHotelName = (name: string) =>
     name
       .toLowerCase()
@@ -41,7 +39,6 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ onClose, onSuccess }) => {
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]/g, '');
 
-  // Générer mot de passe + email automatiquement
   useEffect(() => {
     const { firstName, lastName } = form;
 

@@ -32,12 +32,10 @@ public class Reservation {
     @JoinColumn(name = "hotel_id", nullable = false)
     private Hotel hotel;
 
-    // 🔗 Chambre
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "room_id", nullable = false)
     private Room room;
 
-    // 🔗 Client (utilisateur lié, peut être null si pas encore créé)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "client_id")
     private User client;
@@ -54,7 +52,7 @@ public class Reservation {
 
     @NotNull
     @Column(name = "end_at", nullable = false)
-    private OffsetDateTime endAt;
+    private OffsetDateTime endAt; 
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 32)

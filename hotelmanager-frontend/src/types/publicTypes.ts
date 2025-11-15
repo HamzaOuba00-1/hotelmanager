@@ -4,6 +4,6 @@ export interface PublicRoom {
   roomType: string;
   floor: number;
   description?: string;
-  roomState: string; // string côté public
+  roomState: string; 
   active: boolean;
 }

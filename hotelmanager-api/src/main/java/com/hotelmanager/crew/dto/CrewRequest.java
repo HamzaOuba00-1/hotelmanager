@@ -12,10 +12,8 @@ public class CrewRequest {
     @NotNull
     private ServiceType service;
 
-    // facultatif à la création, sinon géré par endpoints membres
     private List<Long> memberIds;
 
-    // getters/setters…
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public ServiceType getService() { return service; }

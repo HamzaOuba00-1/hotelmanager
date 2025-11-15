@@ -1,4 +1,3 @@
-// src/main/java/com/hotelmanager/chat/ws/ChatWsController.java
 package com.hotelmanager.chat.ws;
 
 import com.hotelmanager.chat.dto.MessageResponse;
@@ -20,7 +19,6 @@ public class ChatWsController {
   public void send(@DestinationVariable Long channelId,
                    @Valid MessageSendRequest req,
                    @AuthenticationPrincipal User me) {
-    // persist + broadcast sur /topic/channel.{id}
     messageService.post(channelId, req, me);
   }
 }

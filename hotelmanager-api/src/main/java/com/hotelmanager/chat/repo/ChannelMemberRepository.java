@@ -1,4 +1,3 @@
-// src/main/java/com/hotelmanager/chat/repo/ChannelMemberRepository.java
 package com.hotelmanager.chat.repo;
 
 import com.hotelmanager.chat.entity.ChannelMember;

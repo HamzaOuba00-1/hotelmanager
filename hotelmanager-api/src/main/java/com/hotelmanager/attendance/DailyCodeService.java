@@ -1,4 +1,3 @@
-// src/main/java/com/hotelmanager/attendance/DailyCodeService.java
 package com.hotelmanager.attendance;
 
 import com.hotelmanager.user.User;
@@ -16,7 +15,6 @@ public class DailyCodeService {
   public DailyCode regenerate(User manager, Duration ttl) {
     var now = LocalDateTime.now();
 
-    // 🚫 Révoquer tous les codes actifs existants pour cet hôtel
     List<DailyCode> actives = repo.findAllActive(manager.getHotel().getId(), now);
     if (!actives.isEmpty()) {
       for (var dc : actives) {
@@ -25,7 +23,6 @@ public class DailyCodeService {
       repo.saveAll(actives);
     }
 
-    // ✅ Créer un nouveau code, valide pendant "ttl" (6h)
     var dc = DailyCode.builder()
         .hotel(manager.getHotel())
         .code(generateCode(6))

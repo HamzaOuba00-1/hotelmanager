@@ -1,12 +1,9 @@
-// src/pages/dashboard/EmployeDashboard.tsx
 import React, { useEffect, useState } from "react";
 import { LayoutDashboard, CalendarIcon, PenLine, Search, MessageSquare } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { getMyHotel } from "../../api/hotelApi";
 
-// ---------------------------------------------------------------------------
-// UI PRIMITIVES
-// ---------------------------------------------------------------------------
+
 
 const Logo: React.FC<{ src?: string; alt?: string }> = ({ src, alt }) => (
   <div className="w-full h-14 flex items-center justify-center rounded-lg bg-white shadow overflow-hidden">
@@ -45,9 +42,6 @@ const SidebarLink: React.FC<{
   </NavLink>
 );
 
-// ---------------------------------------------------------------------------
-// Layout Components
-// ---------------------------------------------------------------------------
 
 const Sidebar: React.FC<{ logoSrc?: string }> = ({ logoSrc }) => (
   <aside className="w-64 shrink-0 bg-[#F6F8F7] h-screen p-6 flex flex-col">
@@ -106,9 +100,7 @@ const Topbar: React.FC<{ avatarSrc?: string }> = ({ avatarSrc }) => (
   </header>
 );
 
-// ---------------------------------------------------------------------------
-// Main Layout
-// ---------------------------------------------------------------------------
+
 
 const EmployeDashboard: React.FC = () => {
   const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined);

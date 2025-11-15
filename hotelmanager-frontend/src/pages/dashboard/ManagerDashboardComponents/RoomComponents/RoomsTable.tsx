@@ -44,7 +44,6 @@ export default function RoomsTable({
   const [showDeleteBlockedModal, setShowDeleteBlockedModal] = useState(false);
   const [stateError, setStateError] = useState<string | null>(null);
 
-  // cache des cibles autorisées renvoyées par le backend
   const [allowedMap, setAllowedMap] = useState<Record<number, RoomState[]>>({});
 
   const fetchAllowedStates = async (roomId: number, current: RoomState) => {
@@ -55,7 +54,6 @@ export default function RoomsTable({
       );
       setAllowedMap((m) => ({ ...m, [roomId]: data }));
     } catch {
-      // fallback local si l’endpoint échoue (déconnecté, etc.)
       setAllowedMap((m) => ({ ...m, [roomId]: ALLOWED_FALLBACK[current] ?? [] }));
     }
   };
@@ -79,7 +77,7 @@ export default function RoomsTable({
       onRefresh();
     } catch (err: any) {
       const status = err?.response?.status;
-      const pd = err?.response?.data; // ProblemDetail
+      const pd = err?.response?.data; 
       if (status === 409) {
         setStateError(pd?.detail || "Transition non autorisée.");
       } else if (status === 400) {
@@ -139,7 +137,6 @@ export default function RoomsTable({
   );
 
 
-  // Règle UI de suppression alignée sur le backend
   const isDeletable = (state: RoomState) => state === ROOM_STATE.LIBRE;
 
   return (

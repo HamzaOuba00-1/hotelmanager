@@ -30,8 +30,7 @@ public class Shift {
 
     private LocalTime endTime;
 
-    private String service; // (optionnel, ex: "Cuisine", "Réception")
-
+    private String service; 
     @ManyToOne(optional = false)
     private User createdBy;
 }

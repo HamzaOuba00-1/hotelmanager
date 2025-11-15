@@ -60,16 +60,13 @@ public class RoomService {
             Map.entry(INACTIVE, Set.of(LIBRE))
     );
 
-    /** États depuis lesquels on peut supprimer une chambre */
     private static final Set<RoomState> DELETABLE = Set.of(LIBRE);
 
     /* ======================= Génération / Nettoyage par hôtel ======================= */
 
-    /** Génère toutes les chambres selon la config de l'hôtel (étages / nb par étage / types) */
     public void generateRoomsForHotel(Hotel hotel) {
         if (hotel == null || hotel.getFloors() == null || hotel.getRoomsPerFloor() == null) return;
 
-        // Supprimer l'existant
         deleteRoomsForHotel(hotel);
 
         List<Room> roomsToSave = new ArrayList<>();
@@ -99,16 +96,13 @@ public class RoomService {
         roomRepository.saveAll(roomsToSave);
     }
 
-    /** Supprime toutes les chambres d'un hôtel */
     public void deleteRoomsForHotel(Hotel hotel) {
         if (hotel == null || hotel.getId() == null) return;
         List<Room> existing = roomRepository.findByHotelId(hotel.getId());
         roomRepository.deleteAll(existing);
     }
 
-    /* =================================== CRUD =================================== */
 
-    /** Crée une chambre pour l'hôtel de l'utilisateur connecté (manager) */
     public Room create(Room room) {
         Hotel hotel = resolveCurrentUserHotel();
         room.setHotel(hotel);
@@ -127,7 +121,6 @@ public class RoomService {
         return roomRepository.findAll();
     }
 
-    /** Mise à jour des infos (pas l'état) */
     public Room update(Long id, Room updatedRoom) {
         Room existing = roomRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Chambre non trouvée: " + id));
@@ -138,11 +131,9 @@ public class RoomService {
         existing.setDescription(updatedRoom.getDescription());
         existing.setActive(updatedRoom.isActive());
         existing.setLastUpdated(LocalDateTime.now());
-        // L'état ne change pas ici : utiliser updateState
         return roomRepository.save(existing);
     }
 
-    /** Suppression autorisée seulement si LIBRE ou A_VALIDER_LIBRE */
     public void delete(Long id) {
         Room room = roomRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Chambre non trouvée: " + id));

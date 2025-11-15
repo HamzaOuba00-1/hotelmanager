@@ -1,5 +1,4 @@
-/// src/pages/PointagePage.tsx
-/* eslint-disable react-hooks/exhaustive-deps */
+
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { exportElementToPDF } from "../../../utils/exportPdf";
 import {
@@ -74,64 +73,52 @@ function exportCSV(rows: any[], fileName: string) {
 type UserLite = { id: number; firstName: string; lastName: string };
 type UiRow = AttendanceDto & { dynStatus: "PRESENT" | "RETARD" | "ABSENT" };
 
-// ✅ Aujourd'hui en **local** (pas UTC)
 const todayLocal = format(new Date(), "yyyy-MM-dd");
 
 export default function PointagePage() {
-  // Code du jour
   const [dailyCode, setDailyCode] = useState<DailyCodeResponse | null>(null);
 
-  // Jour sélectionné (par défaut: aujourd'hui LOCAL)
   const [selectedDate, setSelectedDate] = useState<string>(todayLocal);
 
-  // Pointages
   const [rows, setRows] = useState<AttendanceDto[]>([]);
   const [loadingRows, setLoadingRows] = useState(false);
 
-  // Planning
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [loadingShifts, setLoadingShifts] = useState(false);
 
-  // Filtres
   const [statusFilter, setStatusFilter] = useState<
     "" | "PRESENT" | "RETARD" | "ABSENT"
   >("");
 
-  // Employés pour la popup
   const [users, setUsers] = useState<UserLite[]>([]);
 
-  // Popup ajout
   const [addOpen, setAddOpen] = useState(false);
   const [form, setForm] = useState({
     employeeId: "",
-    date: todayLocal, // ✅ local
+    date: todayLocal, 
     checkIn: "",
     checkOut: "",
     status: "PRESENT",
   });
 
-  // Confirm delete
   const [confirmDel, setConfirmDel] = useState<{
     open: boolean;
     id?: number;
     name?: string;
   }>({ open: false });
 
-  // Confirm stop
   const [confirmStop, setConfirmStop] = useState<{
     open: boolean;
     id?: number;
     name?: string;
   }>({ open: false });
 
-  // Toast
   const [toast, setToast] = useState<string | null>(null);
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 1800);
   };
 
-  // Mesure pour limiter la hauteur de l'équipe du jour
   const qrCardRef = useRef<HTMLDivElement | null>(null);
   const kpiRef = useRef<HTMLDivElement | null>(null);
   const [teamMaxH, setTeamMaxH] = useState<number | undefined>(undefined);
@@ -155,7 +142,6 @@ export default function PointagePage() {
     recomputeHeights();
   }, [dailyCode, rows, shifts, selectedDate, loadingShifts]);
 
-  // Charger code courant
   const loadCode = async () => {
     try {
       const res = await getCurrentDailyCode();
@@ -175,7 +161,6 @@ export default function PointagePage() {
     }
   };
 
-  // Régénérer code
   const onRegenerate = async () => {
     try {
       const res = await regenerateDailyCode();
@@ -187,7 +172,6 @@ export default function PointagePage() {
     }
   };
 
-  // Charger pointages
   const loadRows = async () => {
     setLoadingRows(true);
     try {
@@ -206,7 +190,6 @@ export default function PointagePage() {
     }
   };
 
-  // Charger planning
   const loadShifts = async () => {
     setLoadingShifts(true);
     try {
@@ -220,7 +203,6 @@ export default function PointagePage() {
     }
   };
 
-  // Charger liste employés
   const loadUsers = async () => {
     try {
       const res = await getUsersFromMyHotel();
@@ -239,7 +221,6 @@ export default function PointagePage() {
     loadShifts();
   }, [selectedDate]);
 
-  // Compte à rebours + progression (affichage)
   const { secondsLeft, progressPct, validUntilText } = useMemo(() => {
     if (!dailyCode)
       return { secondsLeft: 0, progressPct: 0, validUntilText: "--:--" };
@@ -261,7 +242,6 @@ export default function PointagePage() {
   const minutes = Math.floor((secondsLeft % 3600) / 60);
   const seconds = secondsLeft % 60;
 
-  // Index shifts
   const shiftIndex = useMemo(() => {
     const map = new Map<string, Shift[]>();
     (shifts || []).forEach((s) => {
@@ -273,7 +253,6 @@ export default function PointagePage() {
     return map;
   }, [shifts]);
 
-  // Statut dynamique d’une ligne existante
   const computeDynamicStatus = (
     r: AttendanceDto
   ): "PRESENT" | "RETARD" | "ABSENT" => {
@@ -322,7 +301,6 @@ export default function PointagePage() {
     return inDt > lateLimit ? "RETARD" : "PRESENT";
   };
 
-  // ===== ÉQUIPE DU JOUR (live) =====
   type LiveStatus = "RIEN" | "RETARD" | "ABSENT" | "PRESENT";
   type DayEmployee = {
     employeeId: number;
@@ -412,7 +390,6 @@ export default function PointagePage() {
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [shifts, rows, selectedDate]);
 
-  // ===== TABLEAU : fusionner absents sans pointage =====
   const tableRows: UiRow[] = useMemo(() => {
     const mappedRows: UiRow[] = rows.map((r) => ({
       ...r,
@@ -446,7 +423,6 @@ export default function PointagePage() {
     return all.filter((r) => r.dynStatus === statusFilter);
   }, [rows, statusFilter, shifts, selectedDate, shiftIndex]);
 
-  // KPI (basés sur l'équipe du jour)
   const stats = useMemo(() => {
     const present = dayTeam.filter((e) => e.status === "PRESENT").length;
     const retard = dayTeam.filter((e) => e.status === "RETARD").length;
@@ -466,7 +442,6 @@ export default function PointagePage() {
     return { present, absent, retard, avgTxt };
   }, [dayTeam, rows]);
 
-  // Export CSV
   const handleExport = () => {
     const plain = tableRows.map((r) => ({
       Date: r.date,
@@ -483,7 +458,6 @@ export default function PointagePage() {
 
   const codeValue = dailyCode?.code ?? "------";
 
-  // PDF : on n'exporte que QR + code (bloc référencé ci-dessous)
   const qrExportRef = useRef<HTMLDivElement | null>(null);
   const onExportQR = async () => {
     if (!qrExportRef.current) return;
@@ -502,7 +476,6 @@ export default function PointagePage() {
     }
   };
 
-  // Actions manager
   const onStop = async (id: number) => {
     try {
       await checkoutAttendance(id);
@@ -531,7 +504,6 @@ export default function PointagePage() {
     }
   };
 
-  // Submit ajout manuel
   const onSubmitAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.employeeId || !form.date || !form.checkIn) {
@@ -658,7 +630,7 @@ export default function PointagePage() {
           <div
             ref={qrExportRef}
             className="flex flex-col items-center gap-3 p-4 bg-white rounded-xl inline-block"
-            style={{ border: "1px solid transparent" }} // petit "truc" pour forcer un padding dans le rendu
+            style={{ border: "1px solid transparent" }}
           >
             <div className="bg-white p-2 rounded-xl border">
               <QRCodeSVG
@@ -671,7 +643,7 @@ export default function PointagePage() {
 
             <div
               className="text-2xl font-extrabold tracking-widest"
-              style={{ wordBreak: "break-all" }} // si le code est long, coupe sur plusieurs lignes
+              style={{ wordBreak: "break-all" }} 
             >
               {codeValue}
             </div>

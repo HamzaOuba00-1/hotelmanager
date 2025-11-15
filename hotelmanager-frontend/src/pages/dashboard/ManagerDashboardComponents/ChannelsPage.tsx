@@ -1,4 +1,3 @@
-// src/pages/ChannelsPage.tsx
 import React, { JSX, useEffect, useRef, useState } from "react";
 import {
   MessageSquare,
@@ -12,7 +11,6 @@ import {
   Search,
   X,
   EllipsisVertical,
-  // Icônes de services pour les listes
   Hotel,
   UsersRound,
   Wrench,
@@ -23,7 +21,6 @@ import {
   Shield,
   Cpu,
   HandCoins,
-  // Icônes de services pour tuiles crew (styles identiques à ton CrewDetails)
   Shield as ShieldLine,
   Hotel as HotelLine,
   Drill,
@@ -53,7 +50,6 @@ import { getUsersFromMyHotel } from "../../../api/userApi";
 import { getCrew, getCrews } from "../../../api/crewApi";
 import ConfirmModal from "../../../common/ConfirmModal";
 
-// ----- petites helpers UI -----
 const card = "bg-white/60 rounded-2xl border shadow p-5";
 const btn = "inline-flex items-center gap-2 px-4 py-2 rounded-xl transition";
 const btnPrimary = `${btn} bg-emerald-600 text-white hover:bg-emerald-700`;
@@ -61,7 +57,6 @@ const btnGhost = `${btn} bg-white/80 border hover:shadow`;
 const input =
   "w-full border border-gray-300 p-2 rounded-xl bg-white/80 focus:outline-none";
 
-// ----- mapping services -> icône (liste des chaînes) -----
 const listServiceIcon: Record<string, JSX.Element> = {
   RECEPTION: <Hotel className="w-4 h-4" />,
   HOUSEKEEPING: <UsersRound className="w-4 h-4" />,
@@ -79,7 +74,6 @@ const listServiceIcon: Record<string, JSX.Element> = {
 
 type CrewLite = { id: number; name: string; service?: string };
 
-// ----- icône de service pour tuile CREW (mêmes choix que CrewDetailsModal) -----
 const crewTileServiceIcon = (service?: string) => {
   const cls = "w-8 h-8 text-emerald-600 mb-2";
   switch (service) {
@@ -112,7 +106,6 @@ const crewTileServiceIcon = (service?: string) => {
   }
 };
 
-// --- tuiles de sélection (évite button-in-button) ---
 const tileBase =
   "flex flex-col items-center justify-center w-36 h-36 p-5 rounded-3xl " +
   "bg-white/60 backdrop-blur-xl border border-white/30 shadow ring-1 ring-white/20 " +
@@ -143,7 +136,6 @@ const SelectTile: React.FC<{
   </div>
 );
 
-// ===================== MODAL CRÉATION =====================
 const CreateChannelModal: React.FC<{
   open: boolean;
   onClose: () => void;
@@ -338,7 +330,6 @@ const CreateChannelModal: React.FC<{
   );
 };
 
-// ===================== MODAL RÉGLAGES / ÉDITION =====================
 const ChannelSettingsModal: React.FC<{
   open: boolean;
   channel: Channel | null;
@@ -376,7 +367,6 @@ const ChannelSettingsModal: React.FC<{
 
       try {
         if (channel.type === "DIRECT" || channel.type === "ANNOUNCEMENT") {
-          // si le backend ne fournit pas /channels/:id/members, on passe par le crew si possible
           if (channel.crewId) {
             const crew = await getCrew(channel.crewId);
             setMemberIds(crew.members.map((m) => m.id));
@@ -601,7 +591,6 @@ const ChannelsPage: React.FC = () => {
 
   const [openSettings, setOpenSettings] = useState(false);
 
-  // Confirm suppression depuis la liste
   const [confirmListDelete, setConfirmListDelete] = useState<{
     open: boolean;
     channel?: Channel;

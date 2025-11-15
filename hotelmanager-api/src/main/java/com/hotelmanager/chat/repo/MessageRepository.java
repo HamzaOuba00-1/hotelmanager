@@ -1,4 +1,3 @@
-// src/main/java/com/hotelmanager/chat/repo/MessageRepository.java
 package com.hotelmanager.chat.repo;
 
 import com.hotelmanager.chat.entity.Message;

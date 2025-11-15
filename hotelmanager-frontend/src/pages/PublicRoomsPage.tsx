@@ -16,22 +16,18 @@ import {
 type ProblemDetail = { type?: string; title?: string; status?: number; detail?: string };
 
 export default function PublicRoomsPage() {
-  // ---- hotelId depuis l'URL /hotels/:hotelId/rooms
   const { hotelId } = useParams();
   const HOTEL_ID = Number(hotelId);
 
-  // ---- dates
   const [arrival, setArrival] = useState<string>(() => defaultArrival());
   const [departure, setDeparture] = useState<string>(() => defaultDeparture());
   const startAtISO = useMemo(() => buildStartISO(arrival), [arrival]);
   const endAtISO   = useMemo(() => buildEndISO(departure), [departure]);
 
-  // ---- data
   const [publicRooms, setPublicRooms] = useState<PublicRoom[]>([]);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  // ---- modale réservation
   const [openReserve, setOpenReserve] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<PublicRoom | null>(null);
   const [firstName, setFirstName] = useState("");
@@ -39,13 +35,11 @@ export default function PublicRoomsPage() {
   const [reserveLoading, setReserveLoading] = useState(false);
   const [reserveError, setReserveError]     = useState<string | null>(null);
 
-  // ---- modale succès
   const [openSuccess, setOpenSuccess] = useState(false);
   const [generatedEmail, setGeneratedEmail]       = useState("");
   const [generatedPassword, setGeneratedPassword] = useState("");
   const [copied, setCopied] = useState<"email" | "password" | null>(null);
 
-  // ---- fetch des dispos
   const loadAvailable = useCallback(async () => {
     if (!HOTEL_ID || Number.isNaN(HOTEL_ID)) {
       setErr("Hôtel invalide.");
@@ -69,11 +63,9 @@ export default function PublicRoomsPage() {
   }, [HOTEL_ID, arrival, departure, startAtISO, endAtISO]);
 
   useEffect(() => {
-    // charge au premier rendu et quand l'hôtel change
     loadAvailable();
   }, [loadAvailable]);
 
-  // ---- actions
   function openReserveFor(room: PublicRoom) {
     setSelectedRoom(room);
     setFirstName("");
@@ -96,12 +88,11 @@ export default function PublicRoomsPage() {
         startAt: startAtISO,
         endAt: endAtISO,
       });
-      // succès → affiche identifiants une seule fois
       setOpenReserve(false);
       setGeneratedEmail(res.email);
       setGeneratedPassword(res.generatedPassword);
       setOpenSuccess(true);
-      await loadAvailable(); // la chambre devient RESERVEE côté back
+      await loadAvailable(); 
     } catch (e: any) {
       const pd: ProblemDetail | undefined = e?.response?.data;
       if ((e?.response?.status ?? 0) === 409) {
@@ -115,7 +106,6 @@ export default function PublicRoomsPage() {
     }
   }
 
-  // ---- UI
   const canSearch = arrival && departure && new Date(arrival) < new Date(departure);
 
   return (
@@ -333,7 +323,6 @@ export default function PublicRoomsPage() {
   );
 }
 
-/* --------- util UI --------- */
 function CopyRow({
   label, value, onCopy, copied, secret,
 }: { label: string; value: string; onCopy: () => void; copied?: boolean; secret?: boolean }) {

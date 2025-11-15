@@ -50,7 +50,7 @@ public class Room {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "client_id")
-    private User client; // Nullable
+    private User client;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "hotel_id", nullable = false)

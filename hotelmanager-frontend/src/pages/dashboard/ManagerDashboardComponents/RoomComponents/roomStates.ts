@@ -1,4 +1,3 @@
-// src/pages/rooms/RoomComponents/roomStates.ts
 import { Bed, DoorOpen, SprayCan, Wrench, CheckCircle, ClipboardCheck, RefreshCw,DoorClosed, PowerOff } from "lucide-react";
 
 export const ROOM_STATE = {
@@ -31,23 +30,19 @@ export const STATE_OPTIONS = [
   { value: ROOM_STATE.INACTIVE,    label: "Inactive",    icon: PowerOff, color: "bg-red-100 text-red-500 border-red-300" },
 ] as const;
 
-/** Fallback local (utilisé seulement si le fetch /allowed-states échoue) */
 export const ALLOWED: Record<RoomState, RoomState[]> = {
   [ROOM_STATE.LIBRE]:           [ROOM_STATE.RESERVEE, ROOM_STATE.CHECKIN,ROOM_STATE.INACTIVE, ROOM_STATE.MAINTENANCE],
   [ROOM_STATE.RESERVEE]:        [ROOM_STATE.CHECKIN, ROOM_STATE.A_VALIDER_LIBRE, ROOM_STATE.LIBRE],
   [ROOM_STATE.CHECKIN]:         [ROOM_STATE.ROOM_SERVICE, ROOM_STATE.CHECKOUT],
 
-  // ✅ corrigé : après CHECKOUT -> A_VALIDER_LIBRE, LIBRE, A_NETTOYER
   [ROOM_STATE.CHECKOUT]:        [ROOM_STATE.A_VALIDER_LIBRE, ROOM_STATE.A_NETTOYER],
 
   [ROOM_STATE.A_NETTOYER]:      [ROOM_STATE.EN_NETTOYAGE],
   [ROOM_STATE.EN_NETTOYAGE]:    [ROOM_STATE.A_VALIDER_CLEAN],
   [ROOM_STATE.A_VALIDER_CLEAN]: [ROOM_STATE.LIBRE, ROOM_STATE.A_NETTOYER],
 
-  // conforme à ta table front : ROOM_SERVICE -> CHECKOUT, LIBRE
   [ROOM_STATE.ROOM_SERVICE]:    [ROOM_STATE.CHECKIN, ROOM_STATE.CHECKOUT],
 
-  // ✅ corrigé : A_VALIDER_LIBRE -> A_NETTOYER, LIBRE
   [ROOM_STATE.A_VALIDER_LIBRE]: [ROOM_STATE.CHECKIN, ROOM_STATE.A_NETTOYER],
   [ROOM_STATE.MAINTENANCE]:     [ROOM_STATE.LIBRE],
   [ROOM_STATE.INACTIVE]:        [ROOM_STATE.LIBRE],

@@ -12,7 +12,6 @@ export default function HotelSecurityCard({
   const { register, watch, setValue } = form;
   const isActive = watch("active");
 
-  // Par défaut, code flouté
   const [showCode, setShowCode] = useState(false);
 
   return (

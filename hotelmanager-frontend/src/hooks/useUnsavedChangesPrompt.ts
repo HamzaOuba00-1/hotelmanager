@@ -5,7 +5,7 @@ export default function useUnsavedChangesPrompt(isDirty: boolean) {
     const handler = (e: BeforeUnloadEvent) => {
       if (!isDirty) return;
       e.preventDefault();
-      e.returnValue = ""; // nécessaire pour certains navigateurs
+      e.returnValue = ""; 
     };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);

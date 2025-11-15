@@ -18,7 +18,6 @@ public class EmployeeService {
     private final PasswordEncoder encoder;
     private final EmailService emailService;
 
-    // Remplacement de @RequiredArgsConstructor
     public EmployeeService(UserRepository userRepo,
                            PasswordEncoder encoder,
                            EmailService emailService) {
