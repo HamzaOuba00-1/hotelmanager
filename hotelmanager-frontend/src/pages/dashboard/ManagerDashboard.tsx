@@ -10,6 +10,7 @@ import {
   QrCode,
   MessageSquare,
   CalendarCheck2,
+  AlertTriangle,
 } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { getMyHotel } from "../../api/hotelApi";
@@ -106,6 +107,13 @@ const Sidebar: React.FC<{ logoSrc?: string }> = ({ logoSrc }) => (
       >
         Chaînes
       </SidebarLink>
+      <SidebarLink
+        to="/dashboard/manager/issues"
+        icon={<AlertTriangle size={18} />}
+      >
+        Signalements
+      </SidebarLink>
+
     </nav>
   </aside>
 );

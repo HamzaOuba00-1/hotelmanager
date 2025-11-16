@@ -21,6 +21,8 @@ import Channels from './pages/dashboard/ManagerDashboardComponents/ChannelsPage'
 import EmployeeChatPage from "./pages/dashboard/EmployeDashboardComponents/EmployeeChatPage";
 import PublicRoomsPage from "./pages/PublicRoomsPage";
 import ReservationsPage from "./pages/dashboard/ManagerDashboardComponents/ReservationsPage";
+import IssuesPage from "./pages/dashboard/ManagerDashboardComponents/IssuesPage";
+
 const DEFAULT_PUBLIC_HOTEL_ID = 1;
 function App() {
   return (
@@ -43,6 +45,7 @@ function App() {
             <Route path="planning" element={<Planning />} />
             <Route path="pointage" element={<Pointage />} />
             <Route path="channels" element={<Channels />} />
+            <Route path="issues" element={<IssuesPage />} />
           </Route>
         </Route>
 

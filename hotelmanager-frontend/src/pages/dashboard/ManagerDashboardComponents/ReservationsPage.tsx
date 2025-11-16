@@ -135,7 +135,11 @@ export default function ReservationsPage() {
     setErr(null);
     try {
       const data = await rApi.listReservations();
-      setReservations(data);
+      const transformed = data.map((r: any) => ({
+        ...r,
+        endAt: r.endAt || r.end || "", // Adjust field name if needed
+      }));
+      setReservations(transformed);
     } catch (e: any) {
       setErr(e?.message || "Erreur de chargement des réservations.");
     } finally {

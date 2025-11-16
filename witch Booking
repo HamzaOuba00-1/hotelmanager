@@ -1,0 +1,31 @@
+[33m15f33e0[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{0}: commit: Refac
+[33m84a1407[m[33m ([m[1;31morigin/merge-chamber-config[m[33m)[m HEAD@{1}: checkout: moving from Booking to main
+[33me9bcde8[m[33m ([m[1;32mBooking[m[33m)[m HEAD@{2}: commit: Refac
+[33m4b3a089[m[33m ([m[1;31morigin/Booking[m[33m, [m[1;32mchat-manager-employe[m[33m)[m HEAD@{3}: checkout: moving from chat-manager-employe to Booking
+[33m4b3a089[m[33m ([m[1;31morigin/Booking[m[33m, [m[1;32mchat-manager-employe[m[33m)[m HEAD@{4}: commit: Fr/Reservation
+[33m6442dd0[m[33m ([m[1;31morigin/chat-manager-employe[m[33m, [m[1;32mplanning-pointage-crew-service-implementation-total[m[33m)[m HEAD@{5}: checkout: moving from planning-pointage-crew-service-implementation-total to chat-manager-employe
+[33m6442dd0[m[33m ([m[1;31morigin/chat-manager-employe[m[33m, [m[1;32mplanning-pointage-crew-service-implementation-total[m[33m)[m HEAD@{6}: commit: implementation chat
+[33md53b5d7[m[33m ([m[1;31morigin/planning-pointage-crew-service-implementation-total[m[33m, [m[1;32mconfigsHotel-rooms-connection[m[33m)[m HEAD@{7}: checkout: moving from configsHotel-rooms-connection to planning-pointage-crew-service-implementation-total
+[33md53b5d7[m[33m ([m[1;31morigin/planning-pointage-crew-service-implementation-total[m[33m, [m[1;32mconfigsHotel-rooms-connection[m[33m)[m HEAD@{8}: commit: Implémentation planning/pointage/crew-service
+[33m9a8003e[m[33m ([m[1;31morigin/configsHotel-rooms-connection[m[33m)[m HEAD@{9}: commit: room css, room/hotelConfig connection, files struct
+[33m3131924[m HEAD@{10}: checkout: moving from main to configsHotel-rooms-connection
+[33m84a1407[m[33m ([m[1;31morigin/merge-chamber-config[m[33m)[m HEAD@{11}: checkout: moving from configsHotel-rooms-connection to main
+[33m3131924[m HEAD@{12}: commit: room css, room/hotelConfig connection
+[33m84a1407[m[33m ([m[1;31morigin/merge-chamber-config[m[33m)[m HEAD@{13}: checkout: moving from main to configsHotel-rooms-connection
+[33m84a1407[m[33m ([m[1;31morigin/merge-chamber-config[m[33m)[m HEAD@{14}: reset: moving to origin/main
+[33m84a1407[m[33m ([m[1;31morigin/merge-chamber-config[m[33m)[m HEAD@{15}: pull origin main: Fast-forward
+[33m4c0b4c6[m[33m ([m[1;32mauth-saad[m[33m)[m HEAD@{16}: checkout: moving from config-hotel-front-backend to main
+[33m06d8f38[m[33m ([m[1;31morigin/config-hotel-front-backend[m[33m, [m[1;32mconfig-hotel-front-backend[m[33m)[m HEAD@{17}: commit: implementation total de config hotel front/back et yml file
+[33m2a335e8[m HEAD@{18}: commit: implementation total de config hotel front/back
+[33m4c0b4c6[m[33m ([m[1;32mauth-saad[m[33m)[m HEAD@{19}: checkout: moving from main to config-hotel-front-backend
+[33m4c0b4c6[m[33m ([m[1;32mauth-saad[m[33m)[m HEAD@{20}: reset: moving to auth-saad
+[33mb69fd8a[m HEAD@{21}: reset: moving to HEAD
+[33mb69fd8a[m HEAD@{22}: checkout: moving from auth-saad to main
+[33m4c0b4c6[m[33m ([m[1;32mauth-saad[m[33m)[m HEAD@{23}: checkout: moving from auth-saad to auth-saad
+[33m4c0b4c6[m[33m ([m[1;32mauth-saad[m[33m)[m HEAD@{24}: pull --rebase origin auth-saad (finish): returning to refs/heads/auth-saad
+[33m4c0b4c6[m[33m ([m[1;32mauth-saad[m[33m)[m HEAD@{25}: pull --rebase origin auth-saad (pick): Create user backend/frontend
+[33me81520b[m HEAD@{26}: pull --rebase origin auth-saad (start): checkout e81520bb3e5fc89dae7e38987e53598f760adbaa
+[33m5f6a834[m HEAD@{27}: commit: Create user backend/frontend
+[33m991dc41[m HEAD@{28}: commit: Connection
+[33m287a662[m HEAD@{29}: checkout: moving from main to auth-saad
+[33mb69fd8a[m HEAD@{30}: clone: from https://github.com/HamzaOuba00-1/hotelmanager.git
