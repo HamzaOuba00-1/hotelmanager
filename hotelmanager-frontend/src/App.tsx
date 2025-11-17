@@ -22,6 +22,7 @@ import EmployeeChatPage from "./pages/dashboard/EmployeDashboardComponents/Emplo
 import PublicRoomsPage from "./pages/PublicRoomsPage";
 import ReservationsPage from "./pages/dashboard/ManagerDashboardComponents/ReservationsPage";
 import IssuesPage from "./pages/dashboard/ManagerDashboardComponents/IssuesPage";
+import EmployeeIssuesPage from "./pages/dashboard/EmployeDashboardComponents/IssuesPage";
 
 const DEFAULT_PUBLIC_HOTEL_ID = 1;
 function App() {
@@ -59,6 +60,8 @@ function App() {
             {/* 👈 ajouté */}
             <Route path="rooms" element={<RoomsPage />} />
             <Route path="messages" element={<EmployeeChatPage />} />
+            <Route path="issues" element={<EmployeeIssuesPage />} />
+            
           </Route>
         </Route>
 

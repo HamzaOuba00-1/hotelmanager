@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { LayoutDashboard, CalendarIcon, PenLine, Search, MessageSquare } from "lucide-react";
+import { LayoutDashboard, CalendarIcon, PenLine, Search, MessageSquare, AlertTriangle, } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { getMyHotel } from "../../api/hotelApi";
 
@@ -74,6 +74,12 @@ const Sidebar: React.FC<{ logoSrc?: string }> = ({ logoSrc }) => (
         icon={<MessageSquare size={18} />}
       >
         Messages
+      </SidebarLink>
+      <SidebarLink
+        to="/dashboard/employe/issues"
+        icon={<AlertTriangle size={18} />}
+      >
+        Signalements
       </SidebarLink>
     </nav>
   </aside>
