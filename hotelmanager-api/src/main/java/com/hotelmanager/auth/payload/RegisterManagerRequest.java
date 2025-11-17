@@ -9,5 +9,5 @@ public class RegisterManagerRequest {
     private String email;
     private String password;
     private String hotelCode;
-    private String hotelName; // peut être null si on rejoint un hôtel existant
+    private String hotelName; 
 }

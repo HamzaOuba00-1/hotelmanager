@@ -1,23 +1,23 @@
-// src/api/axios.ts
-import axios from 'axios';
-import { AuthResponse } from "./authApi";
+import axios from "axios";
 
+const API_BASE = process.env.REACT_APP_API_URL ?? "http://127.0.0.1:8080";
 
-const instance = axios.create({
-  baseURL: 'http://localhost:8080', // adapte selon ton backend
-  headers: {
-    'Content-Type': 'application/json',
-  }
+const api = axios.create({
+  baseURL: API_BASE,
+  headers: { "Content-Type": "application/json" },
 });
 
-export default instance;
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
+export const publicApi = axios.create({
+  baseURL: API_BASE,
+  headers: { "Content-Type": "application/json" },
+});
 
-
-export async function login(credentials: {
-  email: string;
-  password: string;
-}): Promise<AuthResponse> {
-  const response = await axios.post<AuthResponse>("/api/auth/login", credentials);
-  return response.data;
-}
+export default api;

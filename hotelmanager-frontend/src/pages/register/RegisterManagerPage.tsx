@@ -10,16 +10,6 @@ import {
 } from "lucide-react";
 import { registerManager } from "../../api/authApi";
 
-/**
- * RegisterManagerPage – écran d'inscription Manager
- * ---------------------------------------------------------------------------
- * Ajout d'un **toggle "Nouveau hôtel"** :
- *   ▸ quand activé ⇒ le formulaire affiche **Code hôtel (nouveau)** + **Nom hôtel**.
- *   ▸ quand désactivé ⇒ seul **Code hôtel (existant)** est requis.
- *
- * Direction artistique : cohérente avec le dashboard mock‑up (palette vert/blanc,
- * arrondis 3xl, icônes Lucide, typographie sans‑serif).
- */
 
 const RegisterManagerPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -41,8 +31,6 @@ const RegisterManagerPage: React.FC = () => {
     e.preventDefault();
     setLoading(true);
 
-    // Si l'utilisateur n'a pas choisi "Nouveau hôtel", on vide hotelName
-    // pour éviter un body inutile vers l'API.
     const payload = {
       ...formData,
       hotelName: isNewHotel ? formData.hotelName : undefined,
@@ -179,9 +167,7 @@ const RegisterManagerPage: React.FC = () => {
   );
 };
 
-// ---------------------------------------------------------------------------
-// Reusable Input component
-// ---------------------------------------------------------------------------
+
 
 interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {

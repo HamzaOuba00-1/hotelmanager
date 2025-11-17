@@ -11,11 +11,9 @@ public class EmployeeRequest {
     private Role role;
     private Hotel hotel;
 
-    // Constructeur vide (utile pour la désérialisation avec Jackson/Spring)
     public EmployeeRequest() {
     }
 
-    // Getters et Setters
     public String getFirstName() {
         return firstName;
     }
@@ -64,7 +62,6 @@ public class EmployeeRequest {
         this.hotel = hotel;
     }
 
-    // toString (optionnel mais utile pour le debug)
     @Override
     public String toString() {
         return "EmployeeRequest{" +

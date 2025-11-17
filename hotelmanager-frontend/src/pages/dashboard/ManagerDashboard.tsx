@@ -1,11 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { Search, LayoutDashboard, Users, Cog } from "lucide-react";
+import {
+  Search,
+  LayoutDashboard,
+  Users,
+  Cog,
+  CalendarIcon,
+  DoorClosed,
+  PenLine,
+  QrCode,
+  MessageSquare,
+  CalendarCheck2,
+  AlertTriangle,
+} from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
-import { getMyHotel } from "../../api/hotelApi"; // 👈 on utilise ton API
+import { getMyHotel } from "../../api/hotelApi";
 
-// ---------------------------------------------------------------------------
-// UI PRIMITIVES
-// ---------------------------------------------------------------------------
 
 const Logo: React.FC<{ src?: string; alt?: string }> = ({ src, alt }) => (
   <div className="w-full h-14 flex items-center justify-center rounded-lg bg-white shadow overflow-hidden">
@@ -21,7 +30,6 @@ const Logo: React.FC<{ src?: string; alt?: string }> = ({ src, alt }) => (
   </div>
 );
 
-// 👇 Composant de lien latéral réutilisable
 const SidebarLink: React.FC<{
   to: string;
   icon?: React.ReactNode;
@@ -45,9 +53,7 @@ const SidebarLink: React.FC<{
   </NavLink>
 );
 
-// ---------------------------------------------------------------------------
-// Layout Components
-// ---------------------------------------------------------------------------
+
 
 const Sidebar: React.FC<{ logoSrc?: string }> = ({ logoSrc }) => (
   <aside className="w-64 shrink-0 bg-[#F6F8F7] h-screen p-6 flex flex-col">
@@ -56,18 +62,57 @@ const Sidebar: React.FC<{ logoSrc?: string }> = ({ logoSrc }) => (
     </div>
 
     <nav className="space-y-1 flex-1">
-      <SidebarLink to="/dashboard/manager" icon={<LayoutDashboard size={18} />} exact>
+      <SidebarLink
+        to="/dashboard/manager"
+        icon={<LayoutDashboard size={18} />}
+        exact
+      >
         Dashboard
       </SidebarLink>
       <SidebarLink to="/dashboard/manager/users" icon={<Users size={18} />}>
         Utilisateurs
       </SidebarLink>
-      <SidebarLink to="/dashboard/manager/configuration" icon={<Cog size={18} />}>
+      <SidebarLink
+        to="/dashboard/manager/configuration"
+        icon={<Cog size={18} />}
+      >
         Configuration
       </SidebarLink>
-        <SidebarLink to="/dashboard/manager/rooms" icon={<span role="img" aria-label="Bed">🛏</span>}> {/* Or use an icon from lucide-react if available */}
-            Chambres
-        </SidebarLink>
+      <SidebarLink
+        to="/dashboard/manager/rooms"
+        icon={<DoorClosed size={18} />}
+      >
+        {" "}
+        {/* Or use an icon from lucide-react if available */}
+        Chambres
+      </SidebarLink>
+      <SidebarLink
+        to="/dashboard/manager/reservations"
+        icon={<CalendarCheck2 size={18} />}
+      >
+        Réservations
+      </SidebarLink>
+      <SidebarLink
+        to="/dashboard/manager/planning"
+        icon={<CalendarIcon size={18} />}
+      >
+        Planning
+      </SidebarLink>
+      <SidebarLink to="/dashboard/manager/pointage" icon={<QrCode size={18} />}>
+        Pointage
+      </SidebarLink>
+      <SidebarLink
+        to="/dashboard/manager/channels"
+        icon={<MessageSquare size={18} />}
+      >
+        Chaînes
+      </SidebarLink>
+      <SidebarLink
+        to="/dashboard/manager/issues"
+        icon={<AlertTriangle size={18} />}
+      >
+        Signalements
+      </SidebarLink>
 
     </nav>
   </aside>
@@ -94,9 +139,7 @@ const Topbar: React.FC<{ avatarSrc?: string }> = ({ avatarSrc }) => (
   </header>
 );
 
-// ---------------------------------------------------------------------------
-// Main Layout
-// ---------------------------------------------------------------------------
+
 
 const ManagerDashboard: React.FC = () => {
   const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined);

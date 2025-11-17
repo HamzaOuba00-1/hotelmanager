@@ -3,7 +3,6 @@ import React from "react";
 import {LayoutDashboard, Users, Bed } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
-/* sidebar + topbar vus plus haut */
 const Logo: React.FC<{ src?: string; alt?: string }> = ({ src, alt }) => (
   <div className="h-10 w-10 rounded-lg bg-white shadow flex items-center justify-center overflow-hidden">
 	{src ? (
@@ -92,7 +91,7 @@ const ManagerLayout: React.FC = () => (
     <div className="flex-1 flex flex-col overflow-hidden">
       <Topbar />
       <main className="flex-1 overflow-y-auto p-8">
-        <Outlet />   {/* <— rend ManagerHome ou ManagerUsersPage */}
+        <Outlet />   
       </main>
     </div>
   </div>

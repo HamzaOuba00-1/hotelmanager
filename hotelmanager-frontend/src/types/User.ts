@@ -5,7 +5,15 @@ export interface User {
   firstName: string;
   lastName: string;
   email: string;
+  role: Role;
+  hotelId?: number;
+}
+
+export interface CreateUserPayload {
+  firstName: string;
+  lastName: string;
+  email: string;
   password: string;
   role: Role;
-  hotelId?: number; // optionnel si l'utilisateur est lié à un hôtel
+  hotelId?: number;
 }

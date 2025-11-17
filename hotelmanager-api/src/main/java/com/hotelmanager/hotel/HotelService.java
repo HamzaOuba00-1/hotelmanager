@@ -1,12 +1,16 @@
 package com.hotelmanager.hotel;
 
 import com.hotelmanager.hotel.dto.HotelConfigRequest;
+import com.hotelmanager.room.RoomService;
 import com.hotelmanager.user.User;
+import com.hotelmanager.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
-import com.hotelmanager.user.UserRepository;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -14,9 +18,9 @@ public class HotelService {
 
     private final HotelRepository hotelRepository;
     private final UserRepository userRepository;
+    private final RoomService roomService;
 
     public Hotel getHotelOf(User manager) {
-        // Recharge l'utilisateur depuis la BDD pour avoir un lien hôtel à jour
         var freshUser = userRepository.findById(manager.getId())
                 .orElseThrow(() -> new IllegalStateException("Utilisateur introuvable"));
 
@@ -28,10 +32,13 @@ public class HotelService {
                 .orElseThrow(() -> new NoSuchElementException("Hôtel introuvable"));
     }
 
-    
-
-    public Hotel updateHotel(User manager, HotelConfigRequest req) {
+    public Hotel updateHotel(User manager, HotelConfigRequest req, boolean forceRegen) {
         Hotel h = getHotelOf(manager);
+
+        Integer oldFloors = h.getFloors();
+        Integer oldRoomsPerFloor = h.getRoomsPerFloor();
+        List<String> oldFloorLabels = new ArrayList<>(h.getFloorLabels());
+        List<String> oldRoomTypes = new ArrayList<>(h.getRoomTypes());
 
         h.setName(req.name());
         h.setAddress(req.address());
@@ -45,10 +52,12 @@ public class HotelService {
         h.setRoomsPerFloor(req.roomsPerFloor());
 
         h.getFloorLabels().clear();
-        if (req.floorLabels() != null) h.getFloorLabels().addAll(req.floorLabels());
+        if (req.floorLabels() != null)
+            h.getFloorLabels().addAll(req.floorLabels());
 
         h.getRoomTypes().clear();
-        if (req.roomTypes() != null) h.getRoomTypes().addAll(req.roomTypes());
+        if (req.roomTypes() != null)
+            h.getRoomTypes().addAll(req.roomTypes());
 
         if (req.services() != null) {
             Hotel.Services s = h.getServices() == null ? new Hotel.Services() : h.getServices();
@@ -65,7 +74,8 @@ public class HotelService {
         h.setCheckOutHour(req.checkOutHour());
 
         h.getClosedDays().clear();
-        if (req.closedDays() != null) h.getClosedDays().addAll(req.closedDays());
+        if (req.closedDays() != null)
+            h.getClosedDays().addAll(req.closedDays());
 
         if (req.highSeason() != null) {
             Hotel.Season season = h.getHighSeason() == null ? new Hotel.Season() : h.getHighSeason();
@@ -76,21 +86,38 @@ public class HotelService {
             h.setHighSeason(null);
         }
 
+        // --- Politique ---
         h.setCancellationPolicy(req.cancellationPolicy());
         h.setMinAge(req.minAge());
         h.setPetsAllowed(req.petsAllowed());
 
+        // --- Paiements ---
         h.getAcceptedPayments().clear();
-        if (req.acceptedPayments() != null) h.getAcceptedPayments().addAll(req.acceptedPayments());
+        if (req.acceptedPayments() != null)
+            h.getAcceptedPayments().addAll(req.acceptedPayments());
 
+        // --- Statut ---
         h.setActive(req.active() != null ? req.active() : Boolean.TRUE);
-        
 
-        return hotelRepository.save(h);
+        Hotel saved = hotelRepository.save(h);
+
+        boolean structureChanged = !Objects.equals(oldFloors, req.floors()) ||
+                !Objects.equals(oldRoomsPerFloor, req.roomsPerFloor()) ||
+                !Objects.equals(oldRoomTypes, req.roomTypes()) ||
+                !Objects.equals(oldFloorLabels, req.floorLabels());
+
+        if (structureChanged || forceRegen) {
+            try {
+                roomService.generateRoomsForHotel(saved);
+            } catch (Exception e) {
+                System.err.println("⚠ Erreur lors de la génération automatique des chambres : " + e.getMessage());
+            }
+        }
+
+        return saved;
     }
 
     public Hotel save(Hotel hotel) {
         return hotelRepository.save(hotel);
     }
-
 }

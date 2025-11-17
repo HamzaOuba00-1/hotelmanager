@@ -13,14 +13,11 @@ public class Hotel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // identification
     @NotBlank @Size(max = 255)
     private String name;
 
     @Column(unique = true, nullable = false, length = 64)
-    private String code; // code hôtel, créé à l'inscription du manager
-
-    // 1) General info
+    private String code; 
     @Size(max = 500)
     private String address;
 

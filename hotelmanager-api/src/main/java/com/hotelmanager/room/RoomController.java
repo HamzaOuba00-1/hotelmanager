@@ -1,23 +1,27 @@
 package com.hotelmanager.room;
 
+import com.hotelmanager.room.dto.UpdateRoomStateRequest;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/rooms")
 @CrossOrigin(origins = "http://localhost:3000")
 public class RoomController {
-
     private final RoomService roomService;
+    private final RoomRepository roomRepository;
 
-    public RoomController(RoomService roomService) {
+    public RoomController(RoomService roomService, RoomRepository roomRepository) {
         this.roomService = roomService;
+        this.roomRepository = roomRepository;
     }
 
     @PostMapping
-    public ResponseEntity<Room> create(@RequestBody Room room) {
+    public ResponseEntity<Room> create(@Valid @RequestBody Room room) {
         return ResponseEntity.ok(roomService.create(room));
     }
 
@@ -26,19 +30,40 @@ public class RoomController {
         return ResponseEntity.ok(roomService.findAll());
     }
 
+    // ---- nouveau: la chambre du client connecté
+    @GetMapping("/my-room")
+    public ResponseEntity<Room> myRoom() {
+        return ResponseEntity.ok(roomService.findMyRoom());
+    }
+
     @PutMapping("/{id}")
-    public ResponseEntity<Room> update(@PathVariable Long id, @RequestBody Room room) {
+    public ResponseEntity<Room> update(@PathVariable Long id, @Valid @RequestBody Room room) {
         return ResponseEntity.ok(roomService.update(id, room));
     }
 
     @PatchMapping("/{id}/state")
-    public ResponseEntity<Room> updateState(@PathVariable Long id, @RequestParam String state) {
-        return ResponseEntity.ok(roomService.updateState(id, state));
+    public ResponseEntity<Room> updateStateJson(
+            @PathVariable Long id,
+            @RequestBody(required = false) UpdateRoomStateRequest body,
+            @RequestParam(value = "state", required = false) String stateParam
+    ) {
+        if (body != null && body.state() != null) {
+            return ResponseEntity.ok(roomService.updateState(id, body.state()));
+        }
+        if (stateParam != null) {
+            return ResponseEntity.ok(roomService.updateState(id, stateParam));
+        }
+        throw new IllegalArgumentException("Paramètre 'state' manquant");
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         roomService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/allowed-states")
+    public Set<RoomState> allowedStates(@PathVariable Long id) {
+        return roomService.allowedTargets(id);
     }
 }
