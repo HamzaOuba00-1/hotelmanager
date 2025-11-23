@@ -10,7 +10,6 @@ import java.util.Optional;
 
 public interface DailyCodeRepository extends JpaRepository<DailyCode, Long> {
 
-  // Renvoie le code actif le plus récent (TOP 1)
   Optional<DailyCode> findFirstByHotelIdAndRevokedAtIsNullAndValidFromLessThanEqualAndValidUntilGreaterThanEqualOrderByValidFromDesc(
       Long hotelId, LocalDateTime now1, LocalDateTime now2);
 
