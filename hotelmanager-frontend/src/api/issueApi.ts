@@ -1,4 +1,3 @@
-// src/api/issueApi.ts
 import axios from "./axios";
 
 export type IssueStatus = "OPEN" | "RESOLVED" | "DELETED";
