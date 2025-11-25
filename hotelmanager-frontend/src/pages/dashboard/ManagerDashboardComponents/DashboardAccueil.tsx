@@ -1,4 +1,6 @@
-import { useEffect, useState, useMemo } from "react";
+// src/pages/dashboard/manager/DashboardAccueil.tsx
+
+import { useEffect, useState, useMemo, type CSSProperties } from "react";
 import { useNavigate } from "react-router-dom";
 import { getMyHotel } from "../../../api/hotelApi";
 import {
@@ -25,12 +27,14 @@ export default function DashboardAccueil() {
 
   const navigate = useNavigate();
 
+  // Hôtel
   useEffect(() => {
     getMyHotel()
       .then(setHotel)
       .catch((e) => console.error("Erreur getMyHotel :", e));
   }, []);
 
+  // Issues
   useEffect(() => {
     const loadIssues = async () => {
       setIssuesLoading(true);
@@ -55,19 +59,30 @@ export default function DashboardAccueil() {
 
   const needsConfig = !hotel || !hotel.address || !hotel.checkInHour;
 
-  // calcul pour le cercle
-  const { total, openPct, resolvedPct } = useMemo(() => {
+  // calcul pour le diagramme circulaire
+  const { total, openDeg, resolvedDegEnd } = useMemo(() => {
     const totalCount = issueStats.open + issueStats.resolved;
     if (totalCount === 0) {
-      return { total: 0, openPct: 0, resolvedPct: 0 };
+      return { total: 0, openDeg: 0, resolvedDegEnd: 0 };
     }
-    const o = (issueStats.open / totalCount) * 100;
-    const r = (issueStats.resolved / totalCount) * 100;
-    return { total: totalCount, openPct: o, resolvedPct: r };
+
+    // pourcentage de chaque catégorie
+    const openPct = (issueStats.open / totalCount) * 100;
+    const resolvedPct = (issueStats.resolved / totalCount) * 100;
+
+    // conversion en degrés (ce que tu voulais faire)
+    const openDegLocal = (openPct * 360) / 100;
+    const resolvedDegEndLocal = ((openPct + resolvedPct) * 360) / 100;
+
+    return {
+      total: totalCount,
+      openDeg: openDegLocal,
+      resolvedDegEnd: resolvedDegEndLocal,
+    };
   }, [issueStats]);
 
-  // style dynamique du cercle (conic-gradient simple)
-  const circleStyle: React.CSSProperties =
+  // style du circle
+  const circleStyle: CSSProperties =
     total === 0
       ? {
           backgroundImage: "conic-gradient(#e5e7eb 0deg, #e5e7eb 360deg)",
@@ -75,10 +90,10 @@ export default function DashboardAccueil() {
       : {
           backgroundImage: `conic-gradient(
             #f97316 0deg,
-            #f97316 ${openPct}deg,
-            #22c55e ${openPct}deg,
-            #22c55e ${openPct + resolvedPct}deg,
-            #e5e7eb ${openPct + resolvedPct}deg,
+            #f97316 ${openDeg}deg,
+            #22c55e ${openDeg}deg,
+            #22c55e ${resolvedDegEnd}deg,
+            #e5e7eb ${resolvedDegEnd}deg,
             #e5e7eb 360deg
           )`,
         };
@@ -110,7 +125,7 @@ export default function DashboardAccueil() {
         </div>
       )}
 
-      {/* KPI Signalements – 1 carte (~1/3 de ligne) */}
+      {/* Bloc KPI signalements : une seule carte (~1/3 ligne) */}
       <section>
         <div className="bg-white/70 rounded-2xl border shadow p-5 w-full md:w-1/3">
           <div className="flex items-center justify-between mb-3">
@@ -127,12 +142,13 @@ export default function DashboardAccueil() {
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Cercle statistique */}
+            {/* Diagramme circulaire */}
             <div className="relative">
               <div
                 className="w-24 h-24 rounded-full"
                 style={circleStyle}
               />
+              {/* centre (trou pour faire donut) */}
               <div className="absolute inset-2 rounded-full bg-white flex flex-col items-center justify-center">
                 <span className="text-xs text-gray-500">Total</span>
                 <span className="text-xl font-bold text-gray-800">
@@ -141,7 +157,7 @@ export default function DashboardAccueil() {
               </div>
             </div>
 
-            {/* Légende simple */}
+            {/* Légende */}
             <div className="flex-1 space-y-1 text-sm">
               {issuesLoading ? (
                 <div className="text-xs text-gray-500">
