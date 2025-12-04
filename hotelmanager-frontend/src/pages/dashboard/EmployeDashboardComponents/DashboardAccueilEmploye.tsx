@@ -14,10 +14,7 @@ import {
 import { Link } from "react-router-dom";
 
 import { getIssuesForMyHotel, type Issue } from "../../../api/issueApi";
-import {
-  getMe,
-  getUsersFromMyHotel,
-} from "../../../api/userApi";
+import { getMe, getUsersFromMyHotel } from "../../../api/userApi";
 import type { User } from "../../../types/User";
 
 type IssueStats = {
@@ -31,40 +28,47 @@ const DashboardAccueilEmploye: React.FC = () => {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [loadingIssues, setLoadingIssues] = useState(false);
 
-  // Charger l'utilisateur courant (via email) + les issues de l'hôtel
+  // 1) Charger les signalements de l'hôtel (indépendant de l'utilisateur)
   useEffect(() => {
-    const loadData = async () => {
+    const loadIssues = async () => {
+      setLoadingIssues(true);
       try {
-        // 1) email de l'utilisateur connecté
-        const meEmail = await getMe(); // /auth/me → string
-
-        // 2) tous les users de mon hôtel
-        const users = await getUsersFromMyHotel();
-
-        // 3) trouver le user courant par email
-        const meUser = users.find((u) => u.email === meEmail) || null;
-        setCurrentUser(meUser ?? null);
-
-        // 4) charger les issues de l'hôtel
-        setLoadingIssues(true);
         const { data } = await getIssuesForMyHotel();
         setIssues(data || []);
       } catch (e) {
-        console.error("Erreur chargement employé / issues :", e);
+        console.error("Erreur chargement issues :", e);
       } finally {
         setLoadingIssues(false);
       }
     };
 
-    loadData();
+    loadIssues();
   }, []);
 
-  // Stats seulement sur MES signalements
+  // 2) Charger l'utilisateur courant (email + user de l'hôtel)
+  useEffect(() => {
+    const loadCurrentUser = async () => {
+      try {
+        const meEmail = await getMe(); // /auth/me → string (email)
+        const users = await getUsersFromMyHotel();
+        const meUser = users.find((u) => u.email === meEmail) || null;
+        setCurrentUser(meUser);
+      } catch (e) {
+        console.error("Erreur chargement utilisateur courant :", e);
+        // si ça casse, on laisse currentUser = null
+      }
+    };
+
+    loadCurrentUser();
+  }, []);
+
+  // 3) Stats seulement sur MES signalements (fallback = tous si currentUser introuvable)
   const ownStats: IssueStats = useMemo(() => {
-    if (!currentUser) {
-      return { open: 0, resolved: 0, important: 0 };
-    }
-    const mine = issues.filter((i) => i.createdById === currentUser.id);
+    // si l'utilisateur n'est pas encore identifié, on considère tous les issues
+    const mine: Issue[] =
+      currentUser == null
+        ? issues
+        : issues.filter((i) => i.createdById === currentUser.id);
 
     const open = mine.filter((i) => i.status === "OPEN").length;
     const resolved = mine.filter((i) => i.status === "RESOLVED").length;
@@ -73,7 +77,7 @@ const DashboardAccueilEmploye: React.FC = () => {
     return { open, resolved, important };
   }, [issues, currentUser]);
 
-  // Calcul du donut
+  // 4) Calcul du donut
   const { total, openDeg, resolvedDegEnd } = useMemo(() => {
     const totalCount = ownStats.open + ownStats.resolved;
     if (totalCount === 0) {
@@ -172,7 +176,7 @@ const DashboardAccueilEmploye: React.FC = () => {
           <p className="text-2xl font-bold">18</p>
         </div>
 
-        {/* KPI 3 : diagramme circulaire de MES signalements */}
+        {/* KPI 3 : diagramme circulaire de MES signalements (ou de tous si currentUser est inconnu) */}
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm text-gray-500 flex items-center gap-2">
