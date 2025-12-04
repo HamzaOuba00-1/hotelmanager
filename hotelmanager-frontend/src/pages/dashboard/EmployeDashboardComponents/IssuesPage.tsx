@@ -10,12 +10,14 @@ import {
   User as UserIcon,
   Check,
   X,
+  Trash2, // 👈 ajouté
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import fr from "date-fns/locale/fr";
 import {
   getIssuesForMyHotel,
   createIssue,
+  deleteIssue,      // 👈 ajouté
   type Issue,
   type IssueStatus,
 } from "../../../api/issueApi";
@@ -106,6 +108,13 @@ const EmployeeIssuesPage: React.FC = () => {
 
   const [detailsIssue, setDetailsIssue] = useState<Issue | null>(null);
 
+  // 👇 nouveau state pour la confirmation de suppression
+  const [confirmDel, setConfirmDel] = useState<{
+    open: boolean;
+    id?: number;
+    title?: string;
+  }>({ open: false });
+
   const { toast, showToast } = useToast();
 
   const loadIssues = async () => {
@@ -174,6 +183,23 @@ const EmployeeIssuesPage: React.FC = () => {
       );
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  // 👇 handler suppression (soft delete côté back)
+  const onDeleteIssue = async () => {
+    if (!confirmDel.id) return;
+    try {
+      await deleteIssue(confirmDel.id);
+      setConfirmDel({ open: false });
+      showToast("Signalement supprimé 🗑️");
+      await loadIssues();
+    } catch (e: any) {
+      console.error(e);
+      showToast(
+        e?.response?.data?.detail ??
+          "Impossible de supprimer le signalement."
+      );
     }
   };
 
@@ -353,12 +379,13 @@ const EmployeeIssuesPage: React.FC = () => {
                 <th className="py-2 w-28">Statut</th>
                 <th className="py-2 w-40">Auteur</th>
                 <th className="py-2 w-40">Créé le</th>
+                <th className="py-2 w-32">Actions</th> {/* 👈 nouvelle colonne */}
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="py-4 text-center text-gray-500">
+                  <td colSpan={7} className="py-4 text-center text-gray-500">
                     Chargement...
                   </td>
                 </tr>
@@ -406,12 +433,32 @@ const EmployeeIssuesPage: React.FC = () => {
                     <td className="py-2 text-gray-600 align-top w-40 whitespace-nowrap">
                       {formatDate(iss.createdAt)}
                     </td>
+
+                    {/* Actions */}
+                    <td className="py-2 w-32 align-top">
+                      {iss.status === "OPEN" && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation(); // éviter d'ouvrir le détail
+                            setConfirmDel({
+                              open: true,
+                              id: iss.id,
+                              title: iss.title,
+                            });
+                          }}
+                          className="px-2 py-1 rounded-lg border border-rose-200 text-xs text-rose-700 bg-rose-50 hover:bg-rose-100 inline-flex items-center gap-1"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          Supprimer
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={7}
                     className="py-4 text-center text-gray-500 text-sm"
                   >
                     Aucun signalement ne correspond aux filtres.
@@ -509,6 +556,41 @@ const EmployeeIssuesPage: React.FC = () => {
             @keyframes fadeIn { from { opacity:0; transform: translateY(8px);} to { opacity:1; transform: translateY(0);} }
             .animate-fadeIn { animation: fadeIn .25s ease-out; }
           `}</style>
+        </div>
+      )}
+
+      {/* Modal CONFIRM DELETE */}
+      {confirmDel.open && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white/60 rounded-2xl shadow-xl p-6 w-full max-w-sm animate-fadeIn text-left">
+            <h3 className="text-lg font-semibold mb-3">
+              Supprimer ce signalement ?
+            </h3>
+            <p className="text-sm text-gray-700 mb-5">
+              Cette action marquera le signalement comme supprimé.
+              {confirmDel.title ? (
+                <>
+                  <br />
+                  Signalement : <b>{confirmDel.title}</b>
+                </>
+              ) : null}
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setConfirmDel({ open: false })}
+                className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 text-sm"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={onDeleteIssue}
+                className="px-4 py-2 rounded-lg bg-rose-600 text-white hover:bg-rose-700 text-sm inline-flex items-center gap-1"
+              >
+                <Trash2 className="w-4 h-4" />
+                Supprimer
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
