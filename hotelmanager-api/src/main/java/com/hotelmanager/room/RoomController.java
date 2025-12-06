@@ -1,5 +1,8 @@
 package com.hotelmanager.room;
 
+import com.hotelmanager.room.dto.CreateRoomRequest;
+import com.hotelmanager.room.dto.RoomResponse;
+import com.hotelmanager.room.dto.UpdateRoomRequest;
 import com.hotelmanager.room.dto.UpdateRoomStateRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -12,46 +15,64 @@ import java.util.Set;
 @RequestMapping("/api/rooms")
 @CrossOrigin(origins = "http://localhost:3000")
 public class RoomController {
-    private final RoomService roomService;
-    private final RoomRepository roomRepository;
 
-    public RoomController(RoomService roomService, RoomRepository roomRepository) {
+    private final RoomService roomService;
+
+    public RoomController(RoomService roomService) {
         this.roomService = roomService;
-        this.roomRepository = roomRepository;
     }
 
     @PostMapping
-    public ResponseEntity<Room> create(@Valid @RequestBody Room room) {
-        return ResponseEntity.ok(roomService.create(room));
+    public ResponseEntity<RoomResponse> create(@Valid @RequestBody CreateRoomRequest req) {
+        Room r = new Room();
+        r.setRoomNumber(req.roomNumber());
+        r.setRoomType(req.roomType());
+        r.setFloor(req.floor());
+        r.setDescription(req.description());
+        r.setActive(req.active());
+
+        return ResponseEntity.ok(RoomResponse.from(roomService.create(r)));
     }
 
     @GetMapping
-    public ResponseEntity<List<Room>> findAll() {
-        return ResponseEntity.ok(roomService.findAll());
+    public ResponseEntity<List<RoomResponse>> findAll() {
+        var rooms = roomService.findAllForCurrentHotel().stream()
+                .map(RoomResponse::from)
+                .toList();
+        return ResponseEntity.ok(rooms);
     }
 
-    // ---- nouveau: la chambre du client connecté
     @GetMapping("/my-room")
-    public ResponseEntity<Room> myRoom() {
-        return ResponseEntity.ok(roomService.findMyRoom());
+    public ResponseEntity<RoomResponse> myRoom() {
+        return ResponseEntity.ok(RoomResponse.from(roomService.findMyRoom()));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Room> update(@PathVariable Long id, @Valid @RequestBody Room room) {
-        return ResponseEntity.ok(roomService.update(id, room));
+    public ResponseEntity<RoomResponse> update(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateRoomRequest req
+    ) {
+        Room r = new Room();
+        r.setRoomNumber(req.roomNumber());
+        r.setRoomType(req.roomType());
+        r.setFloor(req.floor());
+        r.setDescription(req.description());
+        r.setActive(req.active());
+
+        return ResponseEntity.ok(RoomResponse.from(roomService.update(id, r)));
     }
 
     @PatchMapping("/{id}/state")
-    public ResponseEntity<Room> updateStateJson(
+    public ResponseEntity<RoomResponse> updateStateJson(
             @PathVariable Long id,
             @RequestBody(required = false) UpdateRoomStateRequest body,
             @RequestParam(value = "state", required = false) String stateParam
     ) {
         if (body != null && body.state() != null) {
-            return ResponseEntity.ok(roomService.updateState(id, body.state()));
+            return ResponseEntity.ok(RoomResponse.from(roomService.updateState(id, body.state())));
         }
         if (stateParam != null) {
-            return ResponseEntity.ok(roomService.updateState(id, stateParam));
+            return ResponseEntity.ok(RoomResponse.from(roomService.updateState(id, stateParam)));
         }
         throw new IllegalArgumentException("Paramètre 'state' manquant");
     }
@@ -63,7 +84,7 @@ public class RoomController {
     }
 
     @GetMapping("/{id}/allowed-states")
-    public Set<RoomState> allowedStates(@PathVariable Long id) {
-        return roomService.allowedTargets(id);
+    public ResponseEntity<Set<RoomState>> allowedStates(@PathVariable Long id) {
+        return ResponseEntity.ok(roomService.allowedTargets(id));
     }
 }

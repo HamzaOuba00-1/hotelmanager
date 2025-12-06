@@ -17,21 +17,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
     List<Room> findByHotelIdAndActiveTrueAndRoomState(Long hotelId, RoomState state);
 
-    @Query(value = """
-        SELECT r.*
-        FROM rooms r
-        WHERE r.hotel_id = :hotelId
-          AND r.active = true
-          AND NOT EXISTS (
-            SELECT 1
-            FROM reservations res
-            WHERE res.room_id = r.id
-              AND res.status IN ('PENDING','CONFIRMED','CHECKED_IN')
-              AND NOT (res.end_at <= :startAt OR res.start_at >= :endAt)
-          )
-        ORDER BY r.room_number ASC
-    """, nativeQuery = true)
-    List<Room> findAvailableRoomsNative(Long hotelId, OffsetDateTime startAt, OffsetDateTime endAt);
+    Optional<Room> findByIdAndHotelId(Long id, Long hotelId);
 
     @Query(value = """
         SELECT r.*

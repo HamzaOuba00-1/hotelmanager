@@ -14,22 +14,32 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
-@Table(name = "rooms", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_room_hotel_number", columnNames = {"hotel_id", "room_number"})
-})
+@Table(
+        name = "rooms",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_room_hotel_number",
+                        columnNames = {"hotel_id", "room_number"}
+                )
+        },
+        indexes = {
+                @Index(name = "idx_rooms_hotel", columnList = "hotel_id"),
+                @Index(name = "idx_rooms_state", columnList = "room_state")
+        }
+)
 public class Room {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "room_number", nullable = false)
     @Min(1)
+    @Column(name = "room_number", nullable = false)
     private int roomNumber;
 
     @NotBlank
     @Column(name = "room_type", nullable = false, length = 64)
-    private String roomType; // ex. standard, double, suite, ...
+    private String roomType;
 
     @NotNull
     @Enumerated(EnumType.STRING)

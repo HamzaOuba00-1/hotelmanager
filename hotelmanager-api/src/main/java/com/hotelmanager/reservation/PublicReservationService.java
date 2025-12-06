@@ -29,14 +29,13 @@ public class PublicReservationService {
     private final ReservationRepository reservationRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final RoomReservationSync sync; 
+    private final RoomReservationSync sync;
 
     @Transactional(readOnly = true)
     public List<Room> listAvailableRooms(Long hotelId, OffsetDateTime startAt, OffsetDateTime endAt) {
         if (startAt == null || endAt == null || !startAt.isBefore(endAt)) {
             throw new BusinessRuleException("Intervalle de dates invalide.");
         }
-       
         return roomRepository.findAvailableRoomsStrictlyLibre(hotelId, startAt, endAt);
     }
 
@@ -46,13 +45,11 @@ public class PublicReservationService {
         var actives = reservationRepository.findActiveFutureByRoom(roomId, now);
         if (actives.isEmpty()) return;
 
-        for (var res : actives) {
-            res.setStatus(ReservationStatus.CANCELED);
-        }
+        for (var res : actives) res.setStatus(ReservationStatus.CANCELED);
         reservationRepository.saveAll(actives);
 
         var room = actives.get(0).getRoom();
-        if (room.getRoomState() == RoomState.RESERVEE) {
+        if (room != null && room.getRoomState() == RoomState.RESERVEE) {
             room.setRoomState(RoomState.LIBRE);
             room.setClient(null);
             roomRepository.save(room);
@@ -71,6 +68,7 @@ public class PublicReservationService {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new NotFoundException("Chambre introuvable."));
         Hotel hotel = room.getHotel();
+
         if (hotel == null || !hotel.getId().equals(hotelId)) {
             throw new BusinessRuleException("Cette chambre n’appartient pas à l’hôtel demandé.");
         }
@@ -78,8 +76,7 @@ public class PublicReservationService {
             throw new BusinessRuleException("Chambre indisponible.");
         }
 
-        boolean overlaps = reservationRepository.existsOverlapping(roomId, startAt, endAt);
-        if (overlaps) {
+        if (reservationRepository.existsOverlapping(roomId, startAt, endAt)) {
             throw new BusinessRuleException("Cette chambre est déjà réservée sur l’intervalle.");
         }
 
@@ -114,7 +111,6 @@ public class PublicReservationService {
         } catch (DataIntegrityViolationException e) {
             throw new BusinessRuleException("Conflit : créneau déjà pris pour cette chambre.");
         }
-
 
         return new com.hotelmanager.reservation.dto.PublicReservationResponse(
                 res.getId(), email, rawPassword

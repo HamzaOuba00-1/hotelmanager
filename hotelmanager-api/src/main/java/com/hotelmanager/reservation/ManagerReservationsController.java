@@ -1,8 +1,12 @@
 package com.hotelmanager.reservation;
 
+import com.hotelmanager.user.User;
+import com.hotelmanager.user.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,20 +22,33 @@ public class ManagerReservationsController {
     private final PublicReservationService service;
     private final ReservationRepository reservationRepository;
     private final RoomReservationSync sync;
+    private final UserRepository userRepository;
 
     public ManagerReservationsController(
             PublicReservationService service,
             ReservationRepository reservationRepository,
-            RoomReservationSync sync
+            RoomReservationSync sync,
+            UserRepository userRepository
     ) {
         this.service = service;
         this.reservationRepository = reservationRepository;
         this.sync = sync;
+        this.userRepository = userRepository;
+    }
+
+    private Long currentHotelId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        User u = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+        if (u.getHotel() == null) throw new RuntimeException("Aucun hôtel associé");
+        return u.getHotel().getId();
     }
 
     @GetMapping
     public ResponseEntity<List<ReservationDto>> listReservations() {
-        var all = reservationRepository.findAll();
+        var hotelId = currentHotelId();
+        var all = reservationRepository.findByHotelId(hotelId);
         return ResponseEntity.ok(all.stream().map(ReservationDto::fromEntity).toList());
     }
 
@@ -41,7 +58,6 @@ public class ManagerReservationsController {
                 .orElseThrow(() -> new RuntimeException("Réservation introuvable"));
         return ResponseEntity.ok(getAllowedTransitions(res.getStatus()));
     }
-
 
     @PatchMapping("/by-room/{roomId}/cancel")
     public ResponseEntity<Void> cancelByRoom(@PathVariable Long roomId) {
@@ -64,9 +80,9 @@ public class ManagerReservationsController {
         res.setStatus(req.status());
         reservationRepository.save(res);
         sync.applyStatusToRoom(res);
+
         return ResponseEntity.noContent().build();
     }
-
 
     private List<ReservationStatus> getAllowedTransitions(ReservationStatus current) {
         return switch (current) {
@@ -77,7 +93,6 @@ public class ManagerReservationsController {
             default        -> List.of();
         };
     }
-
 
     public record ReservationDto(
             Long id,
@@ -104,7 +119,7 @@ public class ManagerReservationsController {
                             r.getClient().getFirstName(),
                             r.getClient().getLastName(),
                             r.getClient().getEmail(),
-                            null 
+                            null
                     ),
                     r.getGuestFirstName(),
                     r.getGuestLastName(),

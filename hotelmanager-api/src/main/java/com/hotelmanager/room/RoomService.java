@@ -3,6 +3,7 @@ package com.hotelmanager.room;
 import com.hotelmanager.common.BusinessRuleException;
 import com.hotelmanager.common.NotFoundException;
 import com.hotelmanager.hotel.Hotel;
+import com.hotelmanager.reservation.ReservationStatus;
 import com.hotelmanager.user.User;
 import com.hotelmanager.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,13 +17,6 @@ import java.util.*;
 
 import static com.hotelmanager.room.RoomState.*;
 
-/**
- * Service métier des chambres :
- * - Génération/suppression par hôtel
- * - CRUD
- * - Transitions d'état autorisées (FSM)
- * - Règles de suppression
- */
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -31,21 +25,7 @@ public class RoomService {
     private final RoomRepository roomRepository;
     private final UserRepository userRepository;
 
-    @Transactional(readOnly = true)
-    public Room findMyRoom() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || auth.getName() == null) {
-            throw new IllegalArgumentException("Utilisateur non authentifié.");
-        }
-        String email = auth.getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalStateException("Utilisateur introuvable: " + email));
-
-        return roomRepository.findFirstByClientId(user.getId())
-                .orElseThrow(() -> new NotFoundException("Aucune chambre associée à l'utilisateur."));
-    }
-
-    /** Graph de transitions autorisées (FSM) */
+    /** FSM transitions "manuelles" (UI staff) */
     private static final Map<RoomState, Set<RoomState>> ALLOWED = Map.ofEntries(
             Map.entry(LIBRE, Set.of(RESERVEE, CHECKIN, MAINTENANCE, INACTIVE)),
             Map.entry(RESERVEE, Set.of(CHECKIN, A_VALIDER_LIBRE, LIBRE)),
@@ -62,52 +42,53 @@ public class RoomService {
 
     private static final Set<RoomState> DELETABLE = Set.of(LIBRE);
 
-    /* ======================= Génération / Nettoyage par hôtel ======================= */
+    /* =================== Current hotel resolution =================== */
 
-    public void generateRoomsForHotel(Hotel hotel) {
-        if (hotel == null || hotel.getFloors() == null || hotel.getRoomsPerFloor() == null) return;
-
-        deleteRoomsForHotel(hotel);
-
-        List<Room> roomsToSave = new ArrayList<>();
-
-        for (int floorIndex = 0; floorIndex < hotel.getFloors(); floorIndex++) {
-            String floorLabel = (hotel.getFloorLabels() != null && hotel.getFloorLabels().size() > floorIndex)
-                    ? hotel.getFloorLabels().get(floorIndex)
-                    : String.valueOf(floorIndex);
-
-            for (int roomNumber = 1; roomNumber <= hotel.getRoomsPerFloor(); roomNumber++) {
-                Room room = new Room();
-                room.setHotel(hotel);
-                room.setFloor(floorIndex); // index numérique
-                int number = Integer.parseInt(String.format("%d%02d", floorIndex, roomNumber));
-                room.setRoomNumber(number);
-                String type = (hotel.getRoomTypes() != null && !hotel.getRoomTypes().isEmpty())
-                        ? hotel.getRoomTypes().get(0) : "Standard";
-                room.setRoomType(type);
-                room.setRoomState(LIBRE);
-                room.setDescription("Chambre " + number + " - " + floorLabel);
-                room.setActive(true);
-                room.setLastUpdated(LocalDateTime.now());
-                roomsToSave.add(room);
-            }
+    private User currentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getName() == null) {
+            throw new IllegalArgumentException("Utilisateur non authentifié.");
         }
-
-        roomRepository.saveAll(roomsToSave);
+        String email = auth.getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("Utilisateur introuvable: " + email));
     }
 
-    public void deleteRoomsForHotel(Hotel hotel) {
-        if (hotel == null || hotel.getId() == null) return;
-        List<Room> existing = roomRepository.findByHotelId(hotel.getId());
-        roomRepository.deleteAll(existing);
+    private Hotel currentHotel() {
+        Hotel hotel = currentUser().getHotel();
+        if (hotel == null || hotel.getId() == null) {
+            throw new IllegalArgumentException("Aucun hôtel associé à l'utilisateur.");
+        }
+        return hotel;
     }
 
+    /* =================== Queries =================== */
+
+    @Transactional(readOnly = true)
+    public List<Room> findAllForCurrentHotel() {
+        return roomRepository.findByHotelId(currentHotel().getId());
+    }
+
+    @Transactional(readOnly = true)
+    public Room findMyRoom() {
+        User user = currentUser();
+        return roomRepository.findFirstByClientId(user.getId())
+                .orElseThrow(() -> new NotFoundException("Aucune chambre associée à l'utilisateur."));
+    }
+
+    @Transactional(readOnly = true)
+    public Room findByIdForCurrentHotel(Long id) {
+        Long hotelId = currentHotel().getId();
+        return roomRepository.findByIdAndHotelId(id, hotelId)
+                .orElseThrow(() -> new NotFoundException("Chambre non trouvée: " + id));
+    }
+
+    /* =================== CRUD =================== */
 
     public Room create(Room room) {
-        Hotel hotel = resolveCurrentUserHotel();
+        Hotel hotel = currentHotel();
         room.setHotel(hotel);
         if (room.getRoomState() == null) room.setRoomState(LIBRE);
-        room.setActive(true);
         room.setLastUpdated(LocalDateTime.now());
 
         if (roomRepository.existsByHotelIdAndRoomNumber(hotel.getId(), room.getRoomNumber())) {
@@ -116,14 +97,14 @@ public class RoomService {
         return roomRepository.save(room);
     }
 
-    @Transactional(readOnly = true)
-    public List<Room> findAll() {
-        return roomRepository.findAll();
-    }
-
     public Room update(Long id, Room updatedRoom) {
-        Room existing = roomRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Chambre non trouvée: " + id));
+        Room existing = findByIdForCurrentHotel(id);
+        Long hotelId = existing.getHotel().getId();
+
+        if (updatedRoom.getRoomNumber() != existing.getRoomNumber() &&
+                roomRepository.existsByHotelIdAndRoomNumber(hotelId, updatedRoom.getRoomNumber())) {
+            throw new BusinessRuleException("Numéro de chambre déjà utilisé dans cet hôtel.");
+        }
 
         existing.setRoomNumber(updatedRoom.getRoomNumber());
         existing.setRoomType(updatedRoom.getRoomType());
@@ -135,19 +116,17 @@ public class RoomService {
     }
 
     public void delete(Long id) {
-        Room room = roomRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Chambre non trouvée: " + id));
+        Room room = findByIdForCurrentHotel(id);
         if (!DELETABLE.contains(room.getRoomState())) {
             throw new BusinessRuleException("Suppression impossible: l'état actuel est " + room.getRoomState());
         }
-        roomRepository.deleteById(id);
+        roomRepository.delete(room);
     }
 
-    /* =============================== Changement d'état =============================== */
+    /* =================== Manual state changes (UI) =================== */
 
     public Room updateState(Long id, String newStateRaw) {
-        Room room = roomRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Chambre non trouvée: " + id));
+        Room room = findByIdForCurrentHotel(id);
 
         RoomState target = RoomState.parse(newStateRaw);
         RoomState current = room.getRoomState();
@@ -165,29 +144,34 @@ public class RoomService {
         return updateState(id, target.name());
     }
 
-    /* ================================== Helpers ================================== */
-
-    /** Récupère l'hôtel associé à l'utilisateur courant via Spring Security */
-    private Hotel resolveCurrentUserHotel() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || auth.getName() == null) {
-            throw new IllegalArgumentException("Utilisateur non authentifié.");
-        }
-        String email = auth.getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalStateException("Utilisateur introuvable: " + email));
-
-        Hotel hotel = user.getHotel();
-        if (hotel == null) {
-            throw new IllegalArgumentException("Aucun hôtel associé à l'utilisateur.");
-        }
-        return hotel;
+    @Transactional(readOnly = true)
+    public Set<RoomState> allowedTargets(Long roomId) {
+        Room room = findByIdForCurrentHotel(roomId);
+        return ALLOWED.getOrDefault(room.getRoomState(), Set.of());
     }
 
-    public Set<RoomState> allowedTargets(Long roomId) {
-        Room room = roomRepository.findById(roomId)
-            .orElseThrow(() -> new NotFoundException("Chambre non trouvée: " + roomId));
-        return ALLOWED.getOrDefault(room.getRoomState(), Set.of());
+    /* =================== System-level sync from reservations =================== */
+
+    public Room applyReservationStatus(Room room, ReservationStatus status) {
+        if (room == null || status == null) return room;
+
+        RoomState target = switch (status) {
+            case PENDING, CONFIRMED -> RESERVEE;
+            case CHECKED_IN         -> CHECKIN;
+            case NO_SHOW            -> A_VALIDER_LIBRE;
+            case CANCELED           -> LIBRE;
+            case COMPLETED          -> A_NETTOYER;
+        };
+
+        room.setRoomState(target);
+
+        if (status == ReservationStatus.CANCELED
+                || status == ReservationStatus.NO_SHOW
+                || status == ReservationStatus.COMPLETED) {
+            room.setClient(null);
+        }
+
+        room.setLastUpdated(LocalDateTime.now());
+        return roomRepository.save(room);
     }
 }
