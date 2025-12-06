@@ -9,6 +9,8 @@ import java.util.Optional;
 
 public interface RoomRepository extends JpaRepository<Room, Long> {
 
+    boolean existsByHotelId(Long hotelId);
+
     boolean existsByHotelIdAndRoomNumber(Long hotelId, int roomNumber);
 
     List<Room> findByHotelId(Long hotelId);

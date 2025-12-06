@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { getMyHotel, updateMyHotel, uploadLogo } from "../../../api/hotelApi";
@@ -20,8 +20,10 @@ export default function HotelConfigPage() {
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showStructureWarning, setShowStructureWarning] = useState(false);
+  const [showSetupInfo, setShowSetupInfo] = useState(false);
 
-  const [pendingValues, setPendingValues] = useState<HotelConfigForm | null>(null);
+  const [pendingValues, setPendingValues] =
+    useState<HotelConfigForm | null>(null);
 
   const [toast, setToast] = useState<{
     type: "success" | "error";
@@ -65,7 +67,25 @@ export default function HotelConfigPage() {
     };
 
     fetchHotel();
-  }, []);
+  }, [form]);
+
+  const isLocked = useMemo(() => {
+    const f = hotelData?.floors;
+    const r = hotelData?.roomsPerFloor;
+    return !!f && !!r && f > 0 && r > 0;
+  }, [hotelData]);
+
+  // ✅ Pop-up d’info au 1er setup
+  useEffect(() => {
+    if (!hotelData) return;
+    const key = `structure-info-shown-${hotelData.id ?? "me"}`;
+    const already = localStorage.getItem(key);
+
+    if (!isLocked && !already) {
+      setShowSetupInfo(true);
+      localStorage.setItem(key, "1");
+    }
+  }, [hotelData, isLocked]);
 
   const confirmSave = async () => {
     if (!pendingValues) return;
@@ -79,26 +99,34 @@ export default function HotelConfigPage() {
         type: "success",
         message: "Configuration enregistrée avec succès ✅",
       });
-    } catch (err) {
+    } catch (err: any) {
       console.error("❌ Erreur d'enregistrement :", err);
-      setToast({
-        type: "error",
-        message: "Erreur lors de l'enregistrement ❌",
-      });
+
+      // Si backend renvoie erreur structure verrouillée
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Erreur lors de l'enregistrement ❌";
+
+      setToast({ type: "error", message: msg });
     }
   };
 
   const onSubmit = form.handleSubmit(
     async (values) => {
-      const structureChanged =
-        values.floors !== hotelData?.floors ||
-        values.roomsPerFloor !== hotelData?.roomsPerFloor ||
-        JSON.stringify(values.floorLabels) !== JSON.stringify(hotelData?.floorLabels) ||
-        JSON.stringify(values.roomTypes) !== JSON.stringify(hotelData?.roomTypes);
+      if (!hotelData) return;
+
+      const floorsChanged = values.floors !== hotelData.floors;
+      const rpfChanged = values.roomsPerFloor !== hotelData.roomsPerFloor;
+      const typesChanged =
+        JSON.stringify(values.roomTypes ?? []) !==
+        JSON.stringify(hotelData.roomTypes ?? []);
+
+      const forbiddenChange = isLocked && (floorsChanged || rpfChanged || typesChanged);
 
       setPendingValues(values);
 
-      if (structureChanged) {
+      if (forbiddenChange) {
         setShowStructureWarning(true);
       } else {
         setShowConfirmModal(true);
@@ -121,12 +149,35 @@ export default function HotelConfigPage() {
     }
   }, [toast]);
 
+  // ✅ Animations safe
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const style = document.createElement("style");
+    style.innerHTML = `
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
+      @keyframes slideIn {
+        from { transform: translateX(120%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      .animate-slideIn { animation: slideIn 0.4s ease-out; }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
   return (
     <div className="container mx-auto p-6 grid gap-6">
       <h1 className="text-2xl font-semibold">Configuration de l'hôtel</h1>
+
       <form onSubmit={onSubmit} className="grid gap-6">
         <HotelGeneralInfoCard form={form} onLogoSelected={onLogoSelected} />
-        <HotelStructureCard form={form} />
+        <HotelStructureCard form={form} isLocked={isLocked} />
         <HotelServicesCard form={form} />
         <HotelScheduleCard form={form} />
         <HotelPolicyCard form={form} />
@@ -150,36 +201,59 @@ export default function HotelConfigPage() {
         </div>
       </form>
 
-      {showStructureWarning && (
+      {/* ✅ Pop-up INFO 1er setup */}
+      {showSetupInfo && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md animate-fadeIn">
-            <h2 className="text-xl font-bold text-red-600 mb-4">⚠️ Attention</h2>
-            <p className="text-gray-700 mb-6">
-              Modifier la structure de l'hôtel (étages, chambres par étage ou types de chambres)
-              entraînera la recréation de toutes les chambres existantes.
+            <h2 className="text-xl font-bold text-emerald-700 mb-4">
+              Configuration initiale
+            </h2>
+            <p className="text-gray-700 mb-4">
+              Le nombre d’étages, le nombre de chambres par étage et les types de
+              chambres disponibles constituent le setup initial des chambres.
             </p>
-            <div className="flex justify-end gap-4">
+            <p className="text-gray-700 mb-6">
+              Une fois les chambres générées, ces paramètres seront verrouillés.
+            </p>
+            <div className="flex justify-end">
               <button
-                onClick={() => setShowStructureWarning(false)}
-                className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
+                onClick={() => setShowSetupInfo(false)}
+                className="px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition"
               >
-                Annuler
-              </button>
-              <button
-                onClick={() => {
-                  setShowStructureWarning(false);
-                  setShowConfirmModal(true);
-                }}
-                className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
-              >
-                Continuer
+                Compris
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal confirmation enregistrement */}
+      {/* ✅ Pop-up interdit si tentative de changement */}
+      {showStructureWarning && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md animate-fadeIn">
+            <h2 className="text-xl font-bold text-red-600 mb-4">
+              ⚠️ Structure verrouillée
+            </h2>
+            <p className="text-gray-700 mb-6">
+              Le setup des chambres se fait une seule fois.
+              Les paramètres suivants ne peuvent plus être modifiés :
+              <br />• Nombre d’étages
+              <br />• Chambres par étage
+              <br />• Types de chambres disponibles
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => setShowStructureWarning(false)}
+                className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ✅ Modal confirmation classique */}
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md animate-fadeIn">
@@ -208,7 +282,7 @@ export default function HotelConfigPage() {
         </div>
       )}
 
-      {/* Toast notifications */}
+      {/* Toast */}
       {toast && (
         <div
           className={`fixed bottom-6 right-6 px-5 py-3 rounded-lg shadow-lg text-white animate-slideIn
@@ -220,23 +294,3 @@ export default function HotelConfigPage() {
     </div>
   );
 }
-
-/* Animations */
-const style = document.createElement("style");
-style.innerHTML = `
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-fadeIn {
-  animation: fadeIn 0.3s ease-out;
-}
-@keyframes slideIn {
-  from { transform: translateX(120%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-.animate-slideIn {
-  animation: slideIn 0.4s ease-out;
-}
-`;
-document.head.appendChild(style);

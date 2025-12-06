@@ -25,7 +25,6 @@ public class RoomService {
     private final RoomRepository roomRepository;
     private final UserRepository userRepository;
 
-    /** FSM transitions "manuelles" (UI staff) */
     private static final Map<RoomState, Set<RoomState>> ALLOWED = Map.ofEntries(
             Map.entry(LIBRE, Set.of(RESERVEE, CHECKIN, MAINTENANCE, INACTIVE)),
             Map.entry(RESERVEE, Set.of(CHECKIN, A_VALIDER_LIBRE, LIBRE)),
@@ -37,7 +36,8 @@ public class RoomService {
             Map.entry(ROOM_SERVICE, Set.of(CHECKIN, CHECKOUT)),
             Map.entry(A_VALIDER_LIBRE, Set.of(CHECKIN, A_NETTOYER)),
             Map.entry(MAINTENANCE, Set.of(LIBRE)),
-            Map.entry(INACTIVE, Set.of(LIBRE)));
+            Map.entry(INACTIVE, Set.of(LIBRE))
+    );
 
     private static final Set<RoomState> DELETABLE = Set.of(LIBRE);
 
@@ -59,6 +59,13 @@ public class RoomService {
             throw new IllegalArgumentException("Aucun hôtel associé à l'utilisateur.");
         }
         return hotel;
+    }
+
+    /* =================== Setup check =================== */
+
+    @Transactional(readOnly = true)
+    public boolean hasAnyRooms(Long hotelId) {
+        return roomRepository.existsByHotelId(hotelId);
     }
 
     /* =================== Queries =================== */
@@ -87,8 +94,7 @@ public class RoomService {
     public Room create(Room room) {
         Hotel hotel = currentHotel();
         room.setHotel(hotel);
-        if (room.getRoomState() == null)
-            room.setRoomState(LIBRE);
+        if (room.getRoomState() == null) room.setRoomState(LIBRE);
         room.setLastUpdated(LocalDateTime.now());
 
         if (roomRepository.existsByHotelIdAndRoomNumber(hotel.getId(), room.getRoomNumber())) {
@@ -150,20 +156,17 @@ public class RoomService {
         return ALLOWED.getOrDefault(room.getRoomState(), Set.of());
     }
 
-    /*
-     * =================== System-level sync from reservations ===================
-     */
+    /* =================== System-level sync from reservations =================== */
 
     public Room applyReservationStatus(Room room, ReservationStatus status) {
-        if (room == null || status == null)
-            return room;
+        if (room == null || status == null) return room;
 
         RoomState target = switch (status) {
             case PENDING, CONFIRMED -> RESERVEE;
-            case CHECKED_IN -> CHECKIN;
-            case NO_SHOW -> A_VALIDER_LIBRE;
-            case CANCELED -> LIBRE;
-            case COMPLETED -> A_NETTOYER;
+            case CHECKED_IN         -> CHECKIN;
+            case NO_SHOW            -> A_VALIDER_LIBRE;
+            case CANCELED           -> LIBRE;
+            case COMPLETED          -> A_NETTOYER;
         };
 
         room.setRoomState(target);
@@ -178,22 +181,25 @@ public class RoomService {
         return roomRepository.save(room);
     }
 
+    /* =================== One-time generation =================== */
+
     @Transactional
     public void generateRoomsForHotel(Hotel hotel) {
-        if (hotel == null || hotel.getId() == null)
-            return;
-        if (hotel.getFloors() == null || hotel.getRoomsPerFloor() == null)
-            return;
-        if (hotel.getFloors() <= 0 || hotel.getRoomsPerFloor() <= 0)
-            return;
+        if (hotel == null || hotel.getId() == null) return;
+        if (hotel.getFloors() == null || hotel.getRoomsPerFloor() == null) return;
+        if (hotel.getFloors() <= 0 || hotel.getRoomsPerFloor() <= 0) return;
 
-        // ⚠ Attention: destructive
-        deleteRoomsForHotel(hotel);
+        // ✅ PROTECTION: setup unique
+        if (roomRepository.existsByHotelId(hotel.getId())) {
+            throw new BusinessRuleException(
+                    "Structure déjà initialisée : les chambres existent déjà pour cet hôtel."
+            );
+        }
 
         List<Room> roomsToSave = new ArrayList<>();
 
         List<String> labels = hotel.getFloorLabels() == null ? List.of() : hotel.getFloorLabels();
-        List<String> types = hotel.getRoomTypes() == null ? List.of() : hotel.getRoomTypes();
+        List<String> types  = hotel.getRoomTypes() == null ? List.of() : hotel.getRoomTypes();
 
         String defaultType = types.isEmpty() ? "Standard" : types.get(0);
 
@@ -206,14 +212,13 @@ public class RoomService {
             for (int roomNumber = 1; roomNumber <= hotel.getRoomsPerFloor(); roomNumber++) {
                 Room room = new Room();
                 room.setHotel(hotel);
-
                 room.setFloor(floorIndex);
 
                 int number = Integer.parseInt(String.format("%d%02d", floorIndex, roomNumber));
                 room.setRoomNumber(number);
 
                 room.setRoomType(defaultType);
-                room.setRoomState(RoomState.LIBRE);
+                room.setRoomState(LIBRE);
                 room.setDescription("Chambre " + number + " - " + floorLabel);
                 room.setActive(true);
                 room.setLastUpdated(LocalDateTime.now());
@@ -224,13 +229,4 @@ public class RoomService {
 
         roomRepository.saveAll(roomsToSave);
     }
-
-    @Transactional
-    public void deleteRoomsForHotel(Hotel hotel) {
-        if (hotel == null || hotel.getId() == null)
-            return;
-        List<Room> existing = roomRepository.findByHotelId(hotel.getId());
-        roomRepository.deleteAll(existing);
-    }
-
 }

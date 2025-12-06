@@ -4,15 +4,24 @@ import {
   Building2,
   BedDouble,
   Landmark,
-  Pencil,
   Hotel,
   Warehouse,
   CheckCircle2,
+  Lock,
 } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import type { HotelConfigForm } from "./schemas";
 import clsx from "clsx";
 import { useEffect } from "react";
+
+export const DEFAULT_ROOM_TYPES = [
+  "Single",
+  "Double",
+  "Twin",
+  "Suite",
+  "Deluxe",
+  "Familiale",
+] as const;
 
 const roomTypeOptions = [
   { label: "Single", icon: BedDouble },
@@ -25,8 +34,10 @@ const roomTypeOptions = [
 
 export default function HotelStructureCard({
   form,
+  isLocked = false,
 }: {
   form: UseFormReturn<HotelConfigForm>;
+  isLocked?: boolean;
 }) {
   const { register, watch, setValue, getValues } = form;
 
@@ -41,11 +52,10 @@ export default function HotelStructureCard({
         current[i] ?? (i === 0 ? "RDC" : `Étage ${i}`)
       );
       setValue("floorLabels", updated, { shouldDirty: true });
+    } else {
+      setValue("floorLabels", [], { shouldDirty: true });
     }
   }, [floors, getValues, setValue]);
-
-
-
 
   const updateLabel = (index: number, value: string) => {
     const current = [...(getValues("floorLabels") ?? [])];
@@ -53,15 +63,12 @@ export default function HotelStructureCard({
     setValue("floorLabels", current, { shouldDirty: true });
   };
 
-  const deleteLabel = (index: number) => {
-    const current = [...(getValues("floorLabels") ?? [])];
-    current.splice(index, 1);
-
-    setValue("floorLabels", current, { shouldDirty: true });
-    setValue("floors", current.length, { shouldDirty: true });
+  const resetLabel = (index: number) => {
+    updateLabel(index, index === 0 ? "RDC" : `Étage ${index}`);
   };
 
   const toggleRoomType = (label: string) => {
+    if (isLocked) return; // ✅ verrouillage demandé
     const current = getValues("roomTypes") ?? [];
     const exists = current.includes(label);
     const updated = exists
@@ -93,90 +100,74 @@ export default function HotelStructureCard({
             <div className="flex items-center gap-2">
               <Building2 className="w-4 h-4 text-emerald-500" />
               Nombre d'étages
+              {isLocked && <Lock className="w-3.5 h-3.5 text-gray-400 ml-1" />}
             </div>
             <input
               type="number"
-              className={inputClass}
+              disabled={isLocked}
+              className={clsx(inputClass, isLocked && "opacity-60 cursor-not-allowed")}
               {...register("floors", { valueAsNumber: true })}
               placeholder="Ex: 5"
             />
+            {isLocked && (
+              <span className="text-[11px] text-gray-500 italic">
+                Défini une seule fois
+              </span>
+            )}
           </label>
 
           <label className={labelClass}>
             <div className="flex items-center gap-2">
               <BedDouble className="w-4 h-4 text-emerald-500" />
               Chambres par étage
+              {isLocked && <Lock className="w-3.5 h-3.5 text-gray-400 ml-1" />}
             </div>
             <input
               type="number"
-              className={inputClass}
+              disabled={isLocked}
+              className={clsx(inputClass, isLocked && "opacity-60 cursor-not-allowed")}
               {...register("roomsPerFloor", { valueAsNumber: true })}
               placeholder="Ex: 10"
             />
+            {isLocked && (
+              <span className="text-[11px] text-gray-500 italic">
+                Défini une seule fois
+              </span>
+            )}
           </label>
         </div>
 
-        {/* Labels des étages */}
-        <div className="grid gap-2">
-          <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-            <Landmark className="w-4 h-4 text-emerald-500" />
-            Labels des étages
-          </div>
-
-          {floors > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[320px] overflow-y-auto pr-1">
-              {Array.from({ length: floorLabels.length }, (_, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 p-3 bg-white/70 rounded-lg border border-gray-200 shadow-sm backdrop-blur-sm"
-                >
-                  <div className="flex items-center justify-center w-8 h-8 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold shadow">
-                    {i === 0 ? "RDC" : i}
-                  </div>
-                  <input
-                    type="text"
-                    value={floorLabels[i] ?? (i === 0 ? "RDC" : `Étage ${i}`)}
-                    placeholder={i === 0 ? "RDC" : `Étage ${i}`}
-                    onChange={(e) => updateLabel(i, e.target.value)}
-                    className="flex-1 px-3 py-1.5 text-sm rounded-md border border-gray-300 bg-white/60 backdrop-blur-sm text-gray-800 placeholder-gray-400 shadow-inner focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => deleteLabel(i)}
-                    className="text-gray-500 hover:text-red-700"
-                    title="Supprimer cet étage"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-gray-500 italic">
-              Définissez le nombre d’étages pour générer les labels.
-            </p>
-          )}
-        </div>
+        
 
         {/* Types de chambres */}
         <div className="grid gap-2">
           <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
             <Hotel className="w-4 h-4 text-emerald-500" />
             Types de chambres disponibles
+            {isLocked && (
+              <span className="inline-flex items-center gap-1 text-[11px] text-gray-500">
+                <Lock className="w-3.5 h-3.5" /> Verrouillé
+              </span>
+            )}
           </div>
+
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {roomTypeOptions.map(({ label, icon: Icon }) => {
               const active = roomTypes.includes(label);
+              const disabled = isLocked;
+
               return (
                 <button
                   key={label}
                   type="button"
+                  disabled={disabled}
                   onClick={() => toggleRoomType(label)}
                   className={clsx(
                     "flex flex-col items-center justify-center p-4 rounded-xl border transition shadow backdrop-blur-md relative",
                     active
                       ? "bg-emerald-500/90 border-emerald-600 text-white shadow-lg"
-                      : "bg-white/50 border-gray-200 text-gray-700 hover:bg-white/60"
+                      : "bg-white/50 border-gray-200 text-gray-700 hover:bg-white/60",
+                    disabled && "opacity-60 cursor-not-allowed hover:bg-white/50"
                   )}
                 >
                   <Icon className="w-6 h-6 mb-1" />
@@ -188,6 +179,12 @@ export default function HotelStructureCard({
               );
             })}
           </div>
+
+          {!roomTypes.length && !isLocked && (
+            <p className="text-xs text-gray-500 italic">
+              Astuce : sélectionnez au moins un type pour l’hôtel.
+            </p>
+          )}
         </div>
       </div>
     </section>

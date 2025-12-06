@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import axios from "axios";
 import { useAuth } from "../../../auth/authContext";
 import { BedDouble, List, Plus } from "lucide-react";
@@ -6,13 +6,15 @@ import RoomFormPremium from "./RoomComponents/RoomForm";
 import RoomsTable, { Room } from "./RoomComponents/RoomsTable";
 import RoomFilterPremium from "./RoomComponents/RoomFilter";
 import { createPortal } from "react-dom";
+import { DEFAULT_ROOM_TYPES } from "../../../pages/dashboard/ManagerDashboardComponents/HotelConfigrComponents/HotelStructureCard"; 
+// ✅ adapte ce chemin selon ton arborescence
 
 export default function RoomsPage() {
   const { user } = useAuth();
   const token = localStorage.getItem("token") || "";
 
   const [rooms, setRooms] = useState<Room[]>([]);
-  const [roomTypes, setRoomTypes] = useState<string[]>([]);
+  const [hotelRoomTypes, setHotelRoomTypes] = useState<string[]>([]);
   const [filterType, setFilterType] = useState<"ALL" | "FLOOR" | "STATE">("ALL");
   const [filterValue, setFilterValue] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -23,29 +25,38 @@ export default function RoomsPage() {
 
   const fetchRooms = useCallback(async () => {
     if (!token) return;
+
     let url = "http://localhost:8080/api/rooms";
     if (isClient) url = "http://localhost:8080/api/rooms/my-room";
 
     const { data } = await axios.get<Room | Room[]>(url, {
       headers: { Authorization: `Bearer ${token}` },
     });
+
     setRooms(Array.isArray(data) ? data : [data]);
   }, [token, isClient]);
 
-  // ---------- Récupération config hôtel ----------
   const fetchHotelConfig = useCallback(async () => {
-    if (!token || isClient) return; // les clients n'ont pas accès à /hotels/me
+    if (!token || isClient) return;
+
     const { data } = await axios.get<{ roomTypes: string[] }>(
       "http://localhost:8080/hotels/me",
       { headers: { Authorization: `Bearer ${token}` } }
     );
-    if (data.roomTypes?.length) setRoomTypes(data.roomTypes);
+
+    setHotelRoomTypes(data.roomTypes ?? []);
   }, [token, isClient]);
 
   useEffect(() => {
     fetchHotelConfig();
     fetchRooms();
   }, [fetchHotelConfig, fetchRooms]);
+
+  // ✅ Liste finale pour le select : TOUS les types
+  const allRoomTypes = useMemo(() => {
+    const merged = new Set<string>([...DEFAULT_ROOM_TYPES, ...hotelRoomTypes]);
+    return Array.from(merged);
+  }, [hotelRoomTypes]);
 
   const floorsList = Array.from(new Set(rooms.map((r) => String(r.floor)))).sort();
 
@@ -91,7 +102,7 @@ export default function RoomsPage() {
           filterType={filterType}
           selectedFloor={filterType === "FLOOR" ? filterValue : ""}
           selectedState={filterType === "STATE" ? filterValue : ""}
-          roomTypes={roomTypes}
+          roomTypes={allRoomTypes}
         />
       </div>
 
@@ -100,7 +111,7 @@ export default function RoomsPage() {
           <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center px-4">
             <RoomFormPremium
               token={token}
-              roomTypes={roomTypes}
+              roomTypes={allRoomTypes}
               onCreated={() => {
                 fetchRooms();
                 setShowForm(false);
