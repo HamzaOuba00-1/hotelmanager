@@ -9,4 +9,8 @@ import java.util.List;
 public interface ShiftRepository extends JpaRepository<Shift, Long> {
     List<Shift> findByEmployeeHotelIdAndDateBetween(Long hotelId, LocalDate start, LocalDate end);
     List<Shift> findByEmployeeIdAndDateBetween(Long employeeId, LocalDate start, LocalDate end);
+    List<Shift> findByEmployeeIdAndDateBetweenOrderByDateAscStartTimeAsc(
+            Long employeeId, LocalDate start, LocalDate end
+    );
+
 }

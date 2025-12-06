@@ -4,18 +4,16 @@ import React, {
   useMemo,
   type CSSProperties,
 } from "react";
-import {
-  Calendar,
-  Clock,
-  UserCheck,
-  AlertTriangle,
-  CheckCircle,
-} from "lucide-react";
+import { Calendar, AlertTriangle, CheckCircle, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import { getIssuesForMyHotel, type Issue } from "../../../api/issueApi";
 import { getMe, getUsersFromMyHotel } from "../../../api/userApi";
 import type { User } from "../../../types/User";
+
+import { getMyShifts, type Shift } from "../../../api/planningApi";
+import { startOfWeek, addDays, format, parseISO } from "date-fns";
+import { fr } from "date-fns/locale";
 
 type IssueStats = {
   open: number;
@@ -25,10 +23,16 @@ type IssueStats = {
 
 const DashboardAccueilEmploye: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  // ---------- Signalements ----------
   const [issues, setIssues] = useState<Issue[]>([]);
   const [loadingIssues, setLoadingIssues] = useState(false);
 
-  // 1) Charger les signalements de l'hôtel (indépendant de l'utilisateur)
+  // ---------- Planning ----------
+  const [myShifts, setMyShifts] = useState<Shift[]>([]);
+  const [loadingShifts, setLoadingShifts] = useState(false);
+
+  // 1) Charger les signalements de l'hôtel
   useEffect(() => {
     const loadIssues = async () => {
       setLoadingIssues(true);
@@ -41,11 +45,10 @@ const DashboardAccueilEmploye: React.FC = () => {
         setLoadingIssues(false);
       }
     };
-
     loadIssues();
   }, []);
 
-  // 2) Charger l'utilisateur courant (email + user de l'hôtel)
+  // 2) Charger l'utilisateur courant
   useEffect(() => {
     const loadCurrentUser = async () => {
       try {
@@ -55,16 +58,40 @@ const DashboardAccueilEmploye: React.FC = () => {
         setCurrentUser(meUser);
       } catch (e) {
         console.error("Erreur chargement utilisateur courant :", e);
-        // si ça casse, on laisse currentUser = null
       }
     };
-
     loadCurrentUser();
   }, []);
 
-  // 3) Stats seulement sur MES signalements (fallback = tous si currentUser introuvable)
+  // 3) Charger mon planning (semaine courante + prochaine)
+  useEffect(() => {
+    const loadMyShifts = async () => {
+      setLoadingShifts(true);
+      try {
+        const today = new Date();
+        const weekStart = startOfWeek(today, { weekStartsOn: 1 });
+
+        // On récupère 2 semaines d’un coup :
+        // - pour calculer les heures de cette semaine
+        // - et trouver le prochain shift même si c’est la semaine suivante
+        const rangeStart = format(weekStart, "yyyy-MM-dd");
+        const rangeEnd = format(addDays(weekStart, 13), "yyyy-MM-dd");
+
+        const res = await getMyShifts(rangeStart, rangeEnd);
+        setMyShifts(res.data || []);
+      } catch (e) {
+        console.error("Erreur chargement shifts employé :", e);
+      } finally {
+        setLoadingShifts(false);
+      }
+    };
+
+    loadMyShifts();
+  }, []);
+
+  // ===================== SIGNALMENTS STATS =====================
+
   const ownStats: IssueStats = useMemo(() => {
-    // si l'utilisateur n'est pas encore identifié, on considère tous les issues
     const mine: Issue[] =
       currentUser == null
         ? issues
@@ -77,7 +104,6 @@ const DashboardAccueilEmploye: React.FC = () => {
     return { open, resolved, important };
   }, [issues, currentUser]);
 
-  // 4) Calcul du donut
   const { total, openDeg, resolvedDegEnd } = useMemo(() => {
     const totalCount = ownStats.open + ownStats.resolved;
     if (totalCount === 0) {
@@ -113,6 +139,71 @@ const DashboardAccueilEmploye: React.FC = () => {
           )`,
         };
 
+  // ===================== PLANNING KPIs =====================
+
+  const parseTimeToMinutes = (t: string) => {
+    const [h, m] = t.split(":").map(Number);
+    return h * 60 + (m || 0);
+  };
+
+  const { weekStartDate, weekEndDate } = useMemo(() => {
+    const today = new Date();
+    const ws = startOfWeek(today, { weekStartsOn: 1 });
+    const we = addDays(ws, 6);
+    return { weekStartDate: ws, weekEndDate: we };
+  }, []);
+
+  const weeklyShifts = useMemo(() => {
+    return myShifts.filter((s) => {
+      const d = parseISO(s.date);
+      return d >= weekStartDate && d <= weekEndDate;
+    });
+  }, [myShifts, weekStartDate, weekEndDate]);
+
+  const hoursThisWeek = useMemo(() => {
+    let totalMin = 0;
+
+    for (const s of weeklyShifts) {
+      const start = parseTimeToMinutes(s.startTime);
+      let end = parseTimeToMinutes(s.endTime);
+
+      // overnight safety
+      if (end <= start) end += 1440;
+
+      totalMin += end - start;
+    }
+
+    // arrondi à 0.5h si tu veux une lecture plus propre
+    const hours = totalMin / 60;
+    return Math.round(hours * 2) / 2;
+  }, [weeklyShifts]);
+
+  const nextShift = useMemo(() => {
+    const now = new Date();
+
+    const withStartDate = myShifts
+      .map((s) => ({
+        shift: s,
+        start: new Date(`${s.date}T${s.startTime}`),
+      }))
+      .filter((x) => !isNaN(x.start.getTime()));
+
+    withStartDate.sort((a, b) => a.start.getTime() - b.start.getTime());
+
+    return withStartDate.find((x) => x.start >= now)?.shift ?? null;
+  }, [myShifts]);
+
+  const nextShiftLabel = useMemo(() => {
+    if (!nextShift) return "Aucun shift à venir";
+
+    const d = parseISO(nextShift.date);
+    const dayName = format(d, "EEEE", { locale: fr }); // ex: mardi
+
+    return `${dayName} ${nextShift.startTime} - ${nextShift.endTime}`;
+  }, [nextShift]);
+
+  // ===================== UI =====================
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -122,61 +213,53 @@ const DashboardAccueilEmploye: React.FC = () => {
           {currentUser ? `, ${currentUser.firstName} 👋` : " 👋"}
         </h1>
         <p className="text-gray-500">
-          Voici un aperçu de vos informations et actions rapides.
+          Voici votre résumé planning et signalements.
         </p>
       </div>
 
-      {/* Cartes actions rapides */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Link
-          to="/dashboard/employe/planning"
-          className="p-6 bg-white shadow rounded-lg hover:shadow-md transition"
-        >
-          <Calendar className="h-8 w-8 text-emerald-500 mb-4" />
-          <h2 className="text-lg font-semibold">Voir mon planning</h2>
-          <p className="text-gray-500 text-sm">
-            Consultez vos prochains shifts
-          </p>
-        </Link>
-
-        <Link
-          to="/dashboard/employe/pointage"
-          className="p-6 bg-white shadow rounded-lg hover:shadow-md transition"
-        >
-          <UserCheck className="h-8 w-8 text-blue-500 mb-4" />
-          <h2 className="text-lg font-semibold">Pointer</h2>
-          <p className="text-gray-500 text-sm">
-            Enregistrer votre arrivée ou départ
-          </p>
-        </Link>
-
-        <Link
-          to="/dashboard/employe/rooms"
-          className="p-6 bg-white shadow rounded-lg hover:shadow-md transition"
-        >
-          <Clock className="h-8 w-8 text-orange-500 mb-4" />
-          <h2 className="text-lg font-semibold">Voir mes tâches</h2>
-          <p className="text-gray-500 text-sm">
-            Consultez les tâches assignées
-          </p>
-        </Link>
-      </div>
-
-      {/* KPIs + donut "mes signalements" */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* KPI 1 */}
+      {/*  Planning + Signalements */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* ================= PLANNING CARD ================= */}
         <div className="bg-white p-6 rounded-lg shadow">
-          <p className="text-sm text-gray-500">Total heures ce mois</p>
-          <p className="text-2xl font-bold">120h</p>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm text-gray-500 flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-emerald-500" />
+              Mon planning
+            </p>
+            <Link
+              to="/dashboard/employe/planning"
+              className="text-xs text-emerald-700 hover:text-emerald-900 underline-offset-2 hover:underline"
+            >
+              Voir
+            </Link>
+          </div>
+
+          {loadingShifts ? (
+            <div className="text-sm text-gray-500">
+              Chargement de votre planning…
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-100">
+                <div className="flex items-center gap-2 text-sm text-emerald-700">
+                  <Clock className="w-4 h-4" />
+                  Heures à travailler cette semaine
+                </div>
+                <div className="text-3xl font-bold text-gray-800 mt-1">
+                  {hoursThisWeek}h
+                </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {format(weekStartDate, "dd/MM")} -{" "}
+                  {format(weekEndDate, "dd/MM")}
+                </div>
+              </div>
+
+              
+            </div>
+          )}
         </div>
 
-        {/* KPI 2 */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <p className="text-sm text-gray-500">Présences ce mois</p>
-          <p className="text-2xl font-bold">18</p>
-        </div>
-
-        {/* KPI 3 : diagramme circulaire de MES signalements (ou de tous si currentUser est inconnu) */}
+        {/* ================= SIGNALMENTS CARD ================= */}
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm text-gray-500 flex items-center gap-2">

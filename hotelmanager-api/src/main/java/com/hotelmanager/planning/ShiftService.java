@@ -24,8 +24,9 @@ public class ShiftService {
     }
 
     public List<Shift> getShiftsForEmployee(Long employeeId, LocalDate start, LocalDate end) {
-        return shiftRepository.findByEmployeeIdAndDateBetween(employeeId, start, end);
+        return shiftRepository.findByEmployeeIdAndDateBetweenOrderByDateAscStartTimeAsc(employeeId, start, end);
     }
+
 
     public void deleteShift(Long id) {
         shiftRepository.deleteById(id);

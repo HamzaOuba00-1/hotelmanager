@@ -14,7 +14,7 @@ import Pointage from "./pages/dashboard/ManagerDashboardComponents/PointagePage"
 
 import HotelConfigPage from "./pages/dashboard/ManagerDashboardComponents/HotelConfigPage";
 import Planning from "./pages/dashboard/ManagerDashboardComponents/PlanningPage ";
-import PlanningPage from "./pages/dashboard/EmployeDashboardComponents/PlanningPage";
+import PlanningPage from "./pages/dashboard/EmployeDashboardComponents/EmployeePlanningPage";
 import PointagePage from "./pages/dashboard/EmployeDashboardComponents/PointagePage";
 import DashboardAccueilEmploye from "./pages/dashboard/EmployeDashboardComponents/DashboardAccueilEmploye";
 import Channels from './pages/dashboard/ManagerDashboardComponents/ChannelsPage';
