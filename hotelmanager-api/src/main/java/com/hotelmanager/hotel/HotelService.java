@@ -7,10 +7,7 @@ import com.hotelmanager.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -35,11 +32,16 @@ public class HotelService {
     public Hotel updateHotel(User manager, HotelConfigRequest req, boolean forceRegen) {
         Hotel h = getHotelOf(manager);
 
+        // ---- Ensure lists not null (VERY IMPORTANT) ----
+        ensureCollections(h);
+
+        // ---- Snapshot ancienne structure ----
         Integer oldFloors = h.getFloors();
         Integer oldRoomsPerFloor = h.getRoomsPerFloor();
-        List<String> oldFloorLabels = new ArrayList<>(h.getFloorLabels());
-        List<String> oldRoomTypes = new ArrayList<>(h.getRoomTypes());
+        List<String> oldFloorLabels = new ArrayList<>(safeList(h.getFloorLabels()));
+        List<String> oldRoomTypes   = new ArrayList<>(safeList(h.getRoomTypes()));
 
+        // ---- Infos générales ----
         h.setName(req.name());
         h.setAddress(req.address());
         h.setPhone(req.phone());
@@ -48,17 +50,23 @@ public class HotelService {
         h.setLatitude(req.latitude());
         h.setLongitude(req.longitude());
 
+        // ---- Structure ----
         h.setFloors(req.floors());
         h.setRoomsPerFloor(req.roomsPerFloor());
 
+        // Floor labels
         h.getFloorLabels().clear();
-        if (req.floorLabels() != null)
+        if (req.floorLabels() != null) {
             h.getFloorLabels().addAll(req.floorLabels());
+        }
 
+        // Room types
         h.getRoomTypes().clear();
-        if (req.roomTypes() != null)
+        if (req.roomTypes() != null) {
             h.getRoomTypes().addAll(req.roomTypes());
+        }
 
+        // ---- Services ----
         if (req.services() != null) {
             Hotel.Services s = h.getServices() == null ? new Hotel.Services() : h.getServices();
             s.setHasRestaurant(Boolean.TRUE.equals(req.services().hasRestaurant()));
@@ -70,13 +78,17 @@ public class HotelService {
             h.setServices(s);
         }
 
+        // ---- Horaires ----
         h.setCheckInHour(req.checkInHour());
         h.setCheckOutHour(req.checkOutHour());
 
+        // ---- Jours fermés ----
         h.getClosedDays().clear();
-        if (req.closedDays() != null)
+        if (req.closedDays() != null) {
             h.getClosedDays().addAll(req.closedDays());
+        }
 
+        // ---- Saison haute ----
         if (req.highSeason() != null) {
             Hotel.Season season = h.getHighSeason() == null ? new Hotel.Season() : h.getHighSeason();
             season.setFromDate(req.highSeason().from());
@@ -86,25 +98,26 @@ public class HotelService {
             h.setHighSeason(null);
         }
 
-        // --- Politique ---
+        // ---- Politique ----
         h.setCancellationPolicy(req.cancellationPolicy());
         h.setMinAge(req.minAge());
         h.setPetsAllowed(req.petsAllowed());
 
-        // --- Paiements ---
+        // ---- Paiements ----
         h.getAcceptedPayments().clear();
-        if (req.acceptedPayments() != null)
+        if (req.acceptedPayments() != null) {
             h.getAcceptedPayments().addAll(req.acceptedPayments());
+        }
 
-        // --- Statut ---
+        // ---- Statut ----
         h.setActive(req.active() != null ? req.active() : Boolean.TRUE);
 
         Hotel saved = hotelRepository.save(h);
 
-        boolean structureChanged = !Objects.equals(oldFloors, req.floors()) ||
-                !Objects.equals(oldRoomsPerFloor, req.roomsPerFloor()) ||
-                !Objects.equals(oldRoomTypes, req.roomTypes()) ||
-                !Objects.equals(oldFloorLabels, req.floorLabels());
+        // ---- Compare structure safely ----
+        boolean structureChanged = structureChanged(
+                oldFloors, oldRoomsPerFloor, oldFloorLabels, oldRoomTypes, req
+        );
 
         if (structureChanged || forceRegen) {
             try {
@@ -118,6 +131,49 @@ public class HotelService {
     }
 
     public Hotel save(Hotel hotel) {
+        ensureCollections(hotel);
         return hotelRepository.save(hotel);
+    }
+
+    // -------------------- Helpers --------------------
+
+    private static List<String> safeList(List<String> l) {
+        return l == null ? List.of() : l;
+    }
+
+    private static boolean structureChanged(
+            Integer oldFloors,
+            Integer oldRoomsPerFloor,
+            List<String> oldFloorLabels,
+            List<String> oldRoomTypes,
+            HotelConfigRequest req
+    ) {
+        List<String> newFloorLabels = req.floorLabels() == null ? List.of() : req.floorLabels();
+        List<String> newRoomTypes   = req.roomTypes() == null ? List.of() : req.roomTypes();
+
+        return !Objects.equals(oldFloors, req.floors())
+                || !Objects.equals(oldRoomsPerFloor, req.roomsPerFloor())
+                || !Objects.equals(oldFloorLabels, newFloorLabels)
+                || !Objects.equals(oldRoomTypes, newRoomTypes);
+    }
+
+    /**
+     * Si dans ton entity Hotel tu n’as pas initialisé les listes
+     * (ex: private List<String> floorLabels = new ArrayList<>();),
+     * alors il faut les garantir ici.
+     */
+    private static void ensureCollections(Hotel h) {
+        if (h.getFloorLabels() == null) {
+            h.setFloorLabels(new ArrayList<>());
+        }
+        if (h.getRoomTypes() == null) {
+            h.setRoomTypes(new ArrayList<>());
+        }
+        if (h.getClosedDays() == null) {
+            h.setClosedDays(new ArrayList<>());
+        }
+        if (h.getAcceptedPayments() == null) {
+            h.setAcceptedPayments(new ArrayList<>());
+        }
     }
 }
