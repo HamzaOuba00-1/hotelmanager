@@ -1,33 +1,57 @@
-import React, { useEffect, useState } from 'react';
-import { getCrews } from '../../../../api/crewApi';
-import { Crew, ServiceType } from '../../../../types/Crew';
-import { User } from '../../../../types/User';
-import AddCrewModal from './AddCrewModal';
-import CrewDetailsModal from './CrewDetailsModal';
+import React, { useEffect, useState, useCallback } from "react";
+import { getCrews } from "../../../../api/crewApi";
+import { Crew, ServiceType } from "../../../../types/Crew";
+import { User } from "../../../../types/User";
+import AddCrewModal from "./AddCrewModal";
+import CrewDetailsModal from "./CrewDetailsModal";
 
 import {
-  Users, DoorOpen, Hotel, Drill, Utensils, Martini,
-  ConciergeBell, Bubbles, Shield, MonitorCog, HandCoins,ChefHat, Network
-} from 'lucide-react';
+  Users,
+  DoorOpen,
+  Hotel,
+  Drill,
+  Utensils,
+  Martini,
+  ConciergeBell,
+  Bubbles,
+  Shield,
+  MonitorCog,
+  HandCoins,
+  ChefHat,
+  Network,
+} from "lucide-react";
 
 type Props = { allUsers: User[] };
 
 const serviceIcon = (s: ServiceType) => {
-  const cls = 'w-8 h-8';
+  const cls = "w-8 h-8";
   switch (s) {
-    case 'RECEPTION': return <Hotel className={cls} />;
-    case 'HOUSEKEEPING': return <DoorOpen className={cls} />;
-    case 'MAINTENANCE': return <Drill className={cls} />;
-    case 'KITCHEN': return <ChefHat  className={cls} />;
-    case 'RESTAURANT': return <Utensils className={cls} />;
-    case 'BAR': return <Martini  className={cls} />;
-    case 'CONCIERGE': return <ConciergeBell className={cls} />;
-    case 'SPA': return <Bubbles  className={cls} />;
-    case 'SECURITY': return <Shield className={cls} />;
-    case 'IT': return <MonitorCog className={cls} />;
-    case 'FINANCE': return <HandCoins className={cls} />;
-    case 'HR': return <Network  className={cls} />;
-    default: return <Users className={cls} />;
+    case "RECEPTION":
+      return <Hotel className={cls} />;
+    case "HOUSEKEEPING":
+      return <DoorOpen className={cls} />;
+    case "MAINTENANCE":
+      return <Drill className={cls} />;
+    case "KITCHEN":
+      return <ChefHat className={cls} />;
+    case "RESTAURANT":
+      return <Utensils className={cls} />;
+    case "BAR":
+      return <Martini className={cls} />;
+    case "CONCIERGE":
+      return <ConciergeBell className={cls} />;
+    case "SPA":
+      return <Bubbles className={cls} />;
+    case "SECURITY":
+      return <Shield className={cls} />;
+    case "IT":
+      return <MonitorCog className={cls} />;
+    case "FINANCE":
+      return <HandCoins className={cls} />;
+    case "HR":
+      return <Network className={cls} />;
+    default:
+      return <Users className={cls} />;
   }
 };
 
@@ -37,7 +61,7 @@ const CrewSection: React.FC<Props> = ({ allUsers }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedCrewId, setSelectedCrewId] = useState<number | null>(null);
 
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getCrews();
@@ -45,15 +69,19 @@ const CrewSection: React.FC<Props> = ({ allUsers }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { refresh(); }, []);
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
 
   return (
     <div className="mt-12">
       {/* Header + bouton d’ajout */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold tracking-wide text-gray-800">Crews / Services</h2>
+        <h2 className="text-xl font-semibold tracking-wide text-gray-800">
+          Crews / Services
+        </h2>
         <button
           onClick={() => setShowAddModal(true)}
           className="px-4 h-12 flex items-center justify-center text-base font-medium text-white
@@ -66,7 +94,7 @@ const CrewSection: React.FC<Props> = ({ allUsers }) => {
 
       {/* Liste en carrés cliquables */}
       <div className="flex flex-wrap gap-6">
-        {crews.map(c => (
+        {crews.map((c) => (
           <button
             key={c.id}
             onClick={() => setSelectedCrewId(c.id)}
