@@ -49,6 +49,8 @@ import type { User } from "../../../types/User";
 import { getUsersFromMyHotel } from "../../../api/userApi";
 import { getCrew, getCrews } from "../../../api/crewApi";
 import ConfirmModal from "../../../common/ConfirmModal";
+import clsx from "clsx";
+
 
 const card = "bg-white/60 rounded-2xl border shadow p-5";
 const btn = "inline-flex items-center gap-2 px-4 py-2 rounded-xl transition";
@@ -123,7 +125,13 @@ const SelectTile: React.FC<{
     tabIndex={0}
     onClick={onClick}
     onKeyDown={(e) => e.key === "Enter" && onClick?.()}
-    className={`${tileBase} cursor-pointer ${active ? "bg-[#72f7b0]" : ""}`}
+    className={clsx(
+      tileBase,
+      "cursor-pointer m-0.5",
+      active
+        ? "bg-emerald-50 border-emerald-300 ring-2 ring-emerald-200"
+        : ""
+    )}
     title={title}
   >
     {icon ?? <Users className="w-8 h-8 text-emerald-600 mb-2" />}
@@ -245,7 +253,7 @@ const CreateChannelModal: React.FC<{
               <div className="text-sm text-gray-600 mb-2">
                 Sélectionner un crew
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[260px] overflow-y-auto pr-1">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 max-h-[260px] overflow-y-auto px-2 py-2">
                 {crews.length ? (
                   crews.map((c) => (
                     <SelectTile
@@ -272,14 +280,14 @@ const CreateChannelModal: React.FC<{
               <div className="text-sm text-gray-600 mb-2">
                 Sélection des membres
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[260px] overflow-y-auto pr-1">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 max-h-[260px] overflow-y-auto px-2 py-2">
                 {users.map((u) => (
                   <SelectTile
                     key={u.id}
                     title={`${u.firstName} ${u.lastName}`}
                     subtitle={u.role}
-                    active={memberIds.includes(u.id)}
-                    onClick={() => toggleMember(u.id)}
+                    active={memberIds.includes(Number(u.id))}
+                    onClick={() => toggleMember(Number(u.id))}
                     icon={<Users className="w-8 h-8 text-emerald-600 mb-2" />}
                   />
                 ))}
@@ -460,7 +468,7 @@ const ChannelSettingsModal: React.FC<{
               <div className="text-sm text-gray-600 mb-2">
                 Membres (remplacement complet)
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[260px] overflow-y-auto pr-1">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 max-h-[260px] overflow-y-auto px-2 py-2">
                 {users.map((u) => {
                   const active = memberIds.includes(u.id); // ✅ sera vrai pour les membres existants
                   return (
@@ -470,9 +478,11 @@ const ChannelSettingsModal: React.FC<{
                       tabIndex={0}
                       onClick={() => toggle(u.id)}
                       onKeyDown={(e) => e.key === "Enter" && toggle(u.id)}
-                      className={`${tileBase} ${
-                        active ? "bg-[#60fca8]" : ""
-                      } cursor-pointer`}
+                      className={clsx(
+                        tileBase,
+                        "cursor-pointer m-0.5",
+                        active ? "bg-emerald-50 border-emerald-300 ring-2 ring-emerald-200" : ""
+                      )}
                       title={`${u.firstName} ${u.lastName}`}
                     >
                       <Users className="w-8 h-8 text-emerald-600 mb-2" />
