@@ -135,17 +135,14 @@ export default function ReservationsPage() {
     setErr(null);
     try {
       const data = await rApi.listReservations();
-      const transformed = data.map((r: any) => ({
-        ...r,
-        endAt: r.endAt || r.end || "", // Adjust field name if needed
-      }));
-      setReservations(transformed);
+      setReservations(data);
     } catch (e: any) {
       setErr(e?.message || "Erreur de chargement des réservations.");
     } finally {
       setLoading(false);
     }
   }, []);
+
 
   useEffect(() => {
     fetchReservations();
