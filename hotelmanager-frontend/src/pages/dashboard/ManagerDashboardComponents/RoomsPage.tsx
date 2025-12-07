@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, type FC } from "react";
 import axios from "axios";
 import { useAuth } from "../../../auth/authContext";
 import { BedDouble, List, Plus } from "lucide-react";
@@ -6,8 +6,18 @@ import RoomFormPremium from "./RoomComponents/RoomForm";
 import RoomsTable, { Room } from "./RoomComponents/RoomsTable";
 import RoomFilterPremium from "./RoomComponents/RoomFilter";
 import { createPortal } from "react-dom";
-import { DEFAULT_ROOM_TYPES } from "../../../pages/dashboard/ManagerDashboardComponents/HotelConfigrComponents/HotelStructureCard"; 
-// ✅ adapte ce chemin selon ton arborescence
+import { DEFAULT_ROOM_TYPES } from "../../../pages/dashboard/ManagerDashboardComponents/HotelConfigrComponents/HotelStructureCard";
+
+// ✅ Petit KPI réutilisable (déclaré خارج composant)
+const RoomKpi: FC<{ label: string; value: number | string }> = ({
+  label,
+  value,
+}) => (
+  <div className="rounded-2xl border bg-white/60 backdrop-blur p-4 shadow-sm">
+    <div className="text-xs text-gray-500">{label}</div>
+    <div className="text-2xl font-bold text-gray-800 mt-1">{value}</div>
+  </div>
+);
 
 export default function RoomsPage() {
   const { user } = useAuth();
@@ -15,13 +25,15 @@ export default function RoomsPage() {
 
   const [rooms, setRooms] = useState<Room[]>([]);
   const [hotelRoomTypes, setHotelRoomTypes] = useState<string[]>([]);
-  const [filterType, setFilterType] = useState<"ALL" | "FLOOR" | "STATE">("ALL");
+  const [filterType, setFilterType] = useState<"ALL" | "FLOOR" | "STATE">(
+    "ALL"
+  );
   const [filterValue, setFilterValue] = useState("");
   const [showForm, setShowForm] = useState(false);
 
   const isManager = user?.role === "MANAGER";
   const isEmployee = user?.role === "EMPLOYE";
-  const isClient  = user?.role === "CLIENT";
+  const isClient = user?.role === "CLIENT";
 
   const fetchRooms = useCallback(async () => {
     if (!token) return;
@@ -39,6 +51,8 @@ export default function RoomsPage() {
   const fetchHotelConfig = useCallback(async () => {
     if (!token || isClient) return;
 
+    // ⚠️ Garde ton endpoint actuel si c'est bien celui de ton backend
+    // Si jamais tu as un /api/hotels/me, tu peux remplacer ici.
     const { data } = await axios.get<{ roomTypes: string[] }>(
       "http://localhost:8080/hotels/me",
       { headers: { Authorization: `Bearer ${token}` } }
@@ -58,7 +72,50 @@ export default function RoomsPage() {
     return Array.from(merged);
   }, [hotelRoomTypes]);
 
-  const floorsList = Array.from(new Set(rooms.map((r) => String(r.floor)))).sort();
+  const floorsList = useMemo(
+    () => Array.from(new Set(rooms.map((r) => String(r.floor)))).sort(),
+    [rooms]
+  );
+
+  // ✅ KPIs rooms basés sur RoomState
+  const roomKpis = useMemo(() => {
+    const total = rooms.length;
+
+    const libre = rooms.filter((r) => r.roomState === "LIBRE").length;
+    const reservee = rooms.filter((r) => r.roomState === "RESERVEE").length;
+
+    const checkin = rooms.filter((r) => r.roomState === "CHECKIN").length;
+    const roomService = rooms.filter(
+      (r) => r.roomState === "ROOM_SERVICE"
+    ).length;
+
+    const aNettoyer = rooms.filter((r) => r.roomState === "A_NETTOYER").length;
+    const enNettoyage = rooms.filter(
+      (r) => r.roomState === "EN_NETTOYAGE"
+    ).length;
+
+    const maintenance = rooms.filter(
+      (r) => r.roomState === "MAINTENANCE"
+    ).length;
+
+    const inactive = rooms.filter((r) => r.roomState === "INACTIVE").length;
+
+    // ✅ Occupées = CHECKIN + ROOM_SERVICE
+    const occupied = checkin + roomService;
+
+    return {
+      total,
+      libre,
+      reservee,
+      occupied,
+      checkin,
+      roomService,
+      aNettoyer,
+      enNettoyage,
+      maintenance,
+      inactive,
+    };
+  }, [rooms]);
 
   return (
     <div className="container mx-auto p-6 space-y-8">
@@ -76,6 +133,24 @@ export default function RoomsPage() {
             <Plus className="w-5 h-5" />
             Ajouter une chambre
           </button>
+        )}
+
+        {/* ✅ KPIs Rooms (pas pour client) */}
+        {!isClient && (
+          <div className="w-full">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+              <RoomKpi label="Total chambres" value={roomKpis.total} />
+              <RoomKpi label="Occupées" value={roomKpis.occupied} />
+              <RoomKpi label="Libres" value={roomKpis.libre} />
+              <RoomKpi label="Réservées" value={roomKpis.reservee} />
+              <RoomKpi label="À nettoyer" value={roomKpis.aNettoyer} />
+            </div>
+
+            {/* mini info optionnel */}
+            <div className="mt-2 text-[11px] text-gray-500 text-center">
+              Occupées = CHECKIN + ROOM_SERVICE
+            </div>
+          </div>
         )}
       </div>
 

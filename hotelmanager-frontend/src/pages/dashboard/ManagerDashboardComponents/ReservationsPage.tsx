@@ -484,14 +484,6 @@ export default function ReservationsPage() {
         )}
       </div>
 
-      {/* Info */}
-      <div className="bg-white/60 rounded-2xl border p-4 text-sm text-gray-600 flex items-start gap-2">
-        <Info className="w-4 h-4 text-emerald-600 mt-0.5" />
-        <p>
-          Actions calculées via transitions autorisées (API), avec repli local
-          en cas d’indisponibilité.
-        </p>
-      </div>
 
       {/* Modal Détails */}
       {details && (
