@@ -8,7 +8,13 @@ import { getIssuesForMyHotel, type Issue } from "../../../api/issueApi";
 import { listRooms, type RoomLite } from "../../../api/roomsApi";
 import { listReservations, type Reservation } from "../../../api/reservationsApi";
 
-import { AlertTriangle, CheckCircle, CalendarCheck2, BedDouble } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle,
+  CalendarCheck2,
+  BedDouble,
+} from "lucide-react";
+
 import { parseISO, isSameDay } from "date-fns";
 
 type IssueStats = {
@@ -17,7 +23,7 @@ type IssueStats = {
   important: number;
 };
 
-// ⚠️ Si RoomLite n'expose pas encore roomState dans ton api/roomsApi,
+// ⚠️ Si RoomLite n'expose pas encore roomState dans ton api,
 // on sécurise sans casser TS.
 type RoomWithState = RoomLite & { roomState?: string };
 
@@ -95,7 +101,6 @@ export default function DashboardAccueil() {
       setRoomsLoading(true);
       try {
         const data = await listRooms();
-        // 🔒 cast safe vers RoomWithState
         setRooms((data || []) as RoomWithState[]);
       } catch (e) {
         console.error("Erreur chargement rooms :", e);
@@ -185,7 +190,7 @@ export default function DashboardAccueil() {
       isSameDay(parseISO(r.endAt), today)
     ).length;
 
-    // ✅ TON BESOIN : "séjours en cours = nombre de chambre occupée"
+    // ✅ "séjours en cours" = nombre de chambres occupées
     const inH = roomKpis.occupied;
 
     return { arr, dep, inH };
@@ -218,9 +223,9 @@ export default function DashboardAccueil() {
         </div>
       )}
 
-      {/* ✅ 3 cartes séparées */}
+      {/* ✅ 4 cartes équilibrées */}
       <section>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
           {/* ------------------ Carte ISSUES ------------------ */}
           <div className="bg-white/70 rounded-2xl border shadow p-5">
             <div className="flex items-center justify-between mb-3">
@@ -326,12 +331,12 @@ export default function DashboardAccueil() {
             </div>
           </div>
 
-          {/* ------------------ Carte ROOMS ------------------ */}
+          {/* ------------------ Carte CHAMBRES (GLOBAL) ------------------ */}
           <div className="bg-white/70 rounded-2xl border shadow p-5">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                 <BedDouble className="w-4 h-4 text-emerald-600" />
-                Chambres
+                Chambres — Vue globale
               </h2>
               <button
                 onClick={() => navigate("/dashboard/manager/rooms")}
@@ -346,18 +351,47 @@ export default function DashboardAccueil() {
                 Chargement des chambres…
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <MiniKpi label="Total" value={roomKpis.total} />
-                <MiniKpi label="Libres" value={roomKpis.libre} />
-                <MiniKpi label="Réservées" value={roomKpis.reservee} />
                 <MiniKpi label="Occupées" value={roomKpis.occupied} />
+                <MiniKpi label="Libres" value={roomKpis.libre} />
+              </div>
+            )}
+
+            <div className="mt-3 text-[11px] text-gray-500">
+              Indicateurs globaux des chambres.
+            </div>
+          </div>
+
+          {/* ------------------ Carte ETATS CHAMBRES ------------------ */}
+          <div className="bg-white/70 rounded-2xl border shadow p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <BedDouble className="w-4 h-4 text-emerald-600" />
+                États des chambres
+              </h2>
+              <button
+                onClick={() => navigate("/dashboard/manager/rooms")}
+                className="text-xs text-emerald-700 hover:text-emerald-900 underline-offset-2 hover:underline"
+              >
+                Voir
+              </button>
+            </div>
+
+            {roomsLoading ? (
+              <div className="text-xs text-gray-500">
+                Chargement des chambres…
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-3">
+                <MiniKpi label="Réservées" value={roomKpis.reservee} />
                 <MiniKpi label="À nettoyer" value={roomKpis.aNettoyer} />
                 <MiniKpi label="Maintenance" value={roomKpis.maintenance} />
               </div>
             )}
 
             <div className="mt-3 text-[11px] text-gray-500">
-              KPIs calculés depuis l’état réel des chambres.
+              KPIs basés sur l’état réel des chambres.
             </div>
           </div>
         </div>
