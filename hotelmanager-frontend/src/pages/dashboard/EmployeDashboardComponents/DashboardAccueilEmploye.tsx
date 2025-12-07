@@ -1,3 +1,5 @@
+// src/pages/dashboard/employe/DashboardAccueilEmploye.tsx
+
 import React, {
   useEffect,
   useState,
@@ -8,7 +10,7 @@ import { Calendar, AlertTriangle, CheckCircle, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import { getIssuesForMyHotel, type Issue } from "../../../api/issueApi";
-import { getMe, getUsersFromMyHotel } from "../../../api/userApi";
+import { getUsersFromMyHotel } from "../../../api/userApi";
 import type { User } from "../../../types/User";
 
 import { getMyShifts, type Shift } from "../../../api/planningApi";
@@ -23,6 +25,7 @@ type IssueStats = {
 
 const DashboardAccueilEmploye: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [userLoading, setUserLoading] = useState(false);
 
   // ---------- Signalements ----------
   const [issues, setIssues] = useState<Issue[]>([]);
@@ -48,18 +51,30 @@ const DashboardAccueilEmploye: React.FC = () => {
     loadIssues();
   }, []);
 
-  // 2) Charger l'utilisateur courant
+  // 2) Charger l'utilisateur courant ✅ (même logique que PlaceholderUtilisateurs)
   useEffect(() => {
     const loadCurrentUser = async () => {
+      setUserLoading(true);
       try {
-        const meEmail = await getMe(); // /auth/me → string (email)
+        const emailLs = localStorage.getItem("email");
         const users = await getUsersFromMyHotel();
-        const meUser = users.find((u) => u.email === meEmail) || null;
+
+        const meUser =
+          (emailLs ? users.find((u) => u.email === emailLs) : null) ??
+          // fallback ultra soft si jamais email non stocké
+          users.find((u) => u.role === "EMPLOYE") ??
+          users[0] ??
+          null;
+
         setCurrentUser(meUser);
       } catch (e) {
         console.error("Erreur chargement utilisateur courant :", e);
+        setCurrentUser(null);
+      } finally {
+        setUserLoading(false);
       }
     };
+
     loadCurrentUser();
   }, []);
 
@@ -71,9 +86,6 @@ const DashboardAccueilEmploye: React.FC = () => {
         const today = new Date();
         const weekStart = startOfWeek(today, { weekStartsOn: 1 });
 
-        // On récupère 2 semaines d’un coup :
-        // - pour calculer les heures de cette semaine
-        // - et trouver le prochain shift même si c’est la semaine suivante
         const rangeStart = format(weekStart, "yyyy-MM-dd");
         const rangeEnd = format(addDays(weekStart, 13), "yyyy-MM-dd");
 
@@ -92,10 +104,15 @@ const DashboardAccueilEmploye: React.FC = () => {
   // ===================== SIGNALMENTS STATS =====================
 
   const ownStats: IssueStats = useMemo(() => {
-    const mine: Issue[] =
-      currentUser == null
-        ? issues
-        : issues.filter((i) => i.createdById === currentUser.id);
+    // si on n’a pas un user fiable, on affiche global
+    if (!currentUser || !currentUser.id) {
+      const open = issues.filter((i) => i.status === "OPEN").length;
+      const resolved = issues.filter((i) => i.status === "RESOLVED").length;
+      const important = issues.filter((i) => i.important).length;
+      return { open, resolved, important };
+    }
+
+    const mine = issues.filter((i) => i.createdById === currentUser.id);
 
     const open = mine.filter((i) => i.status === "OPEN").length;
     const resolved = mine.filter((i) => i.status === "RESOLVED").length;
@@ -167,13 +184,10 @@ const DashboardAccueilEmploye: React.FC = () => {
       const start = parseTimeToMinutes(s.startTime);
       let end = parseTimeToMinutes(s.endTime);
 
-      // overnight safety
-      if (end <= start) end += 1440;
-
+      if (end <= start) end += 1440; // overnight safety
       totalMin += end - start;
     }
 
-    // arrondi à 0.5h si tu veux une lecture plus propre
     const hours = totalMin / 60;
     return Math.round(hours * 2) / 2;
   }, [weeklyShifts]);
@@ -197,7 +211,7 @@ const DashboardAccueilEmploye: React.FC = () => {
     if (!nextShift) return "Aucun shift à venir";
 
     const d = parseISO(nextShift.date);
-    const dayName = format(d, "EEEE", { locale: fr }); // ex: mardi
+    const dayName = format(d, "EEEE", { locale: fr });
 
     return `${dayName} ${nextShift.startTime} - ${nextShift.endTime}`;
   }, [nextShift]);
@@ -210,14 +224,18 @@ const DashboardAccueilEmploye: React.FC = () => {
       <div>
         <h1 className="text-3xl font-bold text-gray-800">
           Bienvenue
-          {currentUser ? `, ${currentUser.firstName} 👋` : " 👋"}
+          {userLoading
+            ? " 👋"
+            : currentUser?.firstName
+            ? `, ${currentUser.firstName} 👋`
+            : " 👋"}
         </h1>
         <p className="text-gray-500">
           Voici votre résumé planning et signalements.
         </p>
       </div>
 
-      {/*  Planning + Signalements */}
+      {/* Planning + Signalements */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* ================= PLANNING CARD ================= */}
         <div className="bg-white p-6 rounded-lg shadow">
@@ -254,7 +272,13 @@ const DashboardAccueilEmploye: React.FC = () => {
                 </div>
               </div>
 
-              
+              {/* Prochain shift */}
+              <div className="p-4 rounded-xl bg-gray-50 border">
+                <div className="text-sm text-gray-600">Prochain shift</div>
+                <div className="text-lg font-semibold text-gray-800 mt-1">
+                  {nextShiftLabel}
+                </div>
+              </div>
             </div>
           )}
         </div>
