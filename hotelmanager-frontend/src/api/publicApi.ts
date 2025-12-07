@@ -6,8 +6,9 @@ export interface PublicReservationRequest {
   roomId: number;
   firstName: string;
   lastName: string;
-  startAt: string; 
-  endAt: string;   
+  guestPhone: string;        // ✅ NEW
+  startAt: string;
+  endAt: string;
 }
 
 export interface PublicReservationResponse {

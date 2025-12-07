@@ -11,5 +11,6 @@ public record PublicReservationRequest(
         @NotNull OffsetDateTime startAt,
         @NotNull OffsetDateTime endAt,
         @NotBlank String firstName,
-        @NotBlank String lastName
+        @NotBlank String lastName,
+        @NotBlank String guestPhone
 ) {}

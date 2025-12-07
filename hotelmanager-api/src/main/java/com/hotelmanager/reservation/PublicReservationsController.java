@@ -37,9 +37,15 @@ public class PublicReservationsController {
     public ResponseEntity<PublicReservationResponse> reserve(
             @Valid @RequestBody PublicReservationRequest req) {
         PublicReservationResponse resp = service.reserve(
-                req.hotelId(), req.roomId(), req.startAt(), req.endAt(),
-                req.firstName(), req.lastName()
+                req.hotelId(),
+                req.roomId(),
+                req.startAt(),
+                req.endAt(),
+                req.firstName(),
+                req.lastName(),
+                req.guestPhone()   // ✅ AJOUT
         );
         return ResponseEntity.status(201).body(resp);
     }
+
 }

@@ -55,6 +55,7 @@ interface Reservation {
   client?: UserLite | null;
   guestFirstName: string;
   guestLastName: string;
+  guestPhone?: string;
   startAt: string; // ISO
   endAt: string; // ISO
   status: ReservationStatus;
@@ -190,8 +191,9 @@ export default function ReservationsPage() {
         if (!q) return true;
         const guest = `${r.guestFirstName} ${r.guestLastName}`.toLowerCase();
         const email = (r.client?.email || "").toLowerCase();
+        const phone = (r.client?.phone || r.guestPhone || "").toLowerCase();
         const room = String(r.room?.roomNumber || "");
-        return guest.includes(q) || email.includes(q) || room.includes(q);
+        return guest.includes(q) || email.includes(q) || phone.includes(q) || room.includes(q);
       })
       .sort(
         (a, b) =>
@@ -284,10 +286,10 @@ export default function ReservationsPage() {
                   {r.client.email}
                 </span>
               )}
-              {r.client?.phone && (
+              {(r.client?.phone || r.guestPhone) && (
                 <span className="inline-flex items-center gap-1">
                   <Phone className="w-3.5 h-3.5" />
-                  {r.client.phone}
+                  {r.client?.phone || r.guestPhone}
                 </span>
               )}
             </div>
@@ -519,7 +521,7 @@ export default function ReservationsPage() {
               <InfoLine label="Email" value={details.client?.email || "—"} />
               <InfoLine
                 label="Téléphone"
-                value={details.client?.phone || "—"}
+                value={details.client?.phone || details.guestPhone || "—"}
               />
               <InfoLine
                 label="Chambre"

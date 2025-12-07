@@ -46,6 +46,9 @@ public class Reservation {
     @Column(name = "guest_last_name", nullable = false, length = 64)
     private String guestLastName;
 
+    @Column(name = "guest_phone", length = 32)
+    private String guestPhone;
+
     @NotNull
     @Column(name = "start_at", nullable = false)
     private OffsetDateTime startAt;

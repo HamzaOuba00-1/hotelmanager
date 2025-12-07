@@ -2,7 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getAvailableRooms, reserveRoom } from "./../api/publicApi";
 import { PublicRoom } from "./../types/publicTypes";
-import { buildStartISO, buildEndISO, defaultArrival, defaultDeparture } from "./../utils/datetime";
+import {
+  buildStartISO,
+  buildEndISO,
+  defaultArrival,
+  defaultDeparture,
+} from "./../utils/datetime";
 import {
   CalendarRange,
   Crown,
@@ -11,9 +16,15 @@ import {
   ShieldCheck,
   Copy,
   Check,
+  Phone,
 } from "lucide-react";
 
-type ProblemDetail = { type?: string; title?: string; status?: number; detail?: string };
+type ProblemDetail = {
+  type?: string;
+  title?: string;
+  status?: number;
+  detail?: string;
+};
 
 export default function PublicRoomsPage() {
   const { hotelId } = useParams();
@@ -22,7 +33,7 @@ export default function PublicRoomsPage() {
   const [arrival, setArrival] = useState<string>(() => defaultArrival());
   const [departure, setDeparture] = useState<string>(() => defaultDeparture());
   const startAtISO = useMemo(() => buildStartISO(arrival), [arrival]);
-  const endAtISO   = useMemo(() => buildEndISO(departure), [departure]);
+  const endAtISO = useMemo(() => buildEndISO(departure), [departure]);
 
   const [publicRooms, setPublicRooms] = useState<PublicRoom[]>([]);
   const [loading, setLoading] = useState(false);
@@ -30,13 +41,16 @@ export default function PublicRoomsPage() {
 
   const [openReserve, setOpenReserve] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<PublicRoom | null>(null);
+
   const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName]   = useState("");
+  const [lastName, setLastName] = useState("");
+  const [guestPhone, setGuestPhone] = useState("");
+
   const [reserveLoading, setReserveLoading] = useState(false);
-  const [reserveError, setReserveError]     = useState<string | null>(null);
+  const [reserveError, setReserveError] = useState<string | null>(null);
 
   const [openSuccess, setOpenSuccess] = useState(false);
-  const [generatedEmail, setGeneratedEmail]       = useState("");
+  const [generatedEmail, setGeneratedEmail] = useState("");
   const [generatedPassword, setGeneratedPassword] = useState("");
   const [copied, setCopied] = useState<"email" | "password" | null>(null);
 
@@ -56,7 +70,9 @@ export default function PublicRoomsPage() {
       const data = await getAvailableRooms(HOTEL_ID, startAtISO, endAtISO);
       setPublicRooms(data);
     } catch (e: any) {
-      setErr(e?.response?.data?.detail || e?.message || "Erreur de chargement.");
+      setErr(
+        e?.response?.data?.detail || e?.message || "Erreur de chargement."
+      );
     } finally {
       setLoading(false);
     }
@@ -70,43 +86,70 @@ export default function PublicRoomsPage() {
     setSelectedRoom(room);
     setFirstName("");
     setLastName("");
+    setGuestPhone("");
     setReserveError(null);
+    setCopied(null);
     setOpenReserve(true);
+  }
+
+  function validatePhone(p: string) {
+    const v = p.trim();
+    // validation simple (tu peux l’adapter)
+    return v.length >= 6;
   }
 
   async function submitReserve(e: React.FormEvent) {
     e.preventDefault();
     if (!selectedRoom || !HOTEL_ID) return;
+
+    if (!firstName.trim() || !lastName.trim()) {
+      setReserveError("Veuillez saisir votre prénom et votre nom.");
+      return;
+    }
+    if (!validatePhone(guestPhone)) {
+      setReserveError("Veuillez saisir un numéro de téléphone valide.");
+      return;
+    }
+
     try {
       setReserveLoading(true);
       setReserveError(null);
+
       const res = await reserveRoom({
         hotelId: HOTEL_ID,
         roomId: selectedRoom.id,
-        firstName,
-        lastName,
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        guestPhone,
         startAt: startAtISO,
         endAt: endAtISO,
       });
+
       setOpenReserve(false);
       setGeneratedEmail(res.email);
       setGeneratedPassword(res.generatedPassword);
       setOpenSuccess(true);
-      await loadAvailable(); 
+
+      await loadAvailable();
     } catch (e: any) {
       const pd: ProblemDetail | undefined = e?.response?.data;
       if ((e?.response?.status ?? 0) === 409) {
-        setReserveError(pd?.detail || "Créneau déjà pris. Actualisation des disponibilités…");
+        setReserveError(
+          pd?.detail || "Créneau déjà pris. Actualisation des disponibilités…"
+        );
         await loadAvailable();
       } else {
-        setReserveError(pd?.detail || pd?.title || e?.message || "Réservation impossible.");
+        setReserveError(
+          pd?.detail || pd?.title || e?.message || "Réservation impossible."
+        );
       }
     } finally {
       setReserveLoading(false);
     }
   }
 
-  const canSearch = arrival && departure && new Date(arrival) < new Date(departure);
+  const canSearch =
+    arrival && departure && new Date(arrival) < new Date(departure);
 
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-50 via-white to-emerald-50">
@@ -121,7 +164,9 @@ export default function PublicRoomsPage() {
               <h1 className="text-xl font-semibold text-gray-900">
                 Réservation — Hôtel
               </h1>
-              <p className="text-sm text-gray-500">Une touche de luxe, simplement.</p>
+              <p className="text-sm text-gray-500">
+                Une touche de luxe, simplement.
+              </p>
             </div>
           </div>
           <div className="hidden md:flex items-center gap-2 text-emerald-700">
@@ -136,12 +181,16 @@ export default function PublicRoomsPage() {
         <div className="rounded-2xl border border-emerald-100 bg-white/80 backdrop-blur-sm shadow-[0_8px_35px_rgba(16,185,129,0.08)] p-5">
           <div className="flex items-center gap-3 mb-4">
             <CalendarRange className="w-5 h-5 text-emerald-600" />
-            <h2 className="text-lg font-semibold text-gray-800">Sélectionnez vos dates</h2>
+            <h2 className="text-lg font-semibold text-gray-800">
+              Sélectionnez vos dates
+            </h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
             <div className="sm:col-span-2">
-              <label className="block text-xs font-medium text-gray-500 mb-1">Arrivée</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1">
+                Arrivée
+              </label>
               <input
                 type="date"
                 value={arrival}
@@ -151,7 +200,9 @@ export default function PublicRoomsPage() {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-xs font-medium text-gray-500 mb-1">Départ</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1">
+                Départ
+              </label>
               <input
                 type="date"
                 value={departure}
@@ -166,7 +217,11 @@ export default function PublicRoomsPage() {
                 onClick={loadAvailable}
                 disabled={!canSearch}
                 className={`w-full px-4 py-2 rounded-xl text-white shadow-lg transition
-                  ${canSearch ? "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:scale-[1.02]" : "bg-gray-300 cursor-not-allowed"}
+                  ${
+                    canSearch
+                      ? "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:scale-[1.02]"
+                      : "bg-gray-300 cursor-not-allowed"
+                  }
                 `}
               >
                 Rechercher
@@ -183,12 +238,16 @@ export default function PublicRoomsPage() {
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-40 rounded-2xl bg-white/70 shadow animate-pulse" />
+              <div
+                key={i}
+                className="h-40 rounded-2xl bg-white/70 shadow animate-pulse"
+              />
             ))}
           </div>
         ) : publicRooms.length === 0 ? (
           <div className="text-center py-16 text-gray-600">
-            Aucune chambre disponible sur cet intervalle. Essayez d’autres dates.
+            Aucune chambre disponible sur cet intervalle. Essayez d’autres
+            dates.
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -199,7 +258,9 @@ export default function PublicRoomsPage() {
               >
                 <div className="absolute -top-10 -right-10 h-28 w-28 rounded-full bg-emerald-50 group-hover:bg-emerald-100 transition" />
                 <div className="flex items-center justify-between">
-                  <div className="text-xs text-gray-500">Étage {room.floor}</div>
+                  <div className="text-xs text-gray-500">
+                    Étage {room.floor}
+                  </div>
                   <span className="px-2 py-0.5 text-[11px] rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                     Disponible
                   </span>
@@ -236,20 +297,39 @@ export default function PublicRoomsPage() {
 
       {/* Modal Réserver */}
       {openReserve && selectedRoom && (
-        <div role="dialog" aria-modal="true" aria-labelledby="reserve-title" className="fixed inset-0 z-50 flex items-center justify-center px-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setOpenReserve(false)} />
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="reserve-title"
+          className="fixed inset-0 z-50 flex items-center justify-center px-4"
+        >
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setOpenReserve(false)}
+          />
           <div className="relative w-full max-w-md rounded-2xl bg-white shadow-xl border border-emerald-100 p-6">
             <div className="flex items-center gap-3 mb-4">
               <Crown className="w-5 h-5 text-emerald-600" />
-              <h3 id="reserve-title" className="text-lg font-semibold text-gray-800">Finaliser la réservation</h3>
+              <h3
+                id="reserve-title"
+                className="text-lg font-semibold text-gray-800"
+              >
+                Finaliser la réservation
+              </h3>
             </div>
             <p className="text-sm text-gray-500 mb-4">
-              Chambre <strong>{String(selectedRoom.roomNumber).padStart(3, "0")}</strong> — {selectedRoom.roomType}
+              Chambre{" "}
+              <strong>
+                {String(selectedRoom.roomNumber).padStart(3, "0")}
+              </strong>{" "}
+              — {selectedRoom.roomType}
             </p>
 
             <form onSubmit={submitReserve} className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Prénom</label>
+                <label className="block text-xs font-medium text-gray-500 mb-1">
+                  Prénom
+                </label>
                 <input
                   required
                   value={firstName}
@@ -257,8 +337,11 @@ export default function PublicRoomsPage() {
                   className="w-full rounded-xl border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                 />
               </div>
+
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Nom</label>
+                <label className="block text-xs font-medium text-gray-500 mb-1">
+                  Nom
+                </label>
                 <input
                   required
                   value={lastName}
@@ -267,13 +350,38 @@ export default function PublicRoomsPage() {
                 />
               </div>
 
-              {reserveError && <div className="text-sm text-rose-600">{reserveError}</div>}
+              {/* ✅ NOUVEAU : Téléphone */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">
+                  Téléphone
+                </label>
+                <input
+                  type="tel"
+                  required
+                  value={guestPhone}
+                  onChange={(e) => setGuestPhone(e.target.value)}
+                  className="w-full rounded-xl border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  placeholder="+33 6 12 34 56 78"
+                />
+              </div>
+
+              {reserveError && (
+                <div className="text-sm text-rose-600">{reserveError}</div>
+              )}
 
               <div className="flex items-center justify-end gap-3 pt-2">
-                <button type="button" onClick={() => setOpenReserve(false)} className="px-4 py-2 rounded-xl border text-sm hover:bg-gray-50">
+                <button
+                  type="button"
+                  onClick={() => setOpenReserve(false)}
+                  className="px-4 py-2 rounded-xl border text-sm hover:bg-gray-50"
+                >
                   Annuler
                 </button>
-                <button type="submit" disabled={reserveLoading} className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md hover:shadow-lg">
+                <button
+                  type="submit"
+                  disabled={reserveLoading}
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md hover:shadow-lg"
+                >
                   {reserveLoading ? "Réservation…" : "Confirmer"}
                 </button>
               </div>
@@ -284,35 +392,64 @@ export default function PublicRoomsPage() {
 
       {/* Modal Succès (identifiants affichés une seule fois) */}
       {openSuccess && (
-        <div role="dialog" aria-modal="true" aria-labelledby="success-title" className="fixed inset-0 z-50 flex items-center justify-center px-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setOpenSuccess(false)} />
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="success-title"
+          className="fixed inset-0 z-50 flex items-center justify-center px-4"
+        >
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setOpenSuccess(false)}
+          />
           <div className="relative w-full max-w-md rounded-2xl bg-white shadow-xl border border-emerald-100 p-6">
             <div className="flex items-center gap-3 mb-4">
               <ShieldCheck className="w-5 h-5 text-emerald-600" />
-              <h3 id="success-title" className="text-lg font-semibold text-gray-800">Compte client créé</h3>
+              <h3
+                id="success-title"
+                className="text-lg font-semibold text-gray-800"
+              >
+                Compte client créé
+              </h3>
             </div>
             <p className="text-sm text-gray-500 mb-4">
-              Conservez ces identifiants : ils sont affichés <strong>une seule fois</strong>.
+              Conservez ces identifiants : ils sont affichés{" "}
+              <strong>une seule fois</strong>.
             </p>
 
             <div className="space-y-3">
               <CopyRow
                 label="Email"
                 value={generatedEmail}
-                onCopy={() => quickCopy(generatedEmail, () => setCopied("email"))}
+                onCopy={() =>
+                  quickCopy(
+                    generatedEmail,
+                    () => setCopied("email"),
+                    () => setCopied(null)
+                  )
+                }
                 copied={copied === "email"}
               />
               <CopyRow
                 label="Mot de passe"
                 value={generatedPassword}
-                onCopy={() => quickCopy(generatedPassword, () => setCopied("password"))}
+                onCopy={() =>
+                  quickCopy(
+                    generatedPassword,
+                    () => setCopied("password"),
+                    () => setCopied(null)
+                  )
+                }
                 copied={copied === "password"}
                 secret
               />
             </div>
 
             <div className="flex items-center justify-end gap-3 pt-4">
-              <button onClick={() => setOpenSuccess(false)} className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md hover:shadow-lg">
+              <button
+                onClick={() => setOpenSuccess(false)}
+                className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md hover:shadow-lg"
+              >
                 Terminer
               </button>
             </div>
@@ -324,8 +461,18 @@ export default function PublicRoomsPage() {
 }
 
 function CopyRow({
-  label, value, onCopy, copied, secret,
-}: { label: string; value: string; onCopy: () => void; copied?: boolean; secret?: boolean }) {
+  label,
+  value,
+  onCopy,
+  copied,
+  secret,
+}: {
+  label: string;
+  value: string;
+  onCopy: () => void;
+  copied?: boolean;
+  secret?: boolean;
+}) {
   return (
     <div className="flex items-center justify-between rounded-xl border bg-gray-50 px-3 py-2">
       <div>
@@ -338,17 +485,25 @@ function CopyRow({
         onClick={onCopy}
         className="flex items-center gap-1 px-3 py-1.5 rounded-lg border bg-white text-sm hover:bg-gray-50"
       >
-        {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+        {copied ? (
+          <Check className="w-4 h-4 text-emerald-600" />
+        ) : (
+          <Copy className="w-4 h-4" />
+        )}
         {copied ? "Copié" : "Copier"}
       </button>
     </div>
   );
 }
 
-async function quickCopy(text: string, onOk: () => void) {
+async function quickCopy(text: string, onOk: () => void, onClear?: () => void) {
   try {
     await navigator.clipboard.writeText(text);
     onOk();
-    setTimeout(() => onOk(), 1200);
-  } catch { /* ignore */ }
+    if (onClear) {
+      setTimeout(() => onClear(), 1200);
+    }
+  } catch {
+    /* ignore */
+  }
 }

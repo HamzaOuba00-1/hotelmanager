@@ -59,7 +59,7 @@ public class PublicReservationService {
     @Transactional
     public com.hotelmanager.reservation.dto.PublicReservationResponse reserve(
             Long hotelId, Long roomId, OffsetDateTime startAt, OffsetDateTime endAt,
-            String firstName, String lastName) {
+            String firstName, String lastName, String guestPhone) {
 
         if (startAt == null || endAt == null || !startAt.isBefore(endAt)) {
             throw new BusinessRuleException("Intervalle de dates invalide.");
@@ -101,6 +101,7 @@ public class PublicReservationService {
         res.setClient(client);
         res.setGuestFirstName(cap(firstName));
         res.setGuestLastName(cap(lastName));
+        res.setGuestPhone(guestPhone);
         res.setStartAt(startAt);
         res.setEndAt(endAt);
         res.setStatus(ReservationStatus.CONFIRMED);

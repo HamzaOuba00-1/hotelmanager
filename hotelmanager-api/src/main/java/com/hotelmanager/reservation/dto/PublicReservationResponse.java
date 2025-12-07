@@ -5,4 +5,5 @@ public record PublicReservationResponse(
         Long reservationId,
         String email,
         String generatedPassword
+        
 ) {}

@@ -16,6 +16,7 @@ export interface Reservation {
   client?: UserLite | null;
   guestFirstName: string;
   guestLastName: string;
+  guestPhone?: string;
   startAt: string;
   endAt: string;
   status: ReservationStatus;
