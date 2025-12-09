@@ -6,7 +6,10 @@ import { useNavigate } from "react-router-dom";
 import { getMyHotel } from "../../../api/hotelApi";
 import { getIssuesForMyHotel, type Issue } from "../../../api/issueApi";
 import { listRooms, type RoomLite } from "../../../api/roomsApi";
-import { listReservations, type Reservation } from "../../../api/reservationsApi";
+import {
+  listReservations,
+  type Reservation,
+} from "../../../api/reservationsApi";
 
 import { getUsersFromMyHotel } from "../../../api/userApi";
 import type { User } from "../../../types/User";
@@ -725,7 +728,10 @@ export default function DashboardAccueil() {
               <div className="grid grid-cols-3 gap-3">
                 <MiniKpi label="Shifts" value={planningKpis.totalShifts} />
                 <MiniKpi label="Heures" value={`${planningKpis.totalHours}h`} />
-                <MiniKpi label="Équipe ajd" value={planningKpis.todayEmployees} />
+                <MiniKpi
+                  label="Équipe ajd"
+                  value={planningKpis.todayEmployees}
+                />
               </div>
             )}
 
@@ -762,7 +768,10 @@ export default function DashboardAccueil() {
                   <div className="grid grid-cols-3 gap-3">
                     <MiniKpi label="Présents" value={attendanceKpis.present} />
                     <MiniKpi label="Absents" value={attendanceKpis.absent} />
-                    <MiniKpi label="Durée moyenne" value={attendanceKpis.avgTxt} />
+                    <MiniKpi
+                      label="Durée moyenne"
+                      value={attendanceKpis.avgTxt}
+                    />
                   </div>
                 )}
 
@@ -778,7 +787,8 @@ export default function DashboardAccueil() {
               </div>
 
               {/* RIGHT: QR intégré */}
-              <div className="rounded-2xl border border-white/50 bg-white/60 backdrop-blur-xl p-4 shadow-[0_6px_18px_rgba(0,0,0,0.06)] ring-1 ring-white/40 flex flex-col items-center justify-center">
+              {/* RIGHT: Code journalier (texte uniquement) */}
+              <div className="rounded-2xl border border-white/50 bg-white/60 backdrop-blur-xl p-4 shadow-[0_6px_18px_rgba(0,0,0,0.06)] ring-1 ring-white/40 flex flex-col items-center justify-center text-center">
                 <div className="text-[10px] tracking-wide text-gray-500 mb-2 flex items-center gap-1">
                   <QrCode className="w-3.5 h-3.5" />
                   Code journalier
@@ -786,30 +796,23 @@ export default function DashboardAccueil() {
 
                 {dailyCodeLoading ? (
                   <div className="text-xs text-gray-500">Chargement…</div>
-                ) : (
+                ) : dailyCode ? (
                   <>
-                    <div className="bg-white/80 p-2 rounded-xl border">
-                      <QRCodeSVG
-                        value={JSON.stringify({ code: codeValue, date: todayStr })}
-                        size={120}
-                        marginSize={4}
-                      />
-                    </div>
-
-                    <div className="mt-2 text-lg font-extrabold tracking-widest">
+                    <div
+                      className="text-3xl font-extrabold tracking-widest text-gray-900"
+                      style={{ wordBreak: "break-all" }}
+                    >
                       {codeValue}
                     </div>
 
-                    <div className="text-[10px] text-gray-500 mt-1">
-                      {validUntilLabel ? (
-                        <>
-                          Valide jusqu’à <b>{validUntilLabel}</b>
-                        </>
-                      ) : (
-                        "Aucun code actif"
-                      )}
-                    </div>
+                    {validUntilLabel && (
+                      <div className="text-[10px] text-gray-500 mt-1">
+                        Valide jusqu’à <b>{validUntilLabel}</b>
+                      </div>
+                    )}
                   </>
+                ) : (
+                  <div className="text-xs text-gray-500">Aucun code actif</div>
                 )}
               </div>
             </div>
