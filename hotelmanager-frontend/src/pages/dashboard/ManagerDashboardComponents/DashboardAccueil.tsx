@@ -11,18 +11,39 @@ import { listReservations, type Reservation } from "../../../api/reservationsApi
 import { getUsersFromMyHotel } from "../../../api/userApi";
 import type { User } from "../../../types/User";
 
+import { getShiftsForHotel, type Shift } from "../../../api/planningApi";
+
+import {
+  listAttendance,
+  getCurrentDailyCode,
+  type AttendanceDto,
+  type DailyCodeResponse,
+} from "../../../api/pointage";
+
+import { QRCodeSVG } from "qrcode.react";
+
 import {
   AlertTriangle,
-  CheckCircle,
   CalendarCheck2,
   BedDouble,
   User2,
   Building2,
   ShieldCheck,
   Sparkles,
+  CalendarDays,
+  Clock,
+  Users as UsersIcon,
+  QrCode,
 } from "lucide-react";
 
-import { parseISO, isSameDay } from "date-fns";
+import {
+  parseISO,
+  isSameDay,
+  startOfWeek,
+  addDays,
+  format,
+  differenceInMinutes,
+} from "date-fns";
 
 type IssueStats = {
   open: number;
@@ -93,7 +114,22 @@ export default function DashboardAccueil() {
   const [rooms, setRooms] = useState<RoomWithState[]>([]);
   const [roomsLoading, setRoomsLoading] = useState(false);
 
+  // ------------------ PLANNING (semaine) ------------------
+  const [weekShifts, setWeekShifts] = useState<Shift[]>([]);
+  const [planningLoading, setPlanningLoading] = useState(false);
+
+  // ------------------ POINTAGE (jour) ------------------
+  const [todayAttendance, setTodayAttendance] = useState<AttendanceDto[]>([]);
+  const [attendanceLoading, setAttendanceLoading] = useState(false);
+
+  // ------------------ DAILY QR CODE (jour) ------------------
+  const [dailyCode, setDailyCode] = useState<DailyCodeResponse | null>(null);
+  const [dailyCodeLoading, setDailyCodeLoading] = useState(false);
+
   const navigate = useNavigate();
+
+  const today = new Date();
+  const todayStr = format(today, "yyyy-MM-dd");
 
   // ========================== HOTEL ==========================
   useEffect(() => {
@@ -102,19 +138,16 @@ export default function DashboardAccueil() {
       .catch((e) => console.error("Erreur getMyHotel :", e));
   }, []);
 
-  // ========================== CURRENT USER (SAME AS Utilisateurs) ==========================
+  // ========================== CURRENT USER ==========================
   useEffect(() => {
     const loadCurrentUser = async () => {
       setUserLoading(true);
       try {
         const emailLs = localStorage.getItem("email");
-
         const users = await getUsersFromMyHotel();
 
-        // ✅ même logique que PlaceholderUtilisateurs
         const meUser =
           (emailLs ? users.find((u) => u.email === emailLs) : null) ??
-          // fallback intelligent si jamais email absent
           users.find((u) => u.role === "MANAGER") ??
           users[0] ??
           null;
@@ -188,6 +221,65 @@ export default function DashboardAccueil() {
     loadRooms();
   }, []);
 
+  // ========================== PLANNING WEEK SHIFTS ==========================
+  useEffect(() => {
+    const loadWeekShifts = async () => {
+      setPlanningLoading(true);
+      try {
+        const ws = startOfWeek(new Date(), { weekStartsOn: 1 });
+        const we = addDays(ws, 6);
+
+        const start = format(ws, "yyyy-MM-dd");
+        const end = format(we, "yyyy-MM-dd");
+
+        const res = await getShiftsForHotel(start, end);
+        setWeekShifts(res.data || []);
+      } catch (e) {
+        console.error("Erreur chargement planning (semaine) :", e);
+        setWeekShifts([]);
+      } finally {
+        setPlanningLoading(false);
+      }
+    };
+
+    loadWeekShifts();
+  }, []);
+
+  // ========================== POINTAGE DU JOUR ==========================
+  useEffect(() => {
+    const loadTodayAttendance = async () => {
+      setAttendanceLoading(true);
+      try {
+        const res = await listAttendance({ start: todayStr, end: todayStr });
+        setTodayAttendance(res || []);
+      } catch (e) {
+        console.error("Erreur chargement pointage (jour) :", e);
+        setTodayAttendance([]);
+      } finally {
+        setAttendanceLoading(false);
+      }
+    };
+
+    loadTodayAttendance();
+  }, [todayStr]);
+
+  // ========================== DAILY CODE (QR) ==========================
+  useEffect(() => {
+    const loadDailyCode = async () => {
+      setDailyCodeLoading(true);
+      try {
+        const res = await getCurrentDailyCode();
+        setDailyCode(res);
+      } catch (e) {
+        setDailyCode(null);
+      } finally {
+        setDailyCodeLoading(false);
+      }
+    };
+
+    loadDailyCode();
+  }, []);
+
   const needsConfig = !hotel || !hotel.address || !hotel.checkInHour;
 
   // ========================== DONUT ISSUES ==========================
@@ -250,20 +342,110 @@ export default function DashboardAccueil() {
 
   // ========================== KPI RESERVATIONS DU JOUR ==========================
   const reservationKpis = useMemo(() => {
-    const today = new Date();
+    const todayLocal = new Date();
 
     const arr = reservations.filter((r) =>
-      isSameDay(parseISO(r.startAt), today)
+      isSameDay(parseISO(r.startAt), todayLocal)
     ).length;
 
     const dep = reservations.filter((r) =>
-      isSameDay(parseISO(r.endAt), today)
+      isSameDay(parseISO(r.endAt), todayLocal)
     ).length;
 
     const inH = roomKpis.occupied;
 
     return { arr, dep, inH };
   }, [reservations, roomKpis.occupied]);
+
+  // ========================== KPI PLANNING ==========================
+  const planningKpis = useMemo(() => {
+    const parseTimeToMinutes = (t: string) => {
+      const [h, m] = t.split(":").map(Number);
+      return h * 60 + (m || 0);
+    };
+
+    const totalShifts = weekShifts.length;
+
+    let totalMin = 0;
+    for (const s of weekShifts) {
+      const start = parseTimeToMinutes(s.startTime);
+      let end = parseTimeToMinutes(s.endTime);
+      if (end <= start) end += 1440;
+      totalMin += end - start;
+    }
+    const totalHours = Math.round((totalMin / 60) * 2) / 2;
+
+    const todayEmployees = new Set(
+      weekShifts
+        .filter((s) => s.date === todayStr)
+        .map((s) => s.employee?.id)
+        .filter(Boolean)
+    ).size;
+
+    return {
+      totalShifts,
+      totalHours,
+      todayEmployees,
+    };
+  }, [weekShifts, todayStr]);
+
+  // ========================== KPI POINTAGE ==========================
+  const attendanceKpis = useMemo(() => {
+    const rows = todayAttendance || [];
+
+    const attendedIds = new Set(
+      rows.map((r: any) => r.employeeId).filter(Boolean)
+    );
+
+    const presentRows = rows.filter((r: any) => r.status === "PRESENT").length;
+    const presentSafe = presentRows || attendedIds.size;
+
+    const absentRows = rows.filter((r: any) => r.status === "ABSENT").length;
+
+    const plannedTodayIds = new Set(
+      weekShifts
+        .filter((s) => s.date === todayStr)
+        .map((s) => s.employee?.id)
+        .filter(Boolean)
+    );
+
+    const absentEstimated = Math.max(
+      0,
+      plannedTodayIds.size - attendedIds.size
+    );
+    const absentSafe = Math.max(absentRows, absentEstimated);
+
+    const durations = rows
+      .filter((r: any) => r.checkOutAt)
+      .map((r: any) =>
+        Math.max(
+          0,
+          differenceInMinutes(parseISO(r.checkOutAt), parseISO(r.checkInAt))
+        )
+      );
+
+    const avgMin = durations.length
+      ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
+      : 0;
+
+    const avgTxt =
+      avgMin > 0
+        ? `${Math.floor(avgMin / 60)}h${String(avgMin % 60).padStart(2, "0")}`
+        : "—";
+
+    return {
+      present: presentSafe,
+      absent: absentSafe,
+      avgTxt,
+      plannedToday: plannedTodayIds.size,
+    };
+  }, [todayAttendance, weekShifts, todayStr]);
+
+  // ========================== QR DATA ==========================
+  const codeValue = dailyCode?.code ?? "------";
+  const validUntilLabel = dailyCode?.validUntil
+    ? format(parseISO(dailyCode.validUntil), "HH:mm")
+    : null;
 
   return (
     <div className="space-y-6">
@@ -292,7 +474,7 @@ export default function DashboardAccueil() {
         </div>
       )}
 
-      {/* ✅ Layout premium + équilibré */}
+      {/* ✅ Layout premium */}
       <section>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* ------------------ PROFIL USER (2/3) ------------------ */}
@@ -322,7 +504,10 @@ export default function DashboardAccueil() {
                   {/* Avatar */}
                   <div className="relative">
                     <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 shadow-lg grid place-items-center text-white text-2xl font-bold">
-                      {getInitials(currentUser?.firstName, currentUser?.lastName)}
+                      {getInitials(
+                        currentUser?.firstName,
+                        currentUser?.lastName
+                      )}
                     </div>
                     <div className="absolute -bottom-2 -right-2 h-6 w-6 rounded-full bg-white border shadow-sm grid place-items-center">
                       <User2 className="w-3.5 h-3.5 text-emerald-600" />
@@ -336,7 +521,9 @@ export default function DashboardAccueil() {
                     </div>
                     <div className="text-2xl font-semibold text-gray-900 tracking-tight">
                       {currentUser
-                        ? `${currentUser.firstName ?? ""} ${currentUser.lastName ?? ""}`.trim() || "—"
+                        ? `${currentUser.firstName ?? ""} ${
+                            currentUser.lastName ?? ""
+                          }`.trim() || "—"
                         : "—"}
                     </div>
 
@@ -400,9 +587,7 @@ export default function DashboardAccueil() {
             </div>
           </div>
 
-          {/* ------------------ LIGNE 2 : 3 cartes ------------------ */}
-
-          {/* ISSUES */}
+          {/* ------------------ ISSUES ------------------ */}
           <div className="rounded-3xl border border-white/30 bg-white/40 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.06)] p-6">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
@@ -457,7 +642,7 @@ export default function DashboardAccueil() {
             </div>
           </div>
 
-          {/* CHAMBRES — GLOBAL (3 KPIs) */}
+          {/* ------------------ CHAMBRES — GLOBAL ------------------ */}
           <div className="rounded-3xl border border-white/30 bg-white/40 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.06)] p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
@@ -487,7 +672,7 @@ export default function DashboardAccueil() {
             </div>
           </div>
 
-          {/* ÉTATS CHAMBRES (3 KPIs) */}
+          {/* ------------------ ÉTATS CHAMBRES ------------------ */}
           <div className="rounded-3xl border border-white/30 bg-white/40 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.06)] p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
@@ -514,6 +699,119 @@ export default function DashboardAccueil() {
 
             <div className="mt-3 text-[11px] text-gray-500">
               Vue opérationnelle.
+            </div>
+          </div>
+
+          {/* ------------------ PLANNING KPI ------------------ */}
+          <div className="rounded-3xl border border-white/30 bg-white/40 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.06)] p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <CalendarDays className="w-4 h-4 text-emerald-600" />
+                Planning — Semaine
+              </h2>
+              <button
+                onClick={() => navigate("/dashboard/manager/planning")}
+                className="text-xs text-emerald-700 hover:text-emerald-900 underline-offset-2 hover:underline"
+              >
+                Voir
+              </button>
+            </div>
+
+            {planningLoading ? (
+              <div className="text-xs text-gray-500">
+                Chargement du planning…
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-3">
+                <MiniKpi label="Shifts" value={planningKpis.totalShifts} />
+                <MiniKpi label="Heures" value={`${planningKpis.totalHours}h`} />
+                <MiniKpi label="Équipe ajd" value={planningKpis.todayEmployees} />
+              </div>
+            )}
+
+            <div className="mt-3 flex items-center gap-2 text-[11px] text-gray-500">
+              <Clock className="w-3.5 h-3.5" />
+              Total d’heures basé sur la semaine courante.
+            </div>
+          </div>
+
+          {/* ✅ POINTAGE KPI + QR INTÉGRÉ (2/3) */}
+          <div className="rounded-3xl border border-white/30 bg-white/40 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.06)] p-6 lg:col-span-2">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <QrCode className="w-4 h-4 text-emerald-600" />
+                Pointage — Aujourd’hui
+              </h2>
+              <button
+                onClick={() => navigate("/dashboard/manager/pointage")}
+                className="text-xs text-emerald-700 hover:text-emerald-900 underline-offset-2 hover:underline"
+              >
+                Voir
+              </button>
+            </div>
+
+            {/* ✅ Contenu interne : KPIs à gauche + QR à droite */}
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_230px] gap-4 items-stretch">
+              {/* LEFT: KPIs */}
+              <div>
+                {attendanceLoading ? (
+                  <div className="text-xs text-gray-500">
+                    Chargement du pointage…
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-3 gap-3">
+                    <MiniKpi label="Présents" value={attendanceKpis.present} />
+                    <MiniKpi label="Absents" value={attendanceKpis.absent} />
+                    <MiniKpi label="Durée moyenne" value={attendanceKpis.avgTxt} />
+                  </div>
+                )}
+
+                <div className="mt-3 flex items-center gap-2 text-[11px] text-gray-500">
+                  <UsersIcon className="w-3.5 h-3.5" />
+                  Planifiés aujourd’hui : <b>{attendanceKpis.plannedToday}</b>
+                </div>
+
+                <div className="mt-1 text-[10px] text-gray-400">
+                  “Absents” est estimé via le planning si le backend ne renvoie
+                  pas encore un statut ABSENT fiable.
+                </div>
+              </div>
+
+              {/* RIGHT: QR intégré */}
+              <div className="rounded-2xl border border-white/50 bg-white/60 backdrop-blur-xl p-4 shadow-[0_6px_18px_rgba(0,0,0,0.06)] ring-1 ring-white/40 flex flex-col items-center justify-center">
+                <div className="text-[10px] tracking-wide text-gray-500 mb-2 flex items-center gap-1">
+                  <QrCode className="w-3.5 h-3.5" />
+                  Code journalier
+                </div>
+
+                {dailyCodeLoading ? (
+                  <div className="text-xs text-gray-500">Chargement…</div>
+                ) : (
+                  <>
+                    <div className="bg-white/80 p-2 rounded-xl border">
+                      <QRCodeSVG
+                        value={JSON.stringify({ code: codeValue, date: todayStr })}
+                        size={120}
+                        marginSize={4}
+                      />
+                    </div>
+
+                    <div className="mt-2 text-lg font-extrabold tracking-widest">
+                      {codeValue}
+                    </div>
+
+                    <div className="text-[10px] text-gray-500 mt-1">
+                      {validUntilLabel ? (
+                        <>
+                          Valide jusqu’à <b>{validUntilLabel}</b>
+                        </>
+                      ) : (
+                        "Aucun code actif"
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>
