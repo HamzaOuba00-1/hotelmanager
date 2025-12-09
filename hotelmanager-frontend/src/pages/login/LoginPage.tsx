@@ -49,7 +49,7 @@ const LoginPage: React.FC = () => {
           navigate("/dashboard/employe");
           break;
         case "CLIENT":
-          navigate("/client");
+          navigate("/dashboard/client");
           break;
         default:
           navigate("/dashboard");

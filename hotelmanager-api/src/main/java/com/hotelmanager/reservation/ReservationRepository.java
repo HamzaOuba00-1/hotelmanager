@@ -22,6 +22,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     List<Reservation> findByHotelId(Long hotelId);
 
+    List<Reservation> findByClientId(Long clientId);
+
     @Query("""
         select r
         from Reservation r

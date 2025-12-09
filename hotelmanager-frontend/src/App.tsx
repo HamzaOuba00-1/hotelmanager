@@ -23,6 +23,8 @@ import PublicRoomsPage from "./pages/PublicRoomsPage";
 import ReservationsPage from "./pages/dashboard/ManagerDashboardComponents/ReservationsPage";
 import IssuesPage from "./pages/dashboard/ManagerDashboardComponents/IssuesPage";
 import EmployeeIssuesPage from "./pages/dashboard/EmployeDashboardComponents/IssuesPage";
+import ClientReservationsPage from "./pages/dashboard/ClientDashboardComponents/ClientReservationsPage";
+import ClientMessagesPage from "./pages/dashboard/ClientDashboardComponents/ClientMessagesPage";
 
 const DEFAULT_PUBLIC_HOTEL_ID = 1;
 function App() {
@@ -65,16 +67,20 @@ function App() {
           </Route>
         </Route>
 
-        {/* Routes protégées - Client */}
+        {/* ✅ Routes protégées - Client (NESTED COMME MANAGER) */}
         <Route element={<PrivateRoute allowedRoles={["CLIENT"]} />}>
-          <Route path="/dashboard/client" element={<ClientDashboard />} />
-          <Route path="rooms" element={<RoomsPage />} />{" "}
-          {/* Full path: /dashboard/client/rooms */}
-        </Route>
+          <Route path="/dashboard/client" element={<ClientDashboard />}>
+            <Route path="reservations" element={<ClientReservationsPage />} />
+            <Route path="messages" element={<ClientMessagesPage />} />
 
-        {/* Redirections */}
-        <Route path="/" element={<Navigate to={`/hotels/${DEFAULT_PUBLIC_HOTEL_ID}/rooms`} replace />}/>
-        <Route path="*" element={<div>404 - Page introuvable</div>} />
+            {/* si tu as ces pages plus tard */}
+            {/* <Route path="messages" element={<ClientMessagesPage />} /> */}
+            {/* <Route path="profil" element={<ClientProfilePage />} /> */}
+
+            {/* optionnel si tu veux l’accès rooms depuis client */}
+            <Route path="rooms" element={<RoomsPage />} />
+          </Route>
+        </Route>
       </Routes>
     </AuthProvider>
   );
