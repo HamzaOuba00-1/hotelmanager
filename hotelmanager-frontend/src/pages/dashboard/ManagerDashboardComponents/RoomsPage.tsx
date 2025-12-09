@@ -146,10 +146,7 @@ export default function RoomsPage() {
               <RoomKpi label="À nettoyer" value={roomKpis.aNettoyer} />
             </div>
 
-            {/* mini info optionnel */}
-            <div className="mt-2 text-[11px] text-gray-500 text-center">
-              Occupées = CHECKIN + ROOM_SERVICE
-            </div>
+
           </div>
         )}
       </div>

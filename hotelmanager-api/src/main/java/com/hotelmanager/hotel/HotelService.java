@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
 @Service
 @RequiredArgsConstructor
 public class HotelService {
@@ -17,31 +20,34 @@ public class HotelService {
     private final UserRepository userRepository;
     private final RoomService roomService;
 
-    public Hotel getHotelOf(User manager) {
-        var freshUser = userRepository.findById(manager.getId())
-                .orElseThrow(() -> new IllegalStateException("Utilisateur introuvable"));
+    public Hotel getHotelOf(User principal) {
+        var freshUser = userRepository.findById(principal.getId())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Utilisateur introuvable"
+                ));
 
         if (freshUser.getHotel() == null) {
-            throw new IllegalStateException("Le manager n'est rattaché à aucun hôtel.");
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Utilisateur non rattaché à un hôtel"
+            );
         }
 
         return hotelRepository.findById(freshUser.getHotel().getId())
-                .orElseThrow(() -> new NoSuchElementException("Hôtel introuvable"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Hôtel introuvable"
+                ));
     }
 
     public Hotel updateHotel(User manager, HotelConfigRequest req, boolean forceRegen) {
         Hotel h = getHotelOf(manager);
 
-        // ---- Ensure lists not null (VERY IMPORTANT) ----
         ensureCollections(h);
 
-        // ---- Snapshot ancienne structure ----
         Integer oldFloors = h.getFloors();
         Integer oldRoomsPerFloor = h.getRoomsPerFloor();
         List<String> oldFloorLabels = new ArrayList<>(safeList(h.getFloorLabels()));
         List<String> oldRoomTypes   = new ArrayList<>(safeList(h.getRoomTypes()));
 
-        // ---- Infos générales ----
         h.setName(req.name());
         h.setAddress(req.address());
         h.setPhone(req.phone());
@@ -50,23 +56,15 @@ public class HotelService {
         h.setLatitude(req.latitude());
         h.setLongitude(req.longitude());
 
-        // ---- Structure ----
         h.setFloors(req.floors());
         h.setRoomsPerFloor(req.roomsPerFloor());
 
-        // Floor labels
         h.getFloorLabels().clear();
-        if (req.floorLabels() != null) {
-            h.getFloorLabels().addAll(req.floorLabels());
-        }
+        if (req.floorLabels() != null) h.getFloorLabels().addAll(req.floorLabels());
 
-        // Room types
         h.getRoomTypes().clear();
-        if (req.roomTypes() != null) {
-            h.getRoomTypes().addAll(req.roomTypes());
-        }
+        if (req.roomTypes() != null) h.getRoomTypes().addAll(req.roomTypes());
 
-        // ---- Services ----
         if (req.services() != null) {
             Hotel.Services s = h.getServices() == null ? new Hotel.Services() : h.getServices();
             s.setHasRestaurant(Boolean.TRUE.equals(req.services().hasRestaurant()));
@@ -78,17 +76,12 @@ public class HotelService {
             h.setServices(s);
         }
 
-        // ---- Horaires ----
         h.setCheckInHour(req.checkInHour());
         h.setCheckOutHour(req.checkOutHour());
 
-        // ---- Jours fermés ----
         h.getClosedDays().clear();
-        if (req.closedDays() != null) {
-            h.getClosedDays().addAll(req.closedDays());
-        }
+        if (req.closedDays() != null) h.getClosedDays().addAll(req.closedDays());
 
-        // ---- Saison haute ----
         if (req.highSeason() != null) {
             Hotel.Season season = h.getHighSeason() == null ? new Hotel.Season() : h.getHighSeason();
             season.setFromDate(req.highSeason().from());
@@ -98,23 +91,17 @@ public class HotelService {
             h.setHighSeason(null);
         }
 
-        // ---- Politique ----
         h.setCancellationPolicy(req.cancellationPolicy());
         h.setMinAge(req.minAge());
         h.setPetsAllowed(req.petsAllowed());
 
-        // ---- Paiements ----
         h.getAcceptedPayments().clear();
-        if (req.acceptedPayments() != null) {
-            h.getAcceptedPayments().addAll(req.acceptedPayments());
-        }
+        if (req.acceptedPayments() != null) h.getAcceptedPayments().addAll(req.acceptedPayments());
 
-        // ---- Statut ----
         h.setActive(req.active() != null ? req.active() : Boolean.TRUE);
 
         Hotel saved = hotelRepository.save(h);
 
-        // ---- Compare structure safely ----
         boolean structureChanged = structureChanged(
                 oldFloors, oldRoomsPerFloor, oldFloorLabels, oldRoomTypes, req
         );
@@ -123,7 +110,7 @@ public class HotelService {
             try {
                 roomService.generateRoomsForHotel(saved);
             } catch (Exception e) {
-                System.err.println("⚠ Erreur lors de la génération automatique des chambres : " + e.getMessage());
+                System.err.println("⚠ Erreur génération chambres : " + e.getMessage());
             }
         }
 
@@ -134,8 +121,6 @@ public class HotelService {
         ensureCollections(hotel);
         return hotelRepository.save(hotel);
     }
-
-    // -------------------- Helpers --------------------
 
     private static List<String> safeList(List<String> l) {
         return l == null ? List.of() : l;
@@ -157,23 +142,10 @@ public class HotelService {
                 || !Objects.equals(oldRoomTypes, newRoomTypes);
     }
 
-    /**
-     * Si dans ton entity Hotel tu n’as pas initialisé les listes
-     * (ex: private List<String> floorLabels = new ArrayList<>();),
-     * alors il faut les garantir ici.
-     */
     private static void ensureCollections(Hotel h) {
-        if (h.getFloorLabels() == null) {
-            h.setFloorLabels(new ArrayList<>());
-        }
-        if (h.getRoomTypes() == null) {
-            h.setRoomTypes(new ArrayList<>());
-        }
-        if (h.getClosedDays() == null) {
-            h.setClosedDays(new ArrayList<>());
-        }
-        if (h.getAcceptedPayments() == null) {
-            h.setAcceptedPayments(new ArrayList<>());
-        }
+        if (h.getFloorLabels() == null) h.setFloorLabels(new ArrayList<>());
+        if (h.getRoomTypes() == null) h.setRoomTypes(new ArrayList<>());
+        if (h.getClosedDays() == null) h.setClosedDays(new ArrayList<>());
+        if (h.getAcceptedPayments() == null) h.setAcceptedPayments(new ArrayList<>());
     }
 }

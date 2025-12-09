@@ -373,7 +373,6 @@ const EmployeeIssuesPage: React.FC = () => {
                 <th className="py-2 w-28">Statut</th>
                 <th className="py-2 w-40">Auteur</th>
                 <th className="py-2 w-40">Créé le</th>
-                <th className="py-2 w-32">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -415,11 +414,7 @@ const EmployeeIssuesPage: React.FC = () => {
                         <UserIcon className="w-3.5 h-3.5 text-gray-400" />
                         <span>
                           {iss.createdByName || "Inconnu"}{" "}
-                          {iss.createdById && (
-                            <span className="text-xs text-gray-400">
-                              (#{iss.createdById})
-                            </span>
-                          )}
+                          
                         </span>
                       </div>
                     </td>

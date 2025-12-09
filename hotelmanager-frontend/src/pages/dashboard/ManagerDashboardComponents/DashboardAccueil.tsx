@@ -489,7 +489,7 @@ export default function DashboardAccueil() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
                   <Sparkles className="w-4 h-4 text-emerald-600" />
-                  Profil utilisateur
+                  Mon profil
                 </div>
 
                 <span className="text-[10px] px-2.5 py-1 rounded-full border border-emerald-200 bg-emerald-50/70 text-emerald-700 font-medium">
@@ -520,7 +520,7 @@ export default function DashboardAccueil() {
                   {/* Nom + prénom */}
                   <div className="flex-1">
                     <div className="text-xs text-gray-500">
-                      Utilisateur connecté
+                      Hello
                     </div>
                     <div className="text-2xl font-semibold text-gray-900 tracking-tight">
                       {currentUser
@@ -544,15 +544,7 @@ export default function DashboardAccueil() {
                     </div>
                   </div>
 
-                  <div className="sm:text-right">
-                    <div className="text-[10px] text-gray-500">Vue rapide</div>
-                    <div className="mt-1 text-sm font-medium text-gray-800">
-                      Dashboard manager
-                    </div>
-                    <div className="text-[11px] text-gray-500">
-                      Accès & supervision
-                    </div>
-                  </div>
+                  
                 </div>
               )}
             </div>
@@ -585,9 +577,7 @@ export default function DashboardAccueil() {
               </div>
             )}
 
-            <div className="mt-3 text-[11px] text-gray-500">
-              “En séjour” = chambres occupées.
-            </div>
+            
           </div>
 
           {/* ------------------ ISSUES ------------------ */}
@@ -670,9 +660,7 @@ export default function DashboardAccueil() {
               </div>
             )}
 
-            <div className="mt-3 text-[11px] text-gray-500">
-              Indicateurs principaux.
-            </div>
+           
           </div>
 
           {/* ------------------ ÉTATS CHAMBRES ------------------ */}
@@ -700,9 +688,6 @@ export default function DashboardAccueil() {
               </div>
             )}
 
-            <div className="mt-3 text-[11px] text-gray-500">
-              Vue opérationnelle.
-            </div>
           </div>
 
           {/* ------------------ PLANNING KPI ------------------ */}
@@ -780,10 +765,7 @@ export default function DashboardAccueil() {
                   Planifiés aujourd’hui : <b>{attendanceKpis.plannedToday}</b>
                 </div>
 
-                <div className="mt-1 text-[10px] text-gray-400">
-                  “Absents” est estimé via le planning si le backend ne renvoie
-                  pas encore un statut ABSENT fiable.
-                </div>
+                
               </div>
 
               {/* RIGHT: QR intégré */}

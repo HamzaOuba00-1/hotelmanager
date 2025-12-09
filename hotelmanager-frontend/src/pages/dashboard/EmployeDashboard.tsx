@@ -1,10 +1,18 @@
+// src/pages/dashboard/employe/EmployeDashboard.tsx
+
 import React, { useEffect, useState } from "react";
-import { LayoutDashboard, CalendarIcon, PenLine, Search, MessageSquare, AlertTriangle, } from "lucide-react";
+import {
+  LayoutDashboard,
+  CalendarIcon,
+  PenLine,
+  Search,
+  MessageSquare,
+  AlertTriangle,
+} from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { getMyHotel } from "../../api/hotelApi";
 
-
-
+/* -------------------- Logo -------------------- */
 const Logo: React.FC<{ src?: string; alt?: string }> = ({ src, alt }) => (
   <div className="w-full h-14 flex items-center justify-center rounded-lg bg-white shadow overflow-hidden">
     {src ? (
@@ -19,6 +27,7 @@ const Logo: React.FC<{ src?: string; alt?: string }> = ({ src, alt }) => (
   </div>
 );
 
+/* -------------------- SidebarLink -------------------- */
 const SidebarLink: React.FC<{
   to: string;
   icon?: React.ReactNode;
@@ -42,7 +51,7 @@ const SidebarLink: React.FC<{
   </NavLink>
 );
 
-
+/* -------------------- Sidebar -------------------- */
 const Sidebar: React.FC<{ logoSrc?: string }> = ({ logoSrc }) => (
   <aside className="w-64 shrink-0 bg-[#F6F8F7] h-screen p-6 flex flex-col">
     <div className="mb-10">
@@ -57,24 +66,28 @@ const Sidebar: React.FC<{ logoSrc?: string }> = ({ logoSrc }) => (
       >
         Tableau de bord
       </SidebarLink>
+
       <SidebarLink
         to="/dashboard/employe/planning"
         icon={<CalendarIcon size={18} />}
       >
         Mon Planning
       </SidebarLink>
+
       <SidebarLink
         to="/dashboard/employe/pointage"
         icon={<PenLine size={18} />}
       >
         Pointage
       </SidebarLink>
+
       <SidebarLink
         to="/dashboard/employe/messages"
         icon={<MessageSquare size={18} />}
       >
         Messages
       </SidebarLink>
+
       <SidebarLink
         to="/dashboard/employe/issues"
         icon={<AlertTriangle size={18} />}
@@ -85,6 +98,7 @@ const Sidebar: React.FC<{ logoSrc?: string }> = ({ logoSrc }) => (
   </aside>
 );
 
+/* -------------------- Topbar -------------------- */
 const Topbar: React.FC<{ avatarSrc?: string }> = ({ avatarSrc }) => (
   <header className="h-16 bg-white shadow-sm flex items-center justify-between px-6">
     {/* Search bar */}
@@ -106,32 +120,39 @@ const Topbar: React.FC<{ avatarSrc?: string }> = ({ avatarSrc }) => (
   </header>
 );
 
-
-
+/* -------------------- EmployeDashboard -------------------- */
 const EmployeDashboard: React.FC = () => {
   const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined);
 
   useEffect(() => {
+    let mounted = true;
+
     const fetchHotelLogo = async () => {
       try {
         const hotel = await getMyHotel();
-        setLogoUrl(hotel.logoUrl ?? undefined);
+        if (!mounted) return;
+        setLogoUrl(hotel?.logoUrl ?? undefined);
       } catch (err) {
         console.error("Erreur récupération logo hôtel :", err);
       }
     };
 
     fetchHotelLogo();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   return (
     <div className="flex h-screen bg-gray-50 font-sans">
-      {/* Sidebar */}
+      {/* Sidebar avec logo dynamique */}
       <Sidebar logoSrc={logoUrl} />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <Topbar />
+
         <main className="flex-1 overflow-y-auto p-8">
           <Outlet />
         </main>

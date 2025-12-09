@@ -26,7 +26,7 @@ public class HotelController {
     private final HotelManualMapper mapper;
 
     @GetMapping("/me")
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasAnyRole('MANAGER','EMPLOYE')")
     public HotelConfigResponse getMyHotel(@AuthenticationPrincipal User principal) {
         Hotel h = hotelService.getHotelOf(principal);
         return mapper.toResponse(h);
@@ -34,31 +34,31 @@ public class HotelController {
 
     @PutMapping("/me")
     @PreAuthorize("hasRole('MANAGER')")
-    public HotelConfigResponse updateMyHotel(@AuthenticationPrincipal User principal,
+    public HotelConfigResponse updateMyHotel(
+            @AuthenticationPrincipal User principal,
             @Valid @RequestBody HotelConfigRequest req,
-        @RequestParam(defaultValue = "false") boolean forceRegen) {
+            @RequestParam(defaultValue = "false") boolean forceRegen
+    ) {
         Hotel saved = hotelService.updateHotel(principal, req, forceRegen);
         return mapper.toResponse(saved);
     }
 
     @PostMapping("/me/logo")
     @PreAuthorize("hasRole('MANAGER')")
-    public Map<String, String> uploadLogo(@AuthenticationPrincipal User principal,
-            @RequestParam("file") MultipartFile file) throws IOException {
+    public Map<String, String> uploadLogo(
+            @AuthenticationPrincipal User principal,
+            @RequestParam("file") MultipartFile file
+    ) throws IOException {
 
-        // 1️⃣ Crée un nom unique
         String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
         Path uploadsDir = Paths.get("uploads");
-        Files.createDirectories(uploadsDir); // si le dossier n’existe pas
+        Files.createDirectories(uploadsDir);
         Path path = uploadsDir.resolve(filename);
 
-        // 2️⃣ Sauvegarde le fichier
         Files.write(path, file.getBytes());
 
-        // 3️⃣ URL publique
         String url = "http://localhost:8080/uploads/" + filename;
 
-        // 4️⃣ Sauvegarde dans la config de l’hôtel
         Hotel hotel = hotelService.getHotelOf(principal);
         hotel.setLogoUrl(url);
         hotelService.save(hotel);
