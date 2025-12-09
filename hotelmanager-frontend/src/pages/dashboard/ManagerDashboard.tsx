@@ -69,9 +69,7 @@ const Sidebar: React.FC<{ logoSrc?: string }> = ({ logoSrc }) => (
       >
         Dashboard
       </SidebarLink>
-      <SidebarLink to="/dashboard/manager/users" icon={<Users size={18} />}>
-        Utilisateurs
-      </SidebarLink>
+      
       <SidebarLink
         to="/dashboard/manager/configuration"
         icon={<Cog size={18} />}
@@ -92,15 +90,10 @@ const Sidebar: React.FC<{ logoSrc?: string }> = ({ logoSrc }) => (
       >
         Réservations
       </SidebarLink>
-      <SidebarLink
-        to="/dashboard/manager/planning"
-        icon={<CalendarIcon size={18} />}
-      >
-        Planning
+      <SidebarLink to="/dashboard/manager/users" icon={<Users size={18} />}>
+        Utilisateurs
       </SidebarLink>
-      <SidebarLink to="/dashboard/manager/pointage" icon={<QrCode size={18} />}>
-        Pointage
-      </SidebarLink>
+      
       <SidebarLink
         to="/dashboard/manager/channels"
         icon={<MessageSquare size={18} />}
@@ -112,6 +105,15 @@ const Sidebar: React.FC<{ logoSrc?: string }> = ({ logoSrc }) => (
         icon={<AlertTriangle size={18} />}
       >
         Signalements
+      </SidebarLink>
+      <SidebarLink
+        to="/dashboard/manager/planning"
+        icon={<CalendarIcon size={18} />}
+      >
+        Planning
+      </SidebarLink>
+      <SidebarLink to="/dashboard/manager/pointage" icon={<QrCode size={18} />}>
+        Pointage
       </SidebarLink>
 
     </nav>

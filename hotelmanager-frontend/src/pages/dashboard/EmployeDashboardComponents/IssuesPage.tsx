@@ -10,14 +10,14 @@ import {
   User as UserIcon,
   Check,
   X,
-  Trash2, // 👈 ajouté
+  Trash2,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import fr from "date-fns/locale/fr";
 import {
   getIssuesForMyHotel,
   createIssue,
-  deleteIssue,      // 👈 ajouté
+  deleteIssue,
   type Issue,
   type IssueStatus,
 } from "../../../api/issueApi";
@@ -108,7 +108,6 @@ const EmployeeIssuesPage: React.FC = () => {
 
   const [detailsIssue, setDetailsIssue] = useState<Issue | null>(null);
 
-  // 👇 nouveau state pour la confirmation de suppression
   const [confirmDel, setConfirmDel] = useState<{
     open: boolean;
     id?: number;
@@ -186,7 +185,6 @@ const EmployeeIssuesPage: React.FC = () => {
     }
   };
 
-  // 👇 handler suppression (soft delete côté back)
   const onDeleteIssue = async () => {
     if (!confirmDel.id) return;
     try {
@@ -205,19 +203,15 @@ const EmployeeIssuesPage: React.FC = () => {
 
   return (
     <div className="p-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-        <div className="flex items-center gap-2">
+      {/* ✅ HEADER corrigé pour matcher PlanningPage */}
+      <div className="flex flex-col items-center gap-2 mb-8 text-center">
+        <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2 mb-1">
           <AlertTriangle className="h-8 w-8 text-emerald-600" />
-          <div className="text-left">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
-              Mes signalements
-            </h1>
-            <p className="text-sm text-gray-500">
-              Signale les problèmes que tu constates dans l’hôtel.
-            </p>
-          </div>
-        </div>
+          Mes signalements
+        </h1>
+        <p className="text-sm text-gray-500 max-w-2xl">
+          Signale les problèmes que tu constates dans l’hôtel.
+        </p>
       </div>
 
       {/* Formulaire rapide de création */}
@@ -379,7 +373,7 @@ const EmployeeIssuesPage: React.FC = () => {
                 <th className="py-2 w-28">Statut</th>
                 <th className="py-2 w-40">Auteur</th>
                 <th className="py-2 w-40">Créé le</th>
-                <th className="py-2 w-32">Actions</th> {/* 👈 nouvelle colonne */}
+                <th className="py-2 w-32">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -434,12 +428,11 @@ const EmployeeIssuesPage: React.FC = () => {
                       {formatDate(iss.createdAt)}
                     </td>
 
-                    {/* Actions */}
                     <td className="py-2 w-32 align-top">
                       {iss.status === "OPEN" && (
                         <button
                           onClick={(e) => {
-                            e.stopPropagation(); // éviter d'ouvrir le détail
+                            e.stopPropagation();
                             setConfirmDel({
                               open: true,
                               id: iss.id,
@@ -529,13 +522,11 @@ const EmployeeIssuesPage: React.FC = () => {
                 </div>
                 <div className="flex flex-col gap-1">
                   <span>
-                    Créé le :{" "}
-                    <b>{formatDate(detailsIssue.createdAt)}</b>
+                    Créé le : <b>{formatDate(detailsIssue.createdAt)}</b>
                   </span>
                   {detailsIssue.resolvedAt && (
                     <span>
-                      Résolu le :{" "}
-                      <b>{formatDate(detailsIssue.resolvedAt)}</b>
+                      Résolu le : <b>{formatDate(detailsIssue.resolvedAt)}</b>
                     </span>
                   )}
                 </div>

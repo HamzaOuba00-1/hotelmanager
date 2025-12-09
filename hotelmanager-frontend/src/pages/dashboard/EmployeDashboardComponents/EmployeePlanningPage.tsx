@@ -1,11 +1,15 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { CalendarDays, ChevronLeft, ChevronRight, RefreshCcw } from "lucide-react";
+import {
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  RefreshCcw,
+} from "lucide-react";
 import { format, startOfWeek, addDays } from "date-fns";
 import { fr } from "date-fns/locale";
 import { getMyShifts, Shift } from "../../../api/planningApi";
 import { useAuth } from "../../../auth/authContext";
 import type { User as AppUser } from "../../../../src/types/User";
-
 
 const hours = Array.from({ length: 24 }, (_, i) => i);
 const COLUMN_WIDTH = 60;
@@ -56,7 +60,9 @@ export default function EmployeePlanningPage() {
     setShifts(splitOvernightShifts(res.data));
   };
 
-  useEffect(() => { loadMyShifts(); }, [weekStart]);
+  useEffect(() => {
+    loadMyShifts();
+  }, [weekStart]);
 
   useEffect(() => {
     const center = startOfWeek(new Date(), { weekStartsOn: 1 });
@@ -87,7 +93,6 @@ export default function EmployeePlanningPage() {
   const dayHeights: number[] = [];
   let accumulatedHeight = 0;
 
-  // (sécurité) Si jamais l’API renvoie plus que l’employé courant
   const myShifts = useMemo(() => {
     if (!user?.id) return shifts;
     return shifts.filter((s) => s.employee?.id === user.id);
@@ -101,16 +106,17 @@ export default function EmployeePlanningPage() {
   }, [toast]);
 
   return (
-    <div className="p-6 text-center">
-      <div className="flex flex-col items-center gap-2 mb-6">
+    <div className="container mx-auto p-6">
+      {/* ✅ Header EXACTEMENT comme ConfigHotel */}
+      <div className="flex flex-col items-center gap-2 mb-6 text-center">
         <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2 mb-1">
           <CalendarDays className="h-8 w-8 text-emerald-600" />
           Mon planning hebdomadaire
         </h1>
 
-        <div className="text-sm text-gray-600">
+        <p className="text-sm text-gray-500 max-w-2xl">
           {user?.firstName ?? ""} {user?.lastName ?? ""}
-        </div>
+        </p>
 
         <button
           onClick={() => {
@@ -125,7 +131,7 @@ export default function EmployeePlanningPage() {
         </button>
       </div>
 
-      {/* Navigation semaines */}
+      {/* ✅ Navigation par semaines */}
       <div className="flex justify-center items-center gap-2 mb-8 flex-wrap">
         <button
           onClick={() => {
@@ -182,7 +188,7 @@ export default function EmployeePlanningPage() {
         </button>
       </div>
 
-      {/* Grille planning */}
+      {/* ✅ Grille planning */}
       <div
         ref={gridRef}
         className="grid bg-white/50 backdrop-blur-md border rounded-xl overflow-hidden text-sm relative mx-auto"
@@ -268,7 +274,9 @@ export default function EmployeePlanningPage() {
                       height: SHIFT_HEIGHT,
                       zIndex: 10,
                     }}
-                    title={`${shift.startTime} - ${shift.endTime}${shift.service ? ` • ${shift.service}` : ""}`}
+                    title={`${shift.startTime} - ${shift.endTime}${
+                      shift.service ? ` • ${shift.service}` : ""
+                    }`}
                   >
                     {shift.startTime} - {shift.endTime}
                     {shift.service ? ` • ${shift.service}` : ""}
@@ -280,12 +288,14 @@ export default function EmployeePlanningPage() {
         })}
       </div>
 
+      {/* ✅ Toast */}
       {toast && (
         <div className="fixed bottom-6 right-6 px-5 py-3 rounded-lg bg-emerald-600 text-white shadow-xl animate-slideIn z-50">
           {toast}
         </div>
       )}
 
+      {/* ✅ Animations communes */}
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(8px); }

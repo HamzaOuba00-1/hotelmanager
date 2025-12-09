@@ -1,12 +1,7 @@
 // src/pages/dashboard/employe/DashboardAccueilEmploye.tsx
 
-import React, {
-  useEffect,
-  useState,
-  useMemo,
-  type CSSProperties,
-} from "react";
-import { Calendar, AlertTriangle, CheckCircle, Clock } from "lucide-react";
+import React, { useEffect, useState, useMemo, type CSSProperties } from "react";
+import { Calendar, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import { getIssuesForMyHotel, type Issue } from "../../../api/issueApi";
@@ -73,7 +68,7 @@ const DashboardAccueilEmploye: React.FC = () => {
     loadIssues();
   }, []);
 
-  // 2) Charger l'utilisateur courant ✅ (même logique que PlaceholderUtilisateurs)
+  // 2) Charger l'utilisateur courant ✅
   useEffect(() => {
     const loadCurrentUser = async () => {
       setUserLoading(true);
@@ -83,7 +78,6 @@ const DashboardAccueilEmploye: React.FC = () => {
 
         const meUser =
           (emailLs ? users.find((u) => u.email === emailLs) : null) ??
-          // fallback ultra soft si jamais email non stocké
           users.find((u) => u.role === "EMPLOYE") ??
           users[0] ??
           null;
@@ -126,7 +120,6 @@ const DashboardAccueilEmploye: React.FC = () => {
   // ===================== SIGNALMENTS STATS =====================
 
   const ownStats: IssueStats = useMemo(() => {
-    // si on n’a pas un user fiable, on affiche global
     if (!currentUser || !currentUser.id) {
       const open = issues.filter((i) => i.status === "OPEN").length;
       const resolved = issues.filter((i) => i.status === "RESOLVED").length;
@@ -205,7 +198,7 @@ const DashboardAccueilEmploye: React.FC = () => {
     for (const s of weeklyShifts) {
       const start = parseTimeToMinutes(s.startTime);
       let end = parseTimeToMinutes(s.endTime);
-      if (end <= start) end += 1440; // overnight safety
+      if (end <= start) end += 1440;
       totalMin += end - start;
     }
 
@@ -241,14 +234,14 @@ const DashboardAccueilEmploye: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header (sobre, comme manager) */}
+      {/* ✅ Header EXACTEMENT dans l’esprit du manager */}
       <div>
-        <div className="text-lg font-medium text-gray-900">
-          Bienvenue
+        <div className="text-lg font-bold text-gray-800">
+          Bienvenue sur le Dashboard
           {userLoading
             ? ""
             : currentUser?.firstName
-            ? `, ${currentUser.firstName}`
+            ? ` – ${currentUser.firstName}`
             : ""}
         </div>
         <div className="text-sm text-gray-500 mt-1">
@@ -261,8 +254,6 @@ const DashboardAccueilEmploye: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* ================= PLANNING CARD ================= */}
           <div className="relative overflow-hidden rounded-3xl border border-white/30 bg-white/40 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.08)] p-6">
-   
-
             <div className="relative">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-sm font-semibold text-gray-700 flex items-center gap-2">
@@ -283,8 +274,7 @@ const DashboardAccueilEmploye: React.FC = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {/* Heures semaine (même esprit KPI doux) */}
-                  <div className="grid  grid-cols-3 gap-3 ">
+                  <div className="grid grid-cols-3 gap-3">
                     <MiniKpi label="Heures semaine" value={`${hoursThisWeek}h`} />
                     <MiniKpi label="Shifts semaine" value={weeklyShifts.length} />
                     <MiniKpi
@@ -296,8 +286,17 @@ const DashboardAccueilEmploye: React.FC = () => {
                     />
                   </div>
 
-                  {/* Prochain shift - glass doux */}
-                  
+                  {/* Prochain shift (tu peux le réactiver si tu veux) */}
+                  {nextShift && (
+                    <div className="rounded-2xl border border-white/50 bg-white/60 backdrop-blur-xl p-4 ring-1 ring-white/40">
+                      <div className="text-[10px] tracking-wide text-gray-500">
+                        Prochain shift
+                      </div>
+                      <div className="text-sm font-medium text-gray-900 mt-1">
+                        {nextShiftLabel}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -305,8 +304,6 @@ const DashboardAccueilEmploye: React.FC = () => {
 
           {/* ================= SIGNALMENTS CARD ================= */}
           <div className="relative overflow-hidden rounded-3xl border border-white/30 bg-white/40 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.08)] p-6">
-
-
             <div className="relative">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-sm font-semibold text-gray-700 flex items-center gap-2">
@@ -362,8 +359,12 @@ const DashboardAccueilEmploye: React.FC = () => {
                 </div>
               </div>
 
-              {/* petit hint discret */}
-              
+              {/* Hint optionnel */}
+              {!loadingIssues && total === 0 && (
+                <div className="mt-3 text-[11px] text-gray-500">
+                  Aucun signalement créé pour le moment.
+                </div>
+              )}
             </div>
           </div>
         </div>
