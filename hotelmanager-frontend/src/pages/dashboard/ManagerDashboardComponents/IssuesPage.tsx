@@ -236,23 +236,19 @@ const IssuesPage: React.FC = () => {
 
   return (
     <div className="p-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-        <div className="flex items-center gap-2">
+      {/* Header — aligné sur Planning */}
+      <div className="flex flex-col items-center gap-2 mb-6 text-center">
+        <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2 mb-1">
           <AlertTriangle className="h-8 w-8 text-emerald-600" />
-          <div className="text-left">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
-              Signalements de l’hôtel
-            </h1>
-            <p className="text-sm text-gray-500">
-              Suivi des problèmes remontés par les équipes et les managers.
-            </p>
-          </div>
-        </div>
+          Signalements de l’hôtel
+        </h1>
+        <p className="text-sm text-gray-500 max-w-2xl">
+          Suivi des problèmes remontés par les équipes et les managers.
+        </p>
 
         <button
           onClick={() => setModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 text-white shadow hover:bg-emerald-700 transition"
+          className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-xl shadow-lg hover:from-emerald-600 hover:to-emerald-700 transition-all mt-3"
         >
           <Plus className="w-4 h-4" />
           Nouveau signalement
@@ -380,13 +376,13 @@ const IssuesPage: React.FC = () => {
                   <tr
                     key={iss.id}
                     className="border-b last:border-0 hover:bg-gray-50/60 cursor-pointer"
-                    onClick={() => setDetailsIssue(iss)} // 👈 ouvre les détails
+                    onClick={() => setDetailsIssue(iss)}
                   >
                     {/* important star */}
                     <td className="py-2 text-center">
                       <button
                         onClick={(e) => {
-                          e.stopPropagation(); // ne pas ouvrir le modal
+                          e.stopPropagation();
                           toggleImportant(iss);
                         }}
                         className="p-1 rounded-full hover:bg-gray-100"
@@ -404,12 +400,10 @@ const IssuesPage: React.FC = () => {
                       </button>
                     </td>
 
-                    {/* 👉 Titre limité / tronqué */}
                     <td className="py-2 font-medium text-gray-800 align-top max-w-xs">
                       <span className="block truncate">{iss.title}</span>
                     </td>
 
-                    {/* 👉 Description limitée (2 lignes max) */}
                     <td className="py-2 text-gray-600 align-top max-w-md">
                       <div className="line-clamp-2 overflow-hidden">
                         {iss.description || "—"}
@@ -440,7 +434,6 @@ const IssuesPage: React.FC = () => {
 
                     <td className="py-2 align-top">
                       <div className="flex flex-wrap items-center gap-2">
-                        {/* Bouton RESOLVED / REOPEN */}
                         {iss.status === "OPEN" ? (
                           <button
                             onClick={(e) => {
@@ -465,7 +458,6 @@ const IssuesPage: React.FC = () => {
                           </button>
                         ) : null}
 
-                        {/* Soft delete */}
                         {iss.status !== "DELETED" && (
                           <button
                             onClick={(e) => {

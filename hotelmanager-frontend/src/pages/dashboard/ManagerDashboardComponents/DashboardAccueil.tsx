@@ -483,7 +483,7 @@ export default function DashboardAccueil() {
           {/* ------------------ PROFIL USER (2/3) ------------------ */}
           <div className="relative overflow-hidden rounded-3xl border border-white/30 bg-white/40 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.08)] p-6 lg:col-span-2">
             <div className="absolute -top-20 -right-20 h-56 w-56 rounded-full bg-emerald-100/40 blur-2xl" />
-            <div className="absolute -bottom-24 -left-24 h-56 w-56 rounded-full bg-amber-100/40 blur-2xl" />
+            <div className="absolute -bottom-24 -left-24 h-56 w-56 rounded-full bg-emerald-100/40 blur-2xl" />
 
             <div className="relative">
               <div className="flex items-center justify-between">

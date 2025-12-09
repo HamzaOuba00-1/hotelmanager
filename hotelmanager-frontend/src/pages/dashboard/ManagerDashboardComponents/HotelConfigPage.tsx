@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Cog } from "lucide-react";
 import { getMyHotel, updateMyHotel, uploadLogo } from "../../../api/hotelApi";
 import {
   hotelConfigSchema,
@@ -102,7 +103,6 @@ export default function HotelConfigPage() {
     } catch (err: any) {
       console.error("❌ Erreur d'enregistrement :", err);
 
-      // Si backend renvoie erreur structure verrouillée
       const msg =
         err?.response?.data?.message ||
         err?.message ||
@@ -122,7 +122,8 @@ export default function HotelConfigPage() {
         JSON.stringify(values.roomTypes ?? []) !==
         JSON.stringify(hotelData.roomTypes ?? []);
 
-      const forbiddenChange = isLocked && (floorsChanged || rpfChanged || typesChanged);
+      const forbiddenChange =
+        isLocked && (floorsChanged || rpfChanged || typesChanged);
 
       setPendingValues(values);
 
@@ -172,8 +173,18 @@ export default function HotelConfigPage() {
   }, []);
 
   return (
-    <div className="container mx-auto p-6 grid gap-6">
-      <h1 className="text-2xl font-semibold">Configuration de l'hôtel</h1>
+    <div className="container mx-auto p-6">
+      {/* ✅ Header aligné sur Planning */}
+      <div className="flex flex-col items-center gap-2 mb-6 text-center">
+        <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2 mb-1">
+          <Cog className="h-8 w-8 text-emerald-600" />
+          Configuration de l'hôtel
+        </h1>
+        <p className="text-sm text-gray-500 max-w-2xl">
+          Gérez les informations générales, la structure, les services, les
+          horaires, les politiques et la sécurité.
+        </p>
+      </div>
 
       <form onSubmit={onSubmit} className="grid gap-6">
         <HotelGeneralInfoCard form={form} onLogoSelected={onLogoSelected} />
@@ -183,18 +194,19 @@ export default function HotelConfigPage() {
         <HotelPolicyCard form={form} />
         <HotelSecurityCard form={form} />
 
-        <div className="flex justify-end gap-3">
+        {/* ✅ Actions harmonisées */}
+        <div className="flex justify-end gap-3 pt-2">
           <button
             type="button"
             onClick={() => form.reset(hotelData)}
-            className="px-4 py-2 rounded border"
+            className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
           >
             Réinitialiser
           </button>
           <button
             type="submit"
             disabled={formState.isSubmitting}
-            className="px-4 py-2 rounded bg-emerald-600 text-white disabled:opacity-50"
+            className="px-5 py-2.5 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg hover:from-emerald-600 hover:to-emerald-700 transition-all disabled:opacity-50"
           >
             Enregistrer
           </button>
@@ -209,8 +221,8 @@ export default function HotelConfigPage() {
               Configuration initiale
             </h2>
             <p className="text-gray-700 mb-4">
-              Le nombre d’étages, le nombre de chambres par étage et les types de
-              chambres disponibles constituent le setup initial des chambres.
+              Le nombre d’étages, le nombre de chambres par étage et les types
+              de chambres disponibles constituent le setup initial des chambres.
             </p>
             <p className="text-gray-700 mb-6">
               Une fois les chambres générées, ces paramètres seront verrouillés.
@@ -285,7 +297,7 @@ export default function HotelConfigPage() {
       {/* Toast */}
       {toast && (
         <div
-          className={`fixed bottom-6 right-6 px-5 py-3 rounded-lg shadow-lg text-white animate-slideIn
+          className={`fixed bottom-6 right-6 px-5 py-3 rounded-lg shadow-lg text-white animate-slideIn z-50
           ${toast.type === "success" ? "bg-emerald-600" : "bg-red-500"}`}
         >
           {toast.message}

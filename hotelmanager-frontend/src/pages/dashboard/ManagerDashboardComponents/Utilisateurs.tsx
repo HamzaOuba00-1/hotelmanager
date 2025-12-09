@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { UserRound, ChevronDown, ChevronRight } from 'lucide-react';
+import { UserRound, ChevronDown, ChevronRight, Users } from 'lucide-react';
 import CrewSection from './AddUserComponents/CrewSection';
 import AddUserModal from './AddUserComponents/AddUserModal';
-import type { User } from '../../../types/User'; 
+import type { User } from '../../../types/User';
 
 const PlaceholderUtilisateurs: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -56,7 +56,8 @@ const PlaceholderUtilisateurs: React.FC = () => {
   const employes = users.filter((u) => u.role === 'EMPLOYE');
 
   return (
-    <div className="p-8 min-h-screen bg-gradient-to-br from-[#ffffff] via-[#f2f4f7] to-[#e6ebf1] font-sans text-[#2C2C2C]">
+    <div className="container mx-auto p-6 min-h-screen">
+
       {/* Modal ajout utilisateur */}
       {showModal && (
         <AddUserModal
@@ -68,12 +69,21 @@ const PlaceholderUtilisateurs: React.FC = () => {
         />
       )}
 
-      <div className="flex justify-end mb-8">
+      <div className="flex flex-col items-center gap-2 mb-8 text-center">
+        <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+          <Users className="h-8 w-8 text-emerald-600" />
+          Équipe de l’hôtel
+        </h1>
+        <p className="text-sm text-gray-500 max-w-2xl">
+          Gestion des managers et des employés rattachés à votre établissement.
+        </p>
+
         <button
           onClick={() => setShowModal(true)}
-          className="px-4 h-12 flex items-center justify-center text-base font-medium text-white
-                    bg-gradient-to-br from-[#47B881] to-[#34A384] rounded-2xl shadow-lg
-                    hover:scale-105 transition-transform"
+          className="flex items-center gap-2 px-5 py-2.5 
+                    bg-gradient-to-br from-emerald-500 to-emerald-600 text-white 
+                    rounded-xl shadow-lg hover:from-emerald-600 hover:to-emerald-700 
+                    transition-all mt-3"
           aria-label="Ajouter un utilisateur"
         >
           Ajouter un membre
@@ -81,46 +91,65 @@ const PlaceholderUtilisateurs: React.FC = () => {
       </div>
 
       {/* === MANAGERS === */}
-      <div className="mb-8">
+      <div className="mb-10">
         <div
           role="button"
           tabIndex={0}
-          className="flex items-center justify-between mb-4 cursor-pointer"
+          className="flex items-center justify-between mb-4 cursor-pointer 
+                     bg-white/50 backdrop-blur-md border border-white/30 
+                     rounded-2xl px-4 py-3 shadow-sm"
           onClick={() => setShowManagers(!showManagers)}
           onKeyDown={(e) => e.key === 'Enter' && setShowManagers(!showManagers)}
         >
-          <h2 className="text-xl font-semibold tracking-wide text-gray-800">Managers</h2>
-          {showManagers ? <ChevronDown /> : <ChevronRight />}
+          <h2 className="text-lg font-semibold tracking-wide text-gray-800">
+            Managers
+          </h2>
+          {showManagers ? <ChevronDown className="text-gray-600" /> : <ChevronRight className="text-gray-600" />}
         </div>
 
         {showManagers && (
-          <div className="flex flex-wrap gap-6 animate-fade-in">
+          <div className="flex flex-wrap gap-6 animate-fadeIn">
             {managers.map((u) => renderUserCard(u, u.email === connectedEmail))}
           </div>
         )}
       </div>
 
       {/* === EMPLOYÉS === */}
-      <div>
+      <div className="mb-10">
         <div
           role="button"
           tabIndex={0}
-          className="flex items-center justify-between mb-4 cursor-pointer"
+          className="flex items-center justify-between mb-4 cursor-pointer 
+                     bg-white/50 backdrop-blur-md border border-white/30 
+                     rounded-2xl px-4 py-3 shadow-sm"
           onClick={() => setShowEmployes(!showEmployes)}
           onKeyDown={(e) => e.key === 'Enter' && setShowEmployes(!showEmployes)}
         >
-          <h2 className="text-xl font-semibold tracking-wide text-gray-800">Employés</h2>
-          {showEmployes ? <ChevronDown /> : <ChevronRight />}
+          <h2 className="text-lg font-semibold tracking-wide text-gray-800">
+            Employés
+          </h2>
+          {showEmployes ? <ChevronDown className="text-gray-600" /> : <ChevronRight className="text-gray-600" />}
         </div>
 
         {showEmployes && (
-          <div className="flex flex-wrap gap-6 animate-fade-in">
+          <div className="flex flex-wrap gap-6 animate-fadeIn">
             {employes.map((u) => renderUserCard(u))}
           </div>
         )}
       </div>
 
       <CrewSection allUsers={users} />
+
+      {/* ✅ Animations cohérentes avec Planning */}
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out;
+        }
+      `}</style>
     </div>
   );
 };
