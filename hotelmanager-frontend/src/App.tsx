@@ -27,6 +27,9 @@ import ClientReservationsPage from "./pages/dashboard/ClientDashboardComponents/
 import ClientMessagesPage from "./pages/dashboard/ClientDashboardComponents/ClientMessagesPage";
 import ClientProfilePage from "./pages/dashboard/ClientDashboardComponents/ClientProfilePage";
 import ManagerProfilePage from "./pages/dashboard/ManagerDashboardComponents/ManagerProfilePage";
+import EmployeeProfilePage from "./pages/dashboard/EmployeDashboardComponents/EmployeeProfilePage";
+
+
 
 
 const DEFAULT_PUBLIC_HOTEL_ID = 1;
@@ -67,6 +70,7 @@ function App() {
             <Route path="rooms" element={<RoomsPage />} />
             <Route path="messages" element={<EmployeeChatPage />} />
             <Route path="issues" element={<EmployeeIssuesPage />} />
+            <Route path="profil" element={<EmployeeProfilePage />} />
             
           </Route>
         </Route>

@@ -8,6 +8,7 @@ import {
   Search,
   MessageSquare,
   AlertTriangle,
+  User2,
 } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { getMyHotel } from "../../api/hotelApi";
@@ -93,6 +94,10 @@ const Sidebar: React.FC<{ logoSrc?: string }> = ({ logoSrc }) => (
         icon={<AlertTriangle size={18} />}
       >
         Signalements
+      </SidebarLink>
+
+      <SidebarLink to="/dashboard/employe/profil" icon={<User2 size={18} />}>
+        Mon profil
       </SidebarLink>
     </nav>
   </aside>
