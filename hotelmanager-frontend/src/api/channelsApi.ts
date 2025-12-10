@@ -83,3 +83,13 @@ export async function getChannelMembers(channelId: number): Promise<User[]> {
   );
   return data;
 }
+
+export async function getOrCreateClientSupportChannel(): Promise<Channel> {
+  const { data } = await axios.post<Channel>(
+    "/channels/client-support",
+    {},
+    authHeader()
+  );
+  return data;
+}
+

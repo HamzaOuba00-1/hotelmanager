@@ -63,4 +63,12 @@ public class ChannelController {
                                     @AuthenticationPrincipal User me) {
     return channelService.listMembers(channelId, me);
   }
+
+  @PostMapping("/client-support")
+  @PreAuthorize("hasRole('CLIENT')")
+  public ChannelResponse clientSupport(@AuthenticationPrincipal User me) {
+    Channel c = channelService.getOrCreateClientSupport(me);
+    return ChannelResponse.from(c, channelService.countMembers(c.getId()));
+  }
+
 }

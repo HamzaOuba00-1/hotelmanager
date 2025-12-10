@@ -7,10 +7,14 @@ import org.springframework.stereotype.Component;
 @Component("chatAuth")
 public class ChatAuthorization {
   private final ChannelMemberRepository memberRepo;
-  public ChatAuthorization(ChannelMemberRepository memberRepo) { this.memberRepo = memberRepo; }
+
+  public ChatAuthorization(ChannelMemberRepository memberRepo) {
+    this.memberRepo = memberRepo;
+  }
 
   public boolean isMember(Long channelId, User user) {
     if (user == null) return false;
-    return memberRepo.findByChannelIdAndUserId(channelId, user.getId()).isPresent();
+    return memberRepo.findByChannel_IdAndUser_Id(channelId, user.getId()).isPresent();
   }
 }
+
