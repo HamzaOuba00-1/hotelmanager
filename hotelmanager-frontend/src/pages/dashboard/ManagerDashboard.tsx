@@ -11,6 +11,7 @@ import {
   MessageSquare,
   CalendarCheck2,
   AlertTriangle,
+  User2,
 } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { getMyHotel } from "../../api/hotelApi";
@@ -114,6 +115,9 @@ const Sidebar: React.FC<{ logoSrc?: string }> = ({ logoSrc }) => (
       </SidebarLink>
       <SidebarLink to="/dashboard/manager/pointage" icon={<QrCode size={18} />}>
         Pointage
+      </SidebarLink>
+      <SidebarLink to="/dashboard/manager/profil" icon={<User2 size={18} />}>
+        Mon profil
       </SidebarLink>
 
     </nav>

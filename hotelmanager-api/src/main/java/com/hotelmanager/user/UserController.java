@@ -1,21 +1,15 @@
 package com.hotelmanager.user;
 
 import com.hotelmanager.hotel.HotelRepository;
-import com.hotelmanager.user.dto.UserResponse;
-
+import com.hotelmanager.user.dto.*;
 import lombok.RequiredArgsConstructor;
-
-import com.hotelmanager.user.dto.UserCreatedResponse;
-import com.hotelmanager.user.dto.EmployeeRequest;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -23,16 +17,13 @@ import java.util.List;
 public class UserController {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
     private final HotelRepository hotelRepository;
     private final UserService userService;
 
     public UserController(UserRepository userRepository,
-                          PasswordEncoder passwordEncoder,
                           HotelRepository hotelRepository,
                           UserService userService) {
         this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
         this.hotelRepository = hotelRepository;
         this.userService = userService;
     }
@@ -69,12 +60,12 @@ public class UserController {
         return userService.getUsersByHotel(hotelId);
     }
 
-    
-    @GetMapping("/users/me")
+    // ✅ FIX: /users/me (pas /users/users/me)
+    @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserResponse> getCurrentUser(@AuthenticationPrincipal User user) {
         return ResponseEntity.ok(UserResponse.from(user));
     }
-
 
     /* ──────────────── POST ──────────────── */
 
@@ -90,8 +81,27 @@ public class UserController {
                 .body(UserCreatedResponse.from(createdUser));
     }
 
+    /* ──────────────── PUT (SELF) ──────────────── */
 
+    @PutMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UserResponse> updateMe(
+            @Valid @RequestBody UserSelfUpdateRequest req,
+            @AuthenticationPrincipal User me
+    ) {
+        User updated = userService.updateMyProfile(me, req);
+        return ResponseEntity.ok(UserResponse.from(updated));
+    }
 
+    @PutMapping("/me/password")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> changeMyPassword(
+            @Valid @RequestBody ChangePasswordRequest req,
+            @AuthenticationPrincipal User me
+    ) {
+        userService.changeMyPassword(me, req);
+        return ResponseEntity.noContent().build();
+    }
 
     /* ──────────────── DELETE ──────────────── */
 

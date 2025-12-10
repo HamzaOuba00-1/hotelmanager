@@ -25,6 +25,9 @@ import IssuesPage from "./pages/dashboard/ManagerDashboardComponents/IssuesPage"
 import EmployeeIssuesPage from "./pages/dashboard/EmployeDashboardComponents/IssuesPage";
 import ClientReservationsPage from "./pages/dashboard/ClientDashboardComponents/ClientReservationsPage";
 import ClientMessagesPage from "./pages/dashboard/ClientDashboardComponents/ClientMessagesPage";
+import ClientProfilePage from "./pages/dashboard/ClientDashboardComponents/ClientProfilePage";
+import ManagerProfilePage from "./pages/dashboard/ManagerDashboardComponents/ManagerProfilePage";
+
 
 const DEFAULT_PUBLIC_HOTEL_ID = 1;
 function App() {
@@ -49,6 +52,7 @@ function App() {
             <Route path="pointage" element={<Pointage />} />
             <Route path="channels" element={<Channels />} />
             <Route path="issues" element={<IssuesPage />} />
+            <Route path="profil" element={<ManagerProfilePage />} />
           </Route>
         </Route>
 
@@ -72,6 +76,7 @@ function App() {
           <Route path="/dashboard/client" element={<ClientDashboard />}>
             <Route path="reservations" element={<ClientReservationsPage />} />
             <Route path="messages" element={<ClientMessagesPage />} />
+            <Route path="profil" element={<ClientProfilePage />} />
 
             {/* si tu as ces pages plus tard */}
             {/* <Route path="messages" element={<ClientMessagesPage />} /> */}
