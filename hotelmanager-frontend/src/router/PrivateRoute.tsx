@@ -1,11 +1,20 @@
-import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../auth/useAuth';
+// src/router/PrivateRoute.tsx
+import React from "react";
+import { Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "../auth/authContext";
 
-const PrivateRoute = ({ allowedRoles }: { allowedRoles: string[] }) => {
-  const user = useAuth();
+type Props = {
+  allowedRoles: string[];
+};
 
-  if (!user) return <Navigate to="/login" />;
-  if (!allowedRoles.includes(user.role)) return <Navigate to="/unauthorized" />;
+const PrivateRoute: React.FC<Props> = ({ allowedRoles }) => {
+  const { user } = useAuth();
+
+  if (!user) return <Navigate to="/login" replace />;
+
+  if (!allowedRoles.includes(user.role)) {
+    return <Navigate to="/login" replace />;
+  }
 
   return <Outlet />;
 };

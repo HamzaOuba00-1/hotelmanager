@@ -1,3 +1,5 @@
+// src/pages/dashboard/ManagerDashboardComponents/ManagerProfilePage.tsx
+
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Save,
@@ -8,9 +10,14 @@ import {
   Building2,
   ArrowRight,
   Mail,
+  Phone,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { getMyProfile, updateMyProfile, changeMyPassword } from "../../../api/userApi";
+import {
+  getMyProfile,
+  updateMyProfile,
+  changeMyPassword,
+} from "../../../api/userApi";
 import { getMyHotel } from "../../../api/hotelApi";
 import type { User } from "../../../types/User";
 
@@ -24,6 +31,20 @@ const btn =
   "inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition";
 const btnPrimary = `${btn} bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50`;
 const btnGhost = `${btn} border bg-white hover:bg-gray-50 disabled:opacity-50`;
+
+const InfoRow: React.FC<{ title: string; value?: React.ReactNode }> = ({
+  title,
+  value,
+}) => (
+  <div className="space-y-0.5">
+    <div className="text-[11px] uppercase tracking-widest text-gray-400">
+      {title}
+    </div>
+    <div className="text-sm font-medium text-gray-900">
+      {value ?? "—"}
+    </div>
+  </div>
+);
 
 export default function ManagerProfilePage() {
   const [me, setMe] = useState<User | null>(null);
@@ -41,8 +62,9 @@ export default function ManagerProfilePage() {
 
   // Hotel
   const [hotelName, setHotelName] = useState<string | undefined>();
-  const [hotelCode, setHotelCode] = useState<string | undefined>();
   const [hotelLogo, setHotelLogo] = useState<string | undefined>();
+  const [hotelEmail, setHotelEmail] = useState<string | undefined>();
+  const [hotelPhone, setHotelPhone] = useState<string | undefined>();
 
   // Alerts
   const [err, setErr] = useState<string | null>(null);
@@ -74,12 +96,18 @@ export default function ManagerProfilePage() {
 
         if (h) {
           setHotelName(h.name);
-          setHotelCode(h.code);
           setHotelLogo(h.logoUrl ?? undefined);
+          setHotelEmail(h.email ?? undefined);
+          setHotelPhone(h.phone ?? undefined);
         }
       } catch (e: any) {
         if (!mounted) return;
-        setErr(e?.response?.data?.message || e?.message || "Impossible de charger le profil.");
+        setErr(
+          e?.response?.data?.message ||
+            e?.response?.data?.detail ||
+            e?.message ||
+            "Impossible de charger le profil."
+        );
       } finally {
         if (mounted) setLoading(false);
       }
@@ -133,7 +161,7 @@ export default function ManagerProfilePage() {
   const onChangePassword = async () => {
     resetAlerts();
 
-    if (!currentPassword || !newPassword) {
+    if (!currentPassword || !newPassword || !confirmNew) {
       setErr("Veuillez remplir tous les champs du mot de passe.");
       return;
     }
@@ -171,7 +199,6 @@ export default function ManagerProfilePage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
             <User2 className="w-7 h-7 text-emerald-600" />
             Profil Manager
@@ -196,7 +223,9 @@ export default function ManagerProfilePage() {
               )}
             </div>
             <div>
-              <div className="text-sm font-medium text-gray-800">{hotelName}</div>
+              <div className="text-sm font-medium text-gray-800">
+                {hotelName}
+              </div>
               
             </div>
           </div>
@@ -266,7 +295,10 @@ export default function ManagerProfilePage() {
 
             <div className="sm:col-span-2">
               <div className="text-[11px] text-gray-400">
-                Rôle : <span className="text-gray-600 font-medium">{me?.role ?? "MANAGER"}</span>
+                Rôle :{" "}
+                <span className="text-gray-600 font-medium">
+                  {me?.role ?? "MANAGER"}
+                </span>
               </div>
             </div>
           </div>
@@ -292,7 +324,7 @@ export default function ManagerProfilePage() {
 
         {/* ================= HOTEL QUICK PANEL ================= */}
         <aside className={card}>
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-2 mb-4">
             <div className="p-2 rounded-xl bg-emerald-50 border border-emerald-100">
               <Building2 className="w-4 h-4 text-emerald-700" />
             </div>
@@ -300,13 +332,32 @@ export default function ManagerProfilePage() {
               <div className="text-xs text-gray-400 uppercase tracking-widest">
                 Hôtel
               </div>
+              <div className="text-sm font-semibold text-gray-900">
+                Informations
+              </div>
             </div>
           </div>
 
-          <div className="space-y-2 text-sm">
-            <div className="text-gray-500">Nom</div>
-            <div className="font-medium text-gray-900">{hotelName ?? "—"}</div>
-
+          <div className="space-y-4">
+            <InfoRow title="Nom" value={hotelName} />
+            <InfoRow
+              title="Email"
+              value={
+                <span className="inline-flex items-center gap-1">
+                  <Mail className="w-3.5 h-3.5 text-emerald-600" />
+                  {hotelEmail ?? "—"}
+                </span>
+              }
+            />
+            <InfoRow
+              title="Téléphone"
+              value={
+                <span className="inline-flex items-center gap-1">
+                  <Phone className="w-3.5 h-3.5 text-emerald-600" />
+                  {hotelPhone ?? "—"}
+                </span>
+              }
+            />
           </div>
 
           <div className="mt-5">
@@ -319,7 +370,7 @@ export default function ManagerProfilePage() {
             </Link>
           </div>
 
-          
+        
         </aside>
       </div>
 

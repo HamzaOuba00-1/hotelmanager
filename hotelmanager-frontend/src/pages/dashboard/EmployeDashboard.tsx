@@ -1,4 +1,4 @@
-// src/pages/dashboard/employe/EmployeDashboard.tsx
+// src/pages/dashboard/EmployeDashboard.tsx
 
 import React, { useEffect, useState } from "react";
 import {
@@ -9,9 +9,12 @@ import {
   MessageSquare,
   AlertTriangle,
   User2,
+  LogOut,
+  X,
 } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { getMyHotel } from "../../api/hotelApi";
+import { useAuth } from "../../auth/authContext";
 
 /* -------------------- Logo -------------------- */
 const Logo: React.FC<{ src?: string; alt?: string }> = ({ src, alt }) => (
@@ -52,8 +55,82 @@ const SidebarLink: React.FC<{
   </NavLink>
 );
 
+/* -------------------- SidebarAction -------------------- */
+const SidebarAction: React.FC<{
+  onClick: () => void;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+  tone?: "default" | "danger";
+}> = ({ onClick, icon, children, tone = "default" }) => (
+  <button
+    onClick={onClick}
+    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-left
+    ${
+      tone === "danger"
+        ? "text-rose-600 hover:bg-rose-50"
+        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+    }`}
+  >
+    {icon}
+    {children}
+  </button>
+);
+
+/* -------------------- Confirm Logout Modal -------------------- */
+const ConfirmLogoutModal: React.FC<{
+  open: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+}> = ({ open, onClose, onConfirm }) => {
+  if (!open) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4"
+      onClick={(e) => e.currentTarget === e.target && onClose()}
+    >
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border p-6">
+        <div className="flex items-center justify-between mb-3">
+          <div className="text-lg font-semibold text-gray-900">
+            Confirmer la déconnexion
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-lg hover:bg-gray-100"
+            title="Fermer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <p className="text-sm text-gray-600">
+          Voulez-vous vraiment vous déconnecter ?
+        </p>
+
+        <div className="mt-6 flex justify-end gap-2">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 rounded-xl border text-sm hover:bg-gray-50"
+          >
+            Annuler
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 rounded-xl bg-rose-600 text-white text-sm hover:bg-rose-700"
+          >
+            Se déconnecter
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 /* -------------------- Sidebar -------------------- */
-const Sidebar: React.FC<{ logoSrc?: string }> = ({ logoSrc }) => (
+const Sidebar: React.FC<{
+  logoSrc?: string;
+  onAskLogout: () => void;
+}> = ({ logoSrc, onAskLogout }) => (
   <aside className="w-64 shrink-0 bg-[#F6F8F7] h-screen p-6 flex flex-col">
     <div className="mb-10">
       <Logo src={logoSrc} />
@@ -100,13 +177,23 @@ const Sidebar: React.FC<{ logoSrc?: string }> = ({ logoSrc }) => (
         Mon profil
       </SidebarLink>
     </nav>
+
+    {/* Bas de sidebar */}
+    <div className="pt-4 border-t">
+      <SidebarAction
+        onClick={onAskLogout}
+        icon={<LogOut size={18} />}
+        tone="danger"
+      >
+        Déconnexion
+      </SidebarAction>
+    </div>
   </aside>
 );
 
 /* -------------------- Topbar -------------------- */
 const Topbar: React.FC<{ avatarSrc?: string }> = ({ avatarSrc }) => (
   <header className="h-16 bg-white shadow-sm flex items-center justify-between px-6">
-    {/* Search bar */}
     <div className="relative w-72">
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
       <input
@@ -116,7 +203,6 @@ const Topbar: React.FC<{ avatarSrc?: string }> = ({ avatarSrc }) => (
       />
     </div>
 
-    {/* Avatar */}
     <img
       src={avatarSrc ?? "/avatar-placeholder.jpg"}
       alt="Profil utilisateur"
@@ -128,6 +214,9 @@ const Topbar: React.FC<{ avatarSrc?: string }> = ({ avatarSrc }) => (
 /* -------------------- EmployeDashboard -------------------- */
 const EmployeDashboard: React.FC = () => {
   const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined);
+  const [confirmLogout, setConfirmLogout] = useState(false);
+
+  const { logout } = useAuth();
 
   useEffect(() => {
     let mounted = true;
@@ -151,10 +240,11 @@ const EmployeDashboard: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-gray-50 font-sans">
-      {/* Sidebar avec logo dynamique */}
-      <Sidebar logoSrc={logoUrl} />
+      <Sidebar
+        logoSrc={logoUrl}
+        onAskLogout={() => setConfirmLogout(true)}
+      />
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <Topbar />
 
@@ -162,6 +252,15 @@ const EmployeDashboard: React.FC = () => {
           <Outlet />
         </main>
       </div>
+
+      <ConfirmLogoutModal
+        open={confirmLogout}
+        onClose={() => setConfirmLogout(false)}
+        onConfirm={() => {
+          setConfirmLogout(false);
+          logout();
+        }}
+      />
     </div>
   );
 };
