@@ -1,3 +1,4 @@
+// src/api/hotelApi.ts
 import http from "./http";
 
 export type Services = {
@@ -67,7 +68,9 @@ export async function getMyHotel(): Promise<HotelConfigDTO> {
   return data;
 }
 
-export async function updateMyHotel(payload: HotelConfigDTO): Promise<HotelConfigDTO> {
+export async function updateMyHotel(
+  payload: HotelConfigDTO
+): Promise<HotelConfigDTO> {
   const cleaned = cleanPayload(payload);
   const { data } = await http.put<HotelConfigDTO>("/hotels/me", cleaned);
   return data;
@@ -76,9 +79,21 @@ export async function updateMyHotel(payload: HotelConfigDTO): Promise<HotelConfi
 export async function uploadLogo(file: File): Promise<string> {
   const form = new FormData();
   form.append("file", file);
-  const { data } = await http.post<{ logoUrl: string }>("/hotels/me/logo", form, {
-    headers: { "Content-Type": "multipart/form-data" }
-  });
+  const { data } = await http.post<{ logoUrl: string }>(
+    "/hotels/me/logo",
+    form,
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+    }
+  );
   return data.logoUrl;
 }
 
+/**
+ * Liste des hôtels accessibles publiquement (page d'accueil).
+ * Endpoint à implémenter côté back : GET /public/hotels
+ */
+export async function listPublicHotels(): Promise<HotelConfigDTO[]> {
+  const { data } = await http.get<HotelConfigDTO[]>("/public/hotels");
+  return data;
+}

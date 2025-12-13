@@ -1,9 +1,10 @@
 // src/App.tsx
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 
 import LoginPage from "./pages/login/LoginPage";
 import RegisterManagerPage from "./pages/register/RegisterManagerPage";
 import PublicRoomsPage from "./pages/PublicRoomsPage";
+import PublicHomePage from "./pages/PublicHomePage";
 
 import ManagerDashboard from "./pages/dashboard/ManagerDashboard";
 import EmployeDashboard from "./pages/dashboard/EmployeDashboard";
@@ -37,13 +38,12 @@ import ClientReservationsPage from "./pages/dashboard/ClientDashboardComponents/
 import ClientMessagesPage from "./pages/dashboard/ClientDashboardComponents/ClientMessagesPage";
 import ClientProfilePage from "./pages/dashboard/ClientDashboardComponents/ClientProfilePage";
 
-const DEFAULT_PUBLIC_HOTEL_ID = 1;
-
 function App() {
   return (
     <AuthProvider>
       <Routes>
         {/* Public */}
+        <Route path="/" element={<PublicHomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterManagerPage />} />
         <Route path="/hotels/:hotelId/rooms" element={<PublicRoomsPage />} />
@@ -87,14 +87,11 @@ function App() {
           </Route>
         </Route>
 
-        {/* Redirect root */}
-        <Route
-          path="/"
-          element={<Navigate to={`/hotels/${DEFAULT_PUBLIC_HOTEL_ID}/rooms`} replace />}
-        />
-
         {/* 404 */}
-        <Route path="*" element={<div className="p-8">404 - Page introuvable</div>} />
+        <Route
+          path="*"
+          element={<div className="p-8">404 - Page introuvable</div>}
+        />
       </Routes>
     </AuthProvider>
   );
