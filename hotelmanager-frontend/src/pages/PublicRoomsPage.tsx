@@ -13,10 +13,10 @@ import {
   Crown,
   DoorOpen,
   BedDouble,
-  ShieldCheck,
   Copy,
   Check,
   Phone,
+  ShieldCheck,
 } from "lucide-react";
 
 type ProblemDetail = {
@@ -94,7 +94,6 @@ export default function PublicRoomsPage() {
 
   function validatePhone(p: string) {
     const v = p.trim();
-    // validation simple (tu peux l’adapter)
     return v.length >= 6;
   }
 
@@ -153,7 +152,7 @@ export default function PublicRoomsPage() {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-50 via-white to-emerald-50">
-      {/* Header luxe */}
+      {/* Header */}
       <div className="relative">
         <header className="max-w-6xl mx-auto px-6 pt-10 pb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -161,29 +160,32 @@ export default function PublicRoomsPage() {
               <Crown className="text-white w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">
-                Réservation — Hôtel
+              <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">
+                Réservation de chambres
               </h1>
-              <p className="text-sm text-gray-500">
-                Une touche de luxe, simplement.
+              <p className="text-xs sm:text-sm text-gray-500">
+                Choisissez vos dates et réservez votre séjour.
               </p>
             </div>
-          </div>
-          <div className="hidden md:flex items-center gap-2 text-emerald-700">
-            <ShieldCheck className="w-4 h-4" />
-            <span className="text-sm">Paiement sécurisé (prochainement)</span>
           </div>
         </header>
       </div>
 
       {/* Barre dates */}
       <div className="max-w-6xl mx-auto px-6">
-        <div className="rounded-2xl border border-emerald-100 bg-white/80 backdrop-blur-sm shadow-[0_8px_35px_rgba(16,185,129,0.08)] p-5">
+        <div className="rounded-3xl border border-white/40 bg-white/80 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.06)] p-5">
           <div className="flex items-center gap-3 mb-4">
-            <CalendarRange className="w-5 h-5 text-emerald-600" />
-            <h2 className="text-lg font-semibold text-gray-800">
-              Sélectionnez vos dates
-            </h2>
+            <div className="h-9 w-9 rounded-2xl bg-emerald-50 flex items-center justify-center">
+              <CalendarRange className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-800">
+                Sélectionnez vos dates
+              </h2>
+              <p className="text-xs text-gray-500">
+                L&apos;affichage des chambres se met à jour automatiquement.
+              </p>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
@@ -195,7 +197,7 @@ export default function PublicRoomsPage() {
                 type="date"
                 value={arrival}
                 onChange={(e) => setArrival(e.target.value)}
-                className="w-full rounded-xl border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
               />
             </div>
 
@@ -208,7 +210,7 @@ export default function PublicRoomsPage() {
                 value={departure}
                 min={arrival || undefined}
                 onChange={(e) => setDeparture(e.target.value)}
-                className="w-full rounded-xl border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
               />
             </div>
 
@@ -216,11 +218,11 @@ export default function PublicRoomsPage() {
               <button
                 onClick={loadAvailable}
                 disabled={!canSearch}
-                className={`w-full px-4 py-2 rounded-xl text-white shadow-lg transition
+                className={`w-full px-4 py-2 rounded-xl text-white shadow-lg text-sm font-medium transition
                   ${
                     canSearch
-                      ? "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:scale-[1.02]"
-                      : "bg-gray-300 cursor-not-allowed"
+                      ? "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:scale-[1.02] hover:shadow-xl"
+                      : "bg-gray-300 cursor-not-allowed shadow-none"
                   }
                 `}
               >
@@ -240,7 +242,7 @@ export default function PublicRoomsPage() {
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
-                className="h-40 rounded-2xl bg-white/70 shadow animate-pulse"
+                className="h-40 rounded-3xl bg-white/70 border border-white/40 shadow animate-pulse"
               />
             ))}
           </div>
@@ -254,10 +256,10 @@ export default function PublicRoomsPage() {
             {publicRooms.map((room) => (
               <div
                 key={room.id}
-                className="group relative overflow-hidden rounded-2xl border bg-white p-5 shadow-sm hover:shadow-xl transition-all duration-300"
+                className="group relative overflow-hidden rounded-3xl border border-white/40 bg-white/80 backdrop-blur-xl p-5 shadow-[0_10px_30px_rgba(0,0,0,0.05)] hover:shadow-[0_18px_40px_rgba(16,185,129,0.15)] transition-all duration-300"
               >
                 <div className="absolute -top-10 -right-10 h-28 w-28 rounded-full bg-emerald-50 group-hover:bg-emerald-100 transition" />
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between relative z-10">
                   <div className="text-xs text-gray-500">
                     Étage {room.floor}
                   </div>
@@ -266,25 +268,27 @@ export default function PublicRoomsPage() {
                   </span>
                 </div>
 
-                <div className="mt-2 flex items-center gap-2 text-2xl font-bold text-gray-800">
+                <div className="mt-3 flex items-center gap-2 text-2xl font-bold text-gray-800 relative z-10">
                   <DoorOpen className="w-6 h-6 text-emerald-600" />
                   {String(room.roomNumber).padStart(3, "0")}
                 </div>
-                <div className="text-sm text-gray-500">{room.roomType}</div>
+                <div className="text-sm text-gray-500 relative z-10">
+                  {room.roomType}
+                </div>
                 {room.description && (
-                  <div className="text-xs text-gray-400 mt-1 line-clamp-2">
+                  <div className="text-xs text-gray-400 mt-1 line-clamp-2 relative z-10">
                     {room.description}
                   </div>
                 )}
 
-                <div className="mt-4 flex items-center justify-between">
+                <div className="mt-4 flex items-center justify-between relative z-10">
                   <div className="flex items-center gap-2 text-emerald-700 text-sm">
                     <BedDouble className="w-4 h-4" />
                     Confort premium
                   </div>
                   <button
                     onClick={() => openReserveFor(room)}
-                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md hover:shadow-lg hover:scale-[1.02] transition"
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm font-medium shadow-md hover:shadow-lg hover:scale-[1.03] transition"
                   >
                     Réserver
                   </button>
@@ -334,7 +338,7 @@ export default function PublicRoomsPage() {
                   required
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full rounded-xl border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                 />
               </div>
 
@@ -346,21 +350,26 @@ export default function PublicRoomsPage() {
                   required
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="w-full rounded-xl border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                 />
               </div>
 
-              {/* ✅ NOUVEAU : Téléphone */}
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">
                   Téléphone
                 </label>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1 text-xs text-gray-500 px-2 py-1 rounded-lg bg-gray-50 border">
+                    <Phone className="w-3 h-3 text-gray-400" />
+                    Contact du séjour
+                  </span>
+                </div>
                 <input
                   type="tel"
                   required
                   value={guestPhone}
                   onChange={(e) => setGuestPhone(e.target.value)}
-                  className="w-full rounded-xl border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                   placeholder="+33 6 12 34 56 78"
                 />
               </div>
@@ -380,7 +389,7 @@ export default function PublicRoomsPage() {
                 <button
                   type="submit"
                   disabled={reserveLoading}
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md hover:shadow-lg"
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm font-medium shadow-md hover:shadow-lg"
                 >
                   {reserveLoading ? "Réservation…" : "Confirmer"}
                 </button>
@@ -448,7 +457,7 @@ export default function PublicRoomsPage() {
             <div className="flex items-center justify-end gap-3 pt-4">
               <button
                 onClick={() => setOpenSuccess(false)}
-                className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md hover:shadow-lg"
+                className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm font-medium shadow-md hover:shadow-lg"
               >
                 Terminer
               </button>
