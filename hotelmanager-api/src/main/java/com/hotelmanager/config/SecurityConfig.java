@@ -31,7 +31,8 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/uploads/**", "/auth/**", "/", "/index.html", "/swagger-ui/**").permitAll()
+                .requestMatchers("/uploads/**", "/", "/index.html", "/swagger-ui/**").permitAll()
+                .requestMatchers("/auth/**", "/public/**").permitAll()
 
                 .requestMatchers(HttpMethod.GET,  "/public/hotels/*/rooms/available").permitAll()
                 .requestMatchers(HttpMethod.POST, "/public/reservations").permitAll()

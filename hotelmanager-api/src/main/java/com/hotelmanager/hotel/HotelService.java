@@ -148,4 +148,16 @@ public class HotelService {
         if (h.getClosedDays() == null) h.setClosedDays(new ArrayList<>());
         if (h.getAcceptedPayments() == null) h.setAcceptedPayments(new ArrayList<>());
     }
+
+    public List<Hotel> listActiveHotels() {
+        return hotelRepository.findAllByActiveTrue();
+    }
+
+    public Hotel getActiveHotelById(Long id) {
+        return hotelRepository.findById(id)
+                .filter(h -> Boolean.TRUE.equals(h.getActive()))
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Hôtel introuvable ou inactif"
+                ));
+    }
 }
