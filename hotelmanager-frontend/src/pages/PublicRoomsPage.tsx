@@ -1,3 +1,5 @@
+// src/pages/PublicRoomsPage.tsx
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getAvailableRooms, reserveRoom } from "./../api/publicApi";
@@ -17,7 +19,12 @@ import {
   Check,
   Phone,
   ShieldCheck,
+  MapPin,
+  Mail,
+  PawPrint,
+  Clock,
 } from "lucide-react";
+import { type HotelConfigDTO, listPublicHotels } from "../api/hotelApi";
 
 type ProblemDetail = {
   type?: string;
@@ -39,6 +46,11 @@ export default function PublicRoomsPage() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
+  // ------- Infos hôtel -------
+  const [hotel, setHotel] = useState<HotelConfigDTO | null>(null);
+  const [hotelLoading, setHotelLoading] = useState(false);
+  const [hotelErr, setHotelErr] = useState<string | null>(null);
+
   const [openReserve, setOpenReserve] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<PublicRoom | null>(null);
 
@@ -54,6 +66,7 @@ export default function PublicRoomsPage() {
   const [generatedPassword, setGeneratedPassword] = useState("");
   const [copied, setCopied] = useState<"email" | "password" | null>(null);
 
+  // ------- Chargement des chambres dispo -------
   const loadAvailable = useCallback(async () => {
     if (!HOTEL_ID || Number.isNaN(HOTEL_ID)) {
       setErr("Hôtel invalide.");
@@ -81,6 +94,35 @@ export default function PublicRoomsPage() {
   useEffect(() => {
     loadAvailable();
   }, [loadAvailable]);
+
+  // ------- Chargement des infos de l'hôtel -------
+  useEffect(() => {
+    const loadHotel = async () => {
+      if (!HOTEL_ID || Number.isNaN(HOTEL_ID)) return;
+
+      setHotelLoading(true);
+      setHotelErr(null);
+      try {
+        // simple : on réutilise la liste publique et on filtre
+        const data = await listPublicHotels();
+        const found = (data || []).find((h) => h.id === HOTEL_ID) || null;
+        if (!found) {
+          setHotelErr("Hôtel introuvable.");
+        }
+        setHotel(found);
+      } catch (e: any) {
+        setHotelErr(
+          e?.response?.data?.detail ||
+            e?.message ||
+            "Impossible de charger les informations de l'hôtel."
+        );
+      } finally {
+        setHotelLoading(false);
+      }
+    };
+
+    loadHotel();
+  }, [HOTEL_ID]);
 
   function openReserveFor(room: PublicRoom) {
     setSelectedRoom(room);
@@ -150,25 +192,157 @@ export default function PublicRoomsPage() {
   const canSearch =
     arrival && departure && new Date(arrival) < new Date(departure);
 
+  const totalRooms =
+    hotel?.floors && hotel.roomsPerFloor
+      ? hotel.floors * hotel.roomsPerFloor
+      : null;
+
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-50 via-white to-emerald-50">
       {/* Header */}
       <div className="relative">
-        <header className="max-w-6xl mx-auto px-6 pt-10 pb-6 flex items-center justify-between">
+        <header className="max-w-6xl mx-auto px-6 pt-8 pb-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg flex items-center justify-center">
               <Crown className="text-white w-5 h-5" />
             </div>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">
-                Réservation de chambres
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 flex items-center gap-2">
+                Réservation
+                {hotel && (
+                  <>
+                    <span className="text-gray-300">•</span>
+                    <span className="truncate max-w-[180px] sm:max-w-xs text-emerald-700">
+                      {hotel.name}
+                    </span>
+                  </>
+                )}
               </h1>
-              <p className="text-xs sm:text-sm text-gray-500">
-                Choisissez vos dates et réservez votre séjour.
+              <p className="text-xs sm:text-sm text-gray-500 truncate">
+                {hotel?.address
+                  ? hotel.address
+                  : "Choisissez vos dates et réservez votre séjour."}
               </p>
             </div>
           </div>
         </header>
+      </div>
+
+      {/* Carte d'info de l'hôtel */}
+      <div className="max-w-6xl mx-auto px-6">
+        {hotelLoading ? (
+          <div className="mb-4 h-24 rounded-3xl border border-white/40 bg-white/70 backdrop-blur-xl animate-pulse" />
+        ) : hotel ? (
+          <section className="mb-5 rounded-3xl border border-white/40 bg-white/80 backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.05)] p-4 sm:p-5 flex flex-col sm:flex-row gap-4 items-center sm:items-stretch">
+            {/* Logo / initiales */}
+            <div className="flex-shrink-0">
+              {hotel.logoUrl ? (
+                <div className="h-16 w-16 rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 flex items-center justify-center">
+                  <img
+                    src={hotel.logoUrl}
+                    alt={hotel.name}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white text-2xl font-semibold flex items-center justify-center">
+                  {hotel.name?.[0]?.toUpperCase() ?? "H"}
+                </div>
+              )}
+            </div>
+
+            {/* Infos principales */}
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2 justify-between">
+                <div className="min-w-0">
+                  <h2 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
+                    {hotel.name}
+                  </h2>
+                  {hotel.address && (
+                    <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5 truncate">
+                      <MapPin className="w-3.5 h-3.5" />
+                      <span className="truncate">{hotel.address}</span>
+                    </div>
+                  )}
+                </div>
+
+                {totalRooms && totalRooms > 0 && (
+                  <span className="mt-1 sm:mt-0 inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-[11px] text-emerald-700">
+                    <BedDouble className="w-3.5 h-3.5" />
+                    ≈ {totalRooms} chambres
+                  </span>
+                )}
+              </div>
+
+              {/* Tags contact & politique */}
+              <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-gray-600">
+                {hotel.phone && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-50 border border-gray-100">
+                    <Phone className="w-3 h-3" />
+                    {hotel.phone}
+                  </span>
+                )}
+                {hotel.email && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-50 border border-gray-100">
+                    <Mail className="w-3 h-3" />
+                    {hotel.email}
+                  </span>
+                )}
+                {hotel.checkInHour && hotel.checkOutHour && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-50 border border-gray-100">
+                    <Clock className="w-3 h-3" />
+                    Check-in {hotel.checkInHour} • Check-out {hotel.checkOutHour}
+                  </span>
+                )}
+                {hotel.minAge != null && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-50 border border-gray-100">
+                    <ShieldCheck className="w-3 h-3 text-emerald-500" />
+                    Âge min. {hotel.minAge} ans
+                  </span>
+                )}
+                {hotel.petsAllowed && (
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700">
+                    <PawPrint className="w-3 h-3" />
+                    Animaux acceptés
+                  </span>
+                )}
+              </div>
+
+              {/* Services */}
+              <div className="mt-2 flex flex-wrap gap-1.5 text-[10px] text-gray-600">
+                {hotel.services?.hasRestaurant && (
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
+                    Restaurant
+                  </span>
+                )}
+                {hotel.services?.hasGym && (
+                  <span className="px-2 py-0.5 rounded-full bg-gray-50 border border-gray-100">
+                    Salle de sport
+                  </span>
+                )}
+                {hotel.services?.hasPool && (
+                  <span className="px-2 py-0.5 rounded-full bg-sky-50 border border-sky-100">
+                    Piscine
+                  </span>
+                )}
+                {hotel.services?.hasBusinessCenter && (
+                  <span className="px-2 py-0.5 rounded-full bg-amber-50 border border-amber-100">
+                    Business center
+                  </span>
+                )}
+                {!hotel.services && (
+                  <span className="px-2 py-0.5 rounded-full bg-gray-50 border border-gray-100">
+                    Services standard
+                  </span>
+                )}
+              </div>
+            </div>
+          </section>
+        ) : hotelErr ? (
+          <div className="mb-5 text-sm text-rose-600 bg-rose-50 border border-rose-100 rounded-2xl px-3 py-2">
+            {hotelErr}
+          </div>
+        ) : null}
       </div>
 
       {/* Barre dates */}
