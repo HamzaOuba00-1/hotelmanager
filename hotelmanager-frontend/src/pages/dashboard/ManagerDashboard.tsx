@@ -14,10 +14,12 @@ import {
   User2,
   LogOut,
   X,
+  Home
 } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { getMyHotel } from "../../api/hotelApi";
 import { useAuth } from "../../auth/authContext";
+import { Link } from "react-router-dom";
 
 const Logo: React.FC<{ src?: string; alt?: string }> = ({ src, alt }) => (
   <div className="w-full h-14 flex items-center justify-center rounded-lg bg-white shadow overflow-hidden">
@@ -192,24 +194,38 @@ const Sidebar: React.FC<{
   </aside>
 );
 
-const Topbar: React.FC<{ avatarSrc?: string }> = ({ avatarSrc }) => (
-  <header className="h-16 bg-white shadow-sm flex items-center justify-between px-6">
-    <div className="relative w-72">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-      <input
-        type="search"
-        placeholder="Search"
-        className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-md bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-      />
+
+
+const Topbar: React.FC<{
+  hotelName?: string;
+  logoUrl?: string;
+  avatarSrc?: string;
+}> = ({ hotelName, logoUrl, avatarSrc }) => (
+  <header className="h-16 bg-white/80 backdrop-blur-xl border-b border-gray-100 flex items-center justify-between px-6">
+    {/* Left: Home + hotel */}
+    <div className="flex items-center gap-3 min-w-0">
+      <Link
+        to="/"
+        className="h-10 w-10 rounded-xl border border-gray-100 bg-white shadow-sm flex items-center justify-center hover:bg-gray-50 transition"
+        title="Accueil public"
+      >
+        <Home className="w-5 h-5 text-emerald-700" />
+      </Link>
+
+
     </div>
 
-    <img
-      src={avatarSrc ?? "/avatar-placeholder.jpg"}
-      alt="Profil utilisateur"
-      className="h-9 w-9 rounded-full object-cover"
-    />
+    <div className="flex items-center gap-3">
+
+      <img
+        src={avatarSrc ?? "/avatar-placeholder.jpg"}
+        alt="Profil utilisateur"
+        className="h-9 w-9 rounded-full object-cover border border-gray-200"
+      />
+    </div>
   </header>
 );
+
 
 const ManagerDashboard: React.FC = () => {
   const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined);
