@@ -24,6 +24,7 @@ import Pointage from "./pages/dashboard/ManagerDashboardComponents/PointagePage"
 import Channels from "./pages/dashboard/ManagerDashboardComponents/ChannelsPage";
 import IssuesPage from "./pages/dashboard/ManagerDashboardComponents/IssuesPage";
 import ManagerProfilePage from "./pages/dashboard/ManagerDashboardComponents/ManagerProfilePage";
+import ManagerHomePage from "./pages/dashboard/ManagerDashboardComponents/ManagerHomePage";
 
 // Employe pages
 import DashboardAccueilEmploye from "./pages/dashboard/EmployeDashboardComponents/DashboardAccueilEmploye";
@@ -51,6 +52,7 @@ function App() {
         {/* Manager */}
         <Route element={<PrivateRoute allowedRoles={["MANAGER"]} />}>
           <Route path="/dashboard/manager" element={<ManagerDashboard />}>
+            <Route index element={<ManagerHomePage />} />
             <Route index element={<DashboardAccueil />} />
             <Route path="users" element={<PlaceholderUtilisateurs />} />
             <Route path="configuration" element={<HotelConfigPage />} />
