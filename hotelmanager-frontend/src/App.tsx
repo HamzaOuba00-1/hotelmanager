@@ -52,8 +52,8 @@ function App() {
         {/* Manager */}
         <Route element={<PrivateRoute allowedRoles={["MANAGER"]} />}>
           <Route path="/dashboard/manager" element={<ManagerDashboard />}>
-            <Route index element={<ManagerHomePage />} />
             <Route index element={<DashboardAccueil />} />
+            <Route path="home" element={<ManagerHomePage />} />
             <Route path="users" element={<PlaceholderUtilisateurs />} />
             <Route path="configuration" element={<HotelConfigPage />} />
             <Route path="rooms" element={<RoomsPage />} />

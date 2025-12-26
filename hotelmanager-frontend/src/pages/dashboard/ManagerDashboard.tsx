@@ -205,7 +205,7 @@ const Topbar: React.FC<{
     {/* Left: Home + hotel */}
     <div className="flex items-center gap-3 min-w-0">
       <Link
-        to="/"
+        to="/dashboard/manager/home"
         className="h-10 w-10 rounded-xl border border-gray-100 bg-white shadow-sm flex items-center justify-center hover:bg-gray-50 transition"
         title="Accueil public"
       >
