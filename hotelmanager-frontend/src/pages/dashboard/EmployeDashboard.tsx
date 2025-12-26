@@ -5,14 +5,14 @@ import {
   LayoutDashboard,
   CalendarIcon,
   PenLine,
-  Search,
   MessageSquare,
   AlertTriangle,
   User2,
   LogOut,
   X,
+  Home,
 } from "lucide-react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, Link } from "react-router-dom";
 import { getMyHotel } from "../../api/hotelApi";
 import { useAuth } from "../../auth/authContext";
 
@@ -137,39 +137,23 @@ const Sidebar: React.FC<{
     </div>
 
     <nav className="space-y-1 flex-1">
-      <SidebarLink
-        to="/dashboard/employe"
-        icon={<LayoutDashboard size={18} />}
-        exact
-      >
+      <SidebarLink to="/dashboard/employe" icon={<LayoutDashboard size={18} />} exact>
         Tableau de bord
       </SidebarLink>
 
-      <SidebarLink
-        to="/dashboard/employe/planning"
-        icon={<CalendarIcon size={18} />}
-      >
-        Mon Planning
+      <SidebarLink to="/dashboard/employe/planning" icon={<CalendarIcon size={18} />}>
+        Mon planning
       </SidebarLink>
 
-      <SidebarLink
-        to="/dashboard/employe/pointage"
-        icon={<PenLine size={18} />}
-      >
+      <SidebarLink to="/dashboard/employe/pointage" icon={<PenLine size={18} />}>
         Pointage
       </SidebarLink>
 
-      <SidebarLink
-        to="/dashboard/employe/messages"
-        icon={<MessageSquare size={18} />}
-      >
+      <SidebarLink to="/dashboard/employe/messages" icon={<MessageSquare size={18} />}>
         Messages
       </SidebarLink>
 
-      <SidebarLink
-        to="/dashboard/employe/issues"
-        icon={<AlertTriangle size={18} />}
-      >
+      <SidebarLink to="/dashboard/employe/issues" icon={<AlertTriangle size={18} />}>
         Signalements
       </SidebarLink>
 
@@ -178,7 +162,6 @@ const Sidebar: React.FC<{
       </SidebarLink>
     </nav>
 
-    {/* Bas de sidebar */}
     <div className="pt-4 border-t">
       <SidebarAction
         onClick={onAskLogout}
@@ -191,23 +174,16 @@ const Sidebar: React.FC<{
   </aside>
 );
 
-/* -------------------- Topbar -------------------- */
-const Topbar: React.FC<{ avatarSrc?: string }> = ({ avatarSrc }) => (
-  <header className="h-16 bg-white shadow-sm flex items-center justify-between px-6">
-    <div className="relative w-72">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-      <input
-        type="search"
-        placeholder="Search"
-        className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-md bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-      />
-    </div>
+/* -------------------- Topbar (ALIGNÉE MANAGER) -------------------- */
+const Topbar: React.FC = () => (
+  <header className="h-16 bg-white/80 backdrop-blur-xl border-b border-gray-100 flex items-center justify-between px-6">
+    {/* Left (vide pour alignement futur) */}
+    <div />
 
-    <img
-      src={avatarSrc ?? "/avatar-placeholder.jpg"}
-      alt="Profil utilisateur"
-      className="h-9 w-9 rounded-full object-cover"
-    />
+    {/* Right */}
+    <div className="flex items-center gap-3">
+      
+    </div>
   </header>
 );
 
@@ -219,12 +195,9 @@ const EmployeDashboard: React.FC = () => {
   const { logout } = useAuth();
 
   useEffect(() => {
-    let mounted = true;
-
     const fetchHotelLogo = async () => {
       try {
         const hotel = await getMyHotel();
-        if (!mounted) return;
         setLogoUrl(hotel?.logoUrl ?? undefined);
       } catch (err) {
         console.error("Erreur récupération logo hôtel :", err);
@@ -232,18 +205,11 @@ const EmployeDashboard: React.FC = () => {
     };
 
     fetchHotelLogo();
-
-    return () => {
-      mounted = false;
-    };
   }, []);
 
   return (
     <div className="flex h-screen bg-gray-50 font-sans">
-      <Sidebar
-        logoSrc={logoUrl}
-        onAskLogout={() => setConfirmLogout(true)}
-      />
+      <Sidebar logoSrc={logoUrl} onAskLogout={() => setConfirmLogout(true)} />
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <Topbar />
