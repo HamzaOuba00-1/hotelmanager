@@ -204,6 +204,13 @@ const Topbar: React.FC<{
   <header className="h-16 bg-white/80 backdrop-blur-xl border-b border-gray-100 flex items-center justify-between px-6">
     {/* Left: Home + hotel */}
     <div className="flex items-center gap-3 min-w-0">
+      
+
+
+    </div>
+
+    <div className="flex items-center gap-3">
+
       <Link
         to="/dashboard/manager/home"
         className="h-10 w-10 rounded-xl border border-gray-100 bg-white shadow-sm flex items-center justify-center hover:bg-gray-50 transition"
@@ -213,15 +220,6 @@ const Topbar: React.FC<{
       </Link>
 
 
-    </div>
-
-    <div className="flex items-center gap-3">
-
-      <img
-        src={avatarSrc ?? "/avatar-placeholder.jpg"}
-        alt="Profil utilisateur"
-        className="h-9 w-9 rounded-full object-cover border border-gray-200"
-      />
     </div>
   </header>
 );

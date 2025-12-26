@@ -94,9 +94,9 @@ export default function ManagerHomePage() {
   return (
     <div className="space-y-6">
       {/* Titre */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
+      <div className="flex justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-semibold text-gray-900 flex items-center justify-center gap-2">
             <Crown className="w-5 h-5 text-emerald-600" />
             Accueil manager
           </h1>
@@ -117,19 +117,10 @@ export default function ManagerHomePage() {
         <section className="rounded-3xl border border-white/40 bg-white/80 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.06)] p-5">
           <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
             <div className="flex items-center gap-3 min-w-0">
-              {hotel.logoUrl ? (
-                <div className="h-14 w-14 rounded-2xl overflow-hidden border border-gray-100 bg-gray-50">
-                  <img
-                    src={hotel.logoUrl}
-                    alt={hotel.name}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-              ) : (
                 <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white text-xl font-semibold flex items-center justify-center">
                   {hotel.name?.[0]?.toUpperCase() ?? "H"}
                 </div>
-              )}
+              
 
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
