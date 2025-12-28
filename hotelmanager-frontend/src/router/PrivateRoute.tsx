@@ -1,7 +1,7 @@
 // src/router/PrivateRoute.tsx
 import React from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../auth/authContext";
+import { useAuth } from "../features/auth/context/authContext";
 
 type Props = {
   allowedRoles: string[];

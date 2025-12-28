@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import App from './App';
-import { AuthProvider } from './auth/authContext';
+import App from './app/App';
+import { AuthProvider } from './features/auth/context/authContext';
 import "./index.css";
 
 window.addEventListener('error', (e) => {
