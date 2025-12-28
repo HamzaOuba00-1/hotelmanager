@@ -1,5 +1,3 @@
-// src/pages/dashboard/EmployeDashboard.tsx
-
 import React, { useEffect, useState } from "react";
 import {
   LayoutDashboard,
@@ -10,13 +8,16 @@ import {
   User2,
   LogOut,
   X,
-  Home,
 } from "lucide-react";
-import { NavLink, Outlet, Link } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
+
 import { getMyHotel } from "../features/hotel/api/hotelApi";
 import { useAuth } from "../features/auth/context/authContext";
 
-/* -------------------- Logo -------------------- */
+/**
+ * Displays the hotel logo inside the sidebar.
+ * Falls back to a placeholder when no logo is available.
+ */
 const Logo: React.FC<{ src?: string; alt?: string }> = ({ src, alt }) => (
   <div className="w-full h-14 flex items-center justify-center rounded-lg bg-white shadow overflow-hidden">
     {src ? (
@@ -31,7 +32,10 @@ const Logo: React.FC<{ src?: string; alt?: string }> = ({ src, alt }) => (
   </div>
 );
 
-/* -------------------- SidebarLink -------------------- */
+/**
+ * Navigation link used inside the employee sidebar.
+ * Automatically handles active route styling.
+ */
 const SidebarLink: React.FC<{
   to: string;
   icon?: React.ReactNode;
@@ -55,7 +59,10 @@ const SidebarLink: React.FC<{
   </NavLink>
 );
 
-/* -------------------- SidebarAction -------------------- */
+/**
+ * Sidebar action button (non-navigation).
+ * Mainly used for destructive or secondary actions such as logout.
+ */
 const SidebarAction: React.FC<{
   onClick: () => void;
   icon?: React.ReactNode;
@@ -76,7 +83,10 @@ const SidebarAction: React.FC<{
   </button>
 );
 
-/* -------------------- Confirm Logout Modal -------------------- */
+/**
+ * Modal dialog used to confirm logout action.
+ * Prevents accidental session termination.
+ */
 const ConfirmLogoutModal: React.FC<{
   open: boolean;
   onClose: () => void;
@@ -91,20 +101,21 @@ const ConfirmLogoutModal: React.FC<{
     >
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border p-6">
         <div className="flex items-center justify-between mb-3">
-          <div className="text-lg font-semibold text-gray-900">
-            Confirmer la déconnexion
-          </div>
+          <h2 className="text-lg font-semibold text-gray-900">
+            Confirm logout
+          </h2>
+
           <button
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-gray-100"
-            title="Fermer"
+            title="Close"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         <p className="text-sm text-gray-600">
-          Voulez-vous vraiment vous déconnecter ?
+          Are you sure you want to log out?
         </p>
 
         <div className="mt-6 flex justify-end gap-2">
@@ -112,13 +123,14 @@ const ConfirmLogoutModal: React.FC<{
             onClick={onClose}
             className="px-4 py-2 rounded-xl border text-sm hover:bg-gray-50"
           >
-            Annuler
+            Cancel
           </button>
+
           <button
             onClick={onConfirm}
             className="px-4 py-2 rounded-xl bg-rose-600 text-white text-sm hover:bg-rose-700"
           >
-            Se déconnecter
+            Log out
           </button>
         </div>
       </div>
@@ -126,7 +138,10 @@ const ConfirmLogoutModal: React.FC<{
   );
 };
 
-/* -------------------- Sidebar -------------------- */
+/**
+ * Sidebar layout for employee users.
+ * Contains all navigation links related to employee features.
+ */
 const Sidebar: React.FC<{
   logoSrc?: string;
   onAskLogout: () => void;
@@ -138,15 +153,15 @@ const Sidebar: React.FC<{
 
     <nav className="space-y-1 flex-1">
       <SidebarLink to="/dashboard/employe" icon={<LayoutDashboard size={18} />} exact>
-        Tableau de bord
+        Dashboard
       </SidebarLink>
 
       <SidebarLink to="/dashboard/employe/planning" icon={<CalendarIcon size={18} />}>
-        Mon planning
+        My schedule
       </SidebarLink>
 
       <SidebarLink to="/dashboard/employe/pointage" icon={<PenLine size={18} />}>
-        Pointage
+        Attendance
       </SidebarLink>
 
       <SidebarLink to="/dashboard/employe/messages" icon={<MessageSquare size={18} />}>
@@ -154,11 +169,11 @@ const Sidebar: React.FC<{
       </SidebarLink>
 
       <SidebarLink to="/dashboard/employe/issues" icon={<AlertTriangle size={18} />}>
-        Signalements
+        Issues
       </SidebarLink>
 
       <SidebarLink to="/dashboard/employe/profil" icon={<User2 size={18} />}>
-        Mon profil
+        My profile
       </SidebarLink>
     </nav>
 
@@ -168,28 +183,32 @@ const Sidebar: React.FC<{
         icon={<LogOut size={18} />}
         tone="danger"
       >
-        Déconnexion
+        Logout
       </SidebarAction>
     </div>
   </aside>
 );
 
-/* -------------------- Topbar (ALIGNÉE MANAGER) -------------------- */
+/**
+ * Top navigation bar aligned with the manager layout.
+ * Reserved for future global actions (notifications, language, etc.).
+ */
 const Topbar: React.FC = () => (
   <header className="h-16 bg-white/80 backdrop-blur-xl border-b border-gray-100 flex items-center justify-between px-6">
-    {/* Left (vide pour alignement futur) */}
     <div />
-
-    {/* Right */}
-    <div className="flex items-center gap-3">
-      
-    </div>
+    <div className="flex items-center gap-3" />
   </header>
 );
 
-/* -------------------- EmployeDashboard -------------------- */
+/**
+ * Main dashboard layout for employee users.
+ * Responsible for:
+ * - Fetching hotel branding
+ * - Rendering sidebar and topbar
+ * - Providing an outlet for feature pages
+ */
 const EmployeDashboard: React.FC = () => {
-  const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined);
+  const [logoUrl, setLogoUrl] = useState<string | undefined>();
   const [confirmLogout, setConfirmLogout] = useState(false);
 
   const { logout } = useAuth();
@@ -198,9 +217,9 @@ const EmployeDashboard: React.FC = () => {
     const fetchHotelLogo = async () => {
       try {
         const hotel = await getMyHotel();
-        setLogoUrl(hotel?.logoUrl ?? undefined);
-      } catch (err) {
-        console.error("Erreur récupération logo hôtel :", err);
+        setLogoUrl(hotel?.logoUrl);
+      } catch (error) {
+        console.error("Failed to load hotel logo:", error);
       }
     };
 

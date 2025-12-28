@@ -1,6 +1,6 @@
-import axios from "./axios";
-import type { Channel, ChatMessage, ChannelType } from "../types/Chat";
-import type { User } from "../types/User";
+import axios from "../../../api/axios";
+import type { Channel, ChatMessage, ChannelType } from "../Chat";
+import type { User } from "../../users/User";
 
 const authHeader = () => {
   const token = localStorage.getItem("token");

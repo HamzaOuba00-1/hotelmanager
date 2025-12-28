@@ -1,5 +1,5 @@
-import axios from './axios';
-import { Credentials, AuthResponseDTO } from './dto';
+import axios from '../../../api/axios';
+import { Credentials, AuthResponseDTO } from '../../../api/dto';
 
 
 const _API = '/auth';

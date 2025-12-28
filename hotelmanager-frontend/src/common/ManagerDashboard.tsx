@@ -1,7 +1,5 @@
-// src/pages/dashboard/ManagerDashboard.tsx
 import React, { useEffect, useState } from "react";
 import {
-  Search,
   LayoutDashboard,
   Users,
   Cog,
@@ -14,13 +12,17 @@ import {
   User2,
   LogOut,
   X,
-  Home
+  Home,
 } from "lucide-react";
-import { NavLink, Outlet } from "react-router-dom";
-import { getMyHotel } from "../../features/hotel/api/hotelApi";
-import { useAuth } from "../../features/auth/context/authContext";
-import { Link } from "react-router-dom";
+import { NavLink, Outlet, Link } from "react-router-dom";
 
+import { getMyHotel } from "../features/hotel/api/hotelApi";
+import { useAuth } from "../features/auth/context/authContext";
+
+/**
+ * Displays the hotel logo inside the sidebar.
+ * Shows a placeholder when no logo is available.
+ */
 const Logo: React.FC<{ src?: string; alt?: string }> = ({ src, alt }) => (
   <div className="w-full h-14 flex items-center justify-center rounded-lg bg-white shadow overflow-hidden">
     {src ? (
@@ -35,6 +37,10 @@ const Logo: React.FC<{ src?: string; alt?: string }> = ({ src, alt }) => (
   </div>
 );
 
+/**
+ * Navigation link used in the manager sidebar.
+ * Automatically applies active state styling.
+ */
 const SidebarLink: React.FC<{
   to: string;
   icon?: React.ReactNode;
@@ -58,6 +64,10 @@ const SidebarLink: React.FC<{
   </NavLink>
 );
 
+/**
+ * Sidebar button for non-navigation actions.
+ * Typically used for logout or destructive operations.
+ */
 const SidebarAction: React.FC<{
   onClick: () => void;
   icon?: React.ReactNode;
@@ -78,6 +88,10 @@ const SidebarAction: React.FC<{
   </button>
 );
 
+/**
+ * Modal dialog used to confirm logout action.
+ * Prevents accidental session termination.
+ */
 const ConfirmLogoutModal: React.FC<{
   open: boolean;
   onClose: () => void;
@@ -92,20 +106,21 @@ const ConfirmLogoutModal: React.FC<{
     >
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border p-6">
         <div className="flex items-center justify-between mb-3">
-          <div className="text-lg font-semibold text-gray-900">
-            Confirmer la déconnexion
-          </div>
+          <h2 className="text-lg font-semibold text-gray-900">
+            Confirm logout
+          </h2>
+
           <button
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-gray-100"
-            title="Fermer"
+            title="Close"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         <p className="text-sm text-gray-600">
-          Voulez-vous vraiment vous déconnecter ?
+          Are you sure you want to log out?
         </p>
 
         <div className="mt-6 flex justify-end gap-2">
@@ -113,13 +128,14 @@ const ConfirmLogoutModal: React.FC<{
             onClick={onClose}
             className="px-4 py-2 rounded-xl border text-sm hover:bg-gray-50"
           >
-            Annuler
+            Cancel
           </button>
+
           <button
             onClick={onConfirm}
             className="px-4 py-2 rounded-xl bg-rose-600 text-white text-sm hover:bg-rose-700"
           >
-            Se déconnecter
+            Log out
           </button>
         </div>
       </div>
@@ -127,6 +143,10 @@ const ConfirmLogoutModal: React.FC<{
   );
 };
 
+/**
+ * Sidebar layout for manager users.
+ * Provides access to all administrative features.
+ */
 const Sidebar: React.FC<{
   logoSrc?: string;
   onAskLogout: () => void;
@@ -146,26 +166,26 @@ const Sidebar: React.FC<{
       </SidebarLink>
 
       <SidebarLink to="/dashboard/manager/rooms" icon={<DoorClosed size={18} />}>
-        Chambres
+        Rooms
       </SidebarLink>
 
       <SidebarLink
         to="/dashboard/manager/reservations"
         icon={<CalendarCheck2 size={18} />}
       >
-        Réservations
+        Reservations
       </SidebarLink>
 
       <SidebarLink to="/dashboard/manager/users" icon={<Users size={18} />}>
-        Utilisateurs
+        Users
       </SidebarLink>
 
       <SidebarLink to="/dashboard/manager/channels" icon={<MessageSquare size={18} />}>
-        Chaînes
+        Channels
       </SidebarLink>
 
       <SidebarLink to="/dashboard/manager/issues" icon={<AlertTriangle size={18} />}>
-        Signalements
+        Issues
       </SidebarLink>
 
       <SidebarLink to="/dashboard/manager/planning" icon={<CalendarIcon size={18} />}>
@@ -173,60 +193,55 @@ const Sidebar: React.FC<{
       </SidebarLink>
 
       <SidebarLink to="/dashboard/manager/pointage" icon={<QrCode size={18} />}>
-        Pointage
+        Attendance
       </SidebarLink>
 
       <SidebarLink to="/dashboard/manager/profil" icon={<User2 size={18} />}>
-        Mon profil
+        My profile
       </SidebarLink>
     </nav>
 
-    {/* Zone bas de sidebar */}
     <div className="pt-4 border-t">
       <SidebarAction
         onClick={onAskLogout}
         icon={<LogOut size={18} />}
         tone="danger"
       >
-        Déconnexion
+        Logout
       </SidebarAction>
     </div>
   </aside>
 );
 
-
-
-const Topbar: React.FC<{
-  hotelName?: string;
-  logoUrl?: string;
-  avatarSrc?: string;
-}> = ({ hotelName, logoUrl, avatarSrc }) => (
+/**
+ * Top navigation bar for manager layout.
+ * Reserved for global actions and shortcuts.
+ */
+const Topbar: React.FC = () => (
   <header className="h-16 bg-white/80 backdrop-blur-xl border-b border-gray-100 flex items-center justify-between px-6">
-    {/* Left: Home + hotel */}
-    <div className="flex items-center gap-3 min-w-0">
-      
-
-
-    </div>
+    <div />
 
     <div className="flex items-center gap-3">
-
       <Link
         to="/dashboard/manager/home"
         className="h-10 w-10 rounded-xl border border-gray-100 bg-white shadow-sm flex items-center justify-center hover:bg-gray-50 transition"
-        title="Accueil public"
+        title="Public home"
       >
         <Home className="w-5 h-5 text-emerald-700" />
       </Link>
-
-
     </div>
   </header>
 );
 
-
+/**
+ * Main dashboard layout for manager users.
+ * Handles:
+ * - Hotel branding retrieval
+ * - Sidebar and topbar rendering
+ * - Protected outlet rendering
+ */
 const ManagerDashboard: React.FC = () => {
-  const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined);
+  const [logoUrl, setLogoUrl] = useState<string | undefined>();
   const [confirmLogout, setConfirmLogout] = useState(false);
 
   const { logout } = useAuth();
@@ -235,9 +250,9 @@ const ManagerDashboard: React.FC = () => {
     const fetchHotelLogo = async () => {
       try {
         const hotel = await getMyHotel();
-        setLogoUrl(hotel.logoUrl ?? undefined);
-      } catch (err) {
-        console.error("Erreur récupération logo hôtel :", err);
+        setLogoUrl(hotel?.logoUrl);
+      } catch (error) {
+        console.error("Failed to load hotel logo:", error);
       }
     };
 

@@ -6,7 +6,7 @@ import {
   getOrCreateClientSupportChannel,
   getMessages,
   sendMessage,
-} from "../../../api/channelsApi";
+} from "../../chat/api/channelsApi";
 
 import type { Channel, ChatMessage } from "../Chat";
 

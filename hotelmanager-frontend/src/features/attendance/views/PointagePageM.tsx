@@ -1,4 +1,3 @@
-
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { exportElementToPDF } from "../../../shared/utils/exportPdf";
 import {
@@ -38,20 +37,20 @@ import {
   type AttendanceDto,
   type DailyCodeResponse,
   type CreateManualAttendanceRequest,
-} from "../../../api/pointage";
-import { getUsersFromMyHotel } from "../../../api/userApi";
+} from "../api/pointage";
+import { getUsersFromMyHotel } from "../../users/api/userApi";
 import { getShiftsForHotel, type Shift } from "../../planning/api/planningApi";
 import { QRCodeSVG } from "qrcode.react";
 
-// Utils
+// Utilities
 const pad2 = (n: number) => String(n).padStart(2, "0");
 const toHM = (d: Date) => `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 const joinDateTime = (date: string, time: string) => `${date}T${time}:00`;
 
-// Règles métier
+// Business rules
 const LATE_GRACE_MIN = 10;
 
-// Export CSV simple
+// Simple CSV export
 function exportCSV(rows: any[], fileName: string) {
   if (!rows.length) return;
   const headers = Object.keys(rows[0]);
@@ -95,7 +94,7 @@ export default function PointagePage() {
   const [addOpen, setAddOpen] = useState(false);
   const [form, setForm] = useState({
     employeeId: "",
-    date: todayLocal, 
+    date: todayLocal,
     checkIn: "",
     checkOut: "",
     status: "PRESENT",
@@ -122,6 +121,7 @@ export default function PointagePage() {
   const qrCardRef = useRef<HTMLDivElement | null>(null);
   const kpiRef = useRef<HTMLDivElement | null>(null);
   const [teamMaxH, setTeamMaxH] = useState<number | undefined>(undefined);
+
   const recomputeHeights = () => {
     if (typeof window !== "undefined" && window.innerWidth >= 768) {
       const qrH = qrCardRef.current?.offsetHeight ?? 0;
@@ -133,11 +133,13 @@ export default function PointagePage() {
       setTeamMaxH(undefined);
     }
   };
+
   useEffect(() => {
     recomputeHeights();
     window.addEventListener("resize", recomputeHeights);
     return () => window.removeEventListener("resize", recomputeHeights);
   }, []);
+
   useEffect(() => {
     recomputeHeights();
   }, [dailyCode, rows, shifts, selectedDate, loadingShifts]);
@@ -150,12 +152,12 @@ export default function PointagePage() {
       const status = e?.response?.status;
       if (status === 404) {
         setDailyCode(null);
-        showToast("Aucun code actif — clique sur « Régénérer »");
+        showToast('No active code — click "Regenerate".');
       } else if (status === 409) {
-        showToast("Conflit: principal sans hôtel ? Vérifie la session.");
+        showToast("Conflict: principal has no hotel? Check the session.");
       } else {
         showToast(
-          e?.response?.data?.detail ?? "Erreur lors du chargement du code"
+          e?.response?.data?.detail ?? "Failed to load the daily code."
         );
       }
     }
@@ -165,10 +167,10 @@ export default function PointagePage() {
     try {
       const res = await regenerateDailyCode();
       setDailyCode(res);
-      showToast("Nouveau code généré ✅");
+      showToast("New code generated ✅");
     } catch (e: any) {
       console.error(e);
-      showToast(e?.response?.data?.detail ?? "Échec régénération");
+      showToast(e?.response?.data?.detail ?? "Regeneration failed.");
     }
   };
 
@@ -183,7 +185,7 @@ export default function PointagePage() {
     } catch (e: any) {
       console.error(e);
       showToast(
-        e?.response?.data?.detail ?? "Impossible de charger les pointages"
+        e?.response?.data?.detail ?? "Unable to load attendance records."
       );
     } finally {
       setLoadingRows(false);
@@ -197,7 +199,7 @@ export default function PointagePage() {
       setShifts(data || []);
     } catch (e) {
       console.error(e);
-      showToast("Impossible de charger le planning");
+      showToast("Unable to load the schedule.");
     } finally {
       setLoadingShifts(false);
     }
@@ -216,6 +218,7 @@ export default function PointagePage() {
     loadCode();
     loadUsers();
   }, []);
+
   useEffect(() => {
     loadRows();
     loadShifts();
@@ -352,27 +355,26 @@ export default function PointagePage() {
           const isLate = inDt > grace;
           if (att.checkOutAt) {
             status = "RIEN";
-            reason = "Sorti";
+            reason = "Checked out";
           } else {
             status = isLate ? "RETARD" : "PRESENT";
             reason = isLate
-              ? `Entrée à ${format(inDt, "HH:mm")}`
-              : "En service";
+              ? `Checked in at ${format(inDt, "HH:mm")}`
+              : "On duty";
           }
         } else {
           if (Date.now() < startDt.getTime()) {
             status = "RIEN";
-            reason = "À venir";
+            reason = "Upcoming";
           } else if (
             Date.now() >= startDt.getTime() &&
             Date.now() < endDt.getTime()
           ) {
             status = Date.now() > grace.getTime() ? "RETARD" : "RIEN";
-            reason =
-              Date.now() > grace.getTime() ? "Non pointé" : "Début imminent";
+            reason = Date.now() > grace.getTime() ? "Not checked in" : "Starting soon";
           } else if (Date.now() >= endDt.getTime()) {
             status = "ABSENT";
-            reason = "Pas de pointage";
+            reason = "No check-in";
           }
         }
 
@@ -445,69 +447,71 @@ export default function PointagePage() {
   const handleExport = () => {
     const plain = tableRows.map((r) => ({
       Date: r.date,
-      Employe: `${(r as any).firstName} ${(r as any).lastName}`,
-      "Heure entrée": r.checkInAt ? format(parseISO(r.checkInAt), "HH:mm") : "",
-      "Heure sortie": r.checkOutAt
+      Employee: `${(r as any).firstName} ${(r as any).lastName}`,
+      "Check-in time": r.checkInAt ? format(parseISO(r.checkInAt), "HH:mm") : "",
+      "Check-out time": r.checkOutAt
         ? format(parseISO(r.checkOutAt), "HH:mm")
         : "",
-      Statut: r.dynStatus,
+      Status: r.dynStatus,
       Source: (r as any).source ?? "",
     }));
-    exportCSV(plain, `pointage_${selectedDate}.csv`);
+    exportCSV(plain, `attendance_${selectedDate}.csv`);
   };
 
   const codeValue = dailyCode?.code ?? "------";
 
   const qrExportRef = useRef<HTMLDivElement | null>(null);
+
   const onExportQR = async () => {
     if (!qrExportRef.current) return;
     try {
       await exportElementToPDF(qrExportRef.current, {
-        fileName: `code_qr_${selectedDate}.pdf`,
+        fileName: `daily_qr_code_${selectedDate}.pdf`,
         orientation: "p",
         scale: 2,
         marginMm: 25,
-        headerText: `Code journalier — ${selectedDate}`,
+        headerText: `Daily code — ${selectedDate}`,
       });
-      showToast("PDF généré ✅");
+      showToast("PDF generated ✅");
     } catch (e) {
       console.error(e);
-      showToast("Échec génération PDF");
+      showToast("PDF generation failed.");
     }
   };
 
   const onStop = async (id: number) => {
     try {
       await checkoutAttendance(id);
-      showToast("Pointage arrêté ✅");
+      showToast("Attendance stopped ✅");
       await loadRows();
     } catch (e: any) {
       console.error(e);
       const s = e?.response?.status;
       if (s === 404 || s === 405)
-        showToast("API 'checkout' manquante côté back");
-      else showToast(e?.response?.data?.detail ?? "Échec arrêt pointage");
+        showToast("Missing 'checkout' API on the backend.");
+      else showToast(e?.response?.data?.detail ?? "Failed to stop attendance.");
     }
   };
+
   const onDelete = async () => {
     if (!confirmDel.id) return;
     try {
       await deleteAttendance(confirmDel.id);
       setConfirmDel({ open: false });
-      showToast("Pointage supprimé 🗑️");
+      showToast("Attendance deleted 🗑️");
       await loadRows();
     } catch (e: any) {
       console.error(e);
       const s = e?.response?.status;
-      if (s === 404 || s === 405) showToast("API 'delete' manquante côté back");
-      else showToast(e?.response?.data?.detail ?? "Échec suppression");
+      if (s === 404 || s === 405) showToast("Missing 'delete' API on the backend.");
+      else showToast(e?.response?.data?.detail ?? "Deletion failed.");
     }
   };
 
   const onSubmitAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.employeeId || !form.date || !form.checkIn) {
-      showToast("Champs obligatoires manquants");
+      showToast("Missing required fields.");
       return;
     }
     try {
@@ -523,7 +527,7 @@ export default function PointagePage() {
       };
       await createManualAttendance(payload);
       setAddOpen(false);
-      showToast("Pointage ajouté ✅");
+      showToast("Attendance added ✅");
       setForm({
         employeeId: "",
         date: selectedDate,
@@ -536,9 +540,9 @@ export default function PointagePage() {
       console.error(e);
       const s = e?.response?.status;
       if (s === 404 || s === 405) {
-        showToast("API 'manual' manquante côté back");
+        showToast("Missing 'manual' API on the backend.");
       } else {
-        showToast(e?.response?.data?.detail ?? "Échec ajout pointage");
+        showToast(e?.response?.data?.detail ?? "Failed to add attendance.");
       }
     }
   };
@@ -549,13 +553,13 @@ export default function PointagePage() {
     if (s === "PRESENT")
       return (
         <span className="px-2 py-0.5 rounded-full text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-          <CheckCircle className="w-3.5 h-3.5" /> Présent
+          <CheckCircle className="w-3.5 h-3.5" /> Present
         </span>
       );
     if (s === "RETARD")
       return (
         <span className="px-2 py-0.5 rounded-full text-xs bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1">
-          <AlertTriangle className="w-3.5 h-3.5" /> Retard
+          <AlertTriangle className="w-3.5 h-3.5" /> Late
         </span>
       );
     if (s === "ABSENT")
@@ -576,7 +580,7 @@ export default function PointagePage() {
       {/* Header */}
       <div className="flex flex-col items-center gap-2 mb-6">
         <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2 mb-4">
-          <QrCode className="h-8 w-8 text-emerald-600" /> Page de pointage
+          <QrCode className="h-8 w-8 text-emerald-600" /> Attendance page
         </h1>
 
         <div className="flex gap-2">
@@ -585,7 +589,7 @@ export default function PointagePage() {
             className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl shadow hover:bg-emerald-700 transition"
           >
             <Plus className="w-4 h-4" />
-            Ajouter pointage
+            Add attendance
           </button>
 
           <button
@@ -601,32 +605,32 @@ export default function PointagePage() {
             className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl shadow hover:bg-emerald-700 transition"
           >
             <RefreshCcw className="w-4 h-4" />
-            Régénérer
+            Regenerate
           </button>
         </div>
       </div>
 
-      {/* Ligne : QR à gauche — Équipe + KPI à droite */}
+      {/* Row: QR (left) — Team + KPI (right) */}
       <section className="grid md:grid-cols-[390px_1fr] gap-6 items-start mb-8">
-        {/* Colonne gauche : QR */}
+        {/* Left column: QR */}
         <div
           ref={qrCardRef}
           className="bg-white/60 rounded-2xl border shadow p-6"
         >
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold flex items-center gap-2">
-              <QrCode className="w-5 h-5" /> Code journalier
+              <QrCode className="w-5 h-5" /> Daily code
             </h2>
             <button
               onClick={onExportQR}
               className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 text-sm inline-flex items-center gap-1"
             >
               <Download className="w-4 h-4" />
-              Télécharger PDF
+              Download PDF
             </button>
           </div>
 
-          {/* ✅ Seul ce bloc sera exporté en PDF (QR + texte du code) */}
+          {/* ✅ Only this block is exported to PDF (QR + code text) */}
           <div
             ref={qrExportRef}
             className="flex flex-col items-center gap-3 p-4 bg-white rounded-xl inline-block"
@@ -643,34 +647,34 @@ export default function PointagePage() {
 
             <div
               className="text-2xl font-extrabold tracking-widest"
-              style={{ wordBreak: "break-all" }} 
+              style={{ wordBreak: "break-all" }}
             >
               {codeValue}
             </div>
           </div>
 
-          {/* Bouton Copier en dehors de la zone exportée */}
+          {/* Copy button outside the exported area */}
           <div className="flex items-center justify-center mt-2">
             <button
               onClick={async () => {
                 try {
                   await navigator.clipboard.writeText(codeValue);
-                  showToast("Code copié 📋");
+                  showToast("Code copied 📋");
                 } catch {}
               }}
               className="p-2 rounded-lg hover:bg-gray-100"
-              title="Copier"
+              title="Copy"
             >
               <Copy className="w-4 h-4" />
             </button>
           </div>
 
-          {/* Compte à rebours (hors PDF) */}
+          {/* Countdown (not included in PDF export) */}
           <div className="w-full mt-4">
             <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
               <Clock className="w-4 h-4" />
               <span>
-                Valide jusqu’à <strong>{validUntilText}</strong> — reste{" "}
+                Valid until <strong>{validUntilText}</strong> — remaining{" "}
                 {pad2(hours)}:{pad2(minutes)}:{pad2(seconds)}
               </span>
             </div>
@@ -683,24 +687,22 @@ export default function PointagePage() {
           </div>
         </div>
 
-        {/* Colonne droite : Équipe + KPI */}
+        {/* Right column: Team + KPI */}
         <div className="flex flex-col gap-4">
-          {/* Équipe du jour */}
+          {/* Today's team */}
           <div
             className="bg-white/60 rounded-2xl border shadow p-6 overflow-auto overscroll-contain"
             style={teamMaxH ? { maxHeight: teamMaxH } : undefined}
           >
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-semibold flex items-center gap-2">
-                <Users className="w-5 h-5" /> Équipe du jour — statut
+                <Users className="w-5 h-5" /> Team for the day — status
               </h2>
               <div className="text-sm text-gray-500">{selectedDate}</div>
             </div>
 
             {loadingShifts ? (
-              <div className="text-sm text-gray-500">
-                Chargement du planning…
-              </div>
+              <div className="text-sm text-gray-500">Loading schedule…</div>
             ) : dayTeam.length ? (
               <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-3">
                 {dayTeam.map((e, idx) => (
@@ -721,15 +723,15 @@ export default function PointagePage() {
               </div>
             ) : (
               <div className="text-sm text-gray-500">
-                Aucun shift planifié pour cette date.
+                No shifts scheduled for this date.
               </div>
             )}
 
             <div className="text-xs text-gray-400 mt-2">
-              Règles : <b>Rien</b> (pas commencé / déjà sorti), <b>Retard</b> (à
-              partir de {LATE_GRACE_MIN} min après le début{" "}
-              <u>jusqu’à la fin du shift</u> si non pointé / entrée tardive),{" "}
-              <b>Absent</b> (shift terminé sans pointage).
+              Rules: <b>None</b> (not started / already checked out),{" "}
+              <b>Late</b> (from {LATE_GRACE_MIN} min after shift start{" "}
+              <u>until shift end</u> if not checked in / late check-in),{" "}
+              <b>Absent</b> (shift ended with no check-in).
             </div>
           </div>
 
@@ -737,34 +739,34 @@ export default function PointagePage() {
           <div ref={kpiRef} className="grid sm:grid-cols-3 gap-4">
             <div className="bg-white/60 rounded-2xl border shadow p-5">
               <div className="text-sm text-gray-500 flex items-center gap-2">
-                <Users className="w-4 h-4" /> Présents
+                <Users className="w-4 h-4" /> Present
               </div>
               <div className="text-3xl font-bold mt-1">{stats.present}</div>
             </div>
             <div className="bg-white/60 rounded-2xl border shadow p-5">
               <div className="text-sm text-gray-500 flex items-center gap-2">
-                <Users className="w-4 h-4" /> Absents
+                <Users className="w-4 h-4" /> Absent
               </div>
               <div className="text-3xl font-bold mt-1">{stats.absent}</div>
             </div>
             <div className="bg-white/60 rounded-2xl border shadow p-5">
               <div className="text-sm text-gray-500 flex items-center gap-2">
-                <BarChart3 className="w-4 h-4" /> Durée moyenne
+                <BarChart3 className="w-4 h-4" /> Average duration
               </div>
               <div className="text-3xl font-bold mt-1">{stats.avgTxt}</div>
               <div className="text-xs text-gray-500 mt-1">
-                Retards aujourd’hui : <b>{stats.retard}</b>
+                Late today: <b>{stats.retard}</b>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Section 2 : Tableau */}
+      {/* Section 2: Table */}
       <section className="bg-white/60 rounded-2xl border shadow p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
           <h2 className="font-semibold flex items-center gap-2">
-            <Calendar className="w-5 h-5" /> Pointage du jour
+            <Calendar className="w-5 h-5" /> Today's attendance
           </h2>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -784,9 +786,9 @@ export default function PointagePage() {
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as any)}
               >
-                <option value="">Statut</option>
-                <option value="PRESENT">Présent</option>
-                <option value="RETARD">Retard</option>
+                <option value="">Status</option>
+                <option value="PRESENT">Present</option>
+                <option value="RETARD">Late</option>
                 <option value="ABSENT">Absent</option>
               </select>
             </div>
@@ -797,11 +799,11 @@ export default function PointagePage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-gray-500 border-b">
-                <th className="py-2">Employé</th>
-                <th className="py-2">Heure entrée</th>
-                <th className="py-2">Heure sortie</th>
-                <th className="py-2">Durée</th>
-                <th className="py-2">Statut</th>
+                <th className="py-2">Employee</th>
+                <th className="py-2">Check-in</th>
+                <th className="py-2">Check-out</th>
+                <th className="py-2">Duration</th>
+                <th className="py-2">Status</th>
                 <th className="py-2">Actions</th>
               </tr>
             </thead>
@@ -809,7 +811,7 @@ export default function PointagePage() {
               {loadingRows ? (
                 <tr>
                   <td className="py-4 text-center text-gray-500" colSpan={6}>
-                    Chargement...
+                    Loading...
                   </td>
                 </tr>
               ) : tableRows.length ? (
@@ -834,19 +836,17 @@ export default function PointagePage() {
                       <td className="py-2">
                         {hasIn ? format(inDt!, "HH:mm") : "—"}
                       </td>
-                      <td className="py-2">
-                        {outDt ? format(outDt, "HH:mm") : "—"}
-                      </td>
+                      <td className="py-2">{outDt ? format(outDt, "HH:mm") : "—"}</td>
                       <td className="py-2">{durTxt}</td>
                       <td className="py-2 text-center">
                         {r.dynStatus === "PRESENT" && (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            <CheckCircle className="w-3.5 h-3.5" /> Présent
+                            <CheckCircle className="w-3.5 h-3.5" /> Present
                           </span>
                         )}
                         {r.dynStatus === "RETARD" && (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-amber-50 text-amber-700 border border-amber-200">
-                            <AlertTriangle className="w-3.5 h-3.5" /> Retard
+                            <AlertTriangle className="w-3.5 h-3.5" /> Late
                           </span>
                         )}
                         {r.dynStatus === "ABSENT" && (
@@ -857,7 +857,7 @@ export default function PointagePage() {
                       </td>
                       <td className="py-2">
                         <div className="flex items-center gap-2">
-                          {/* Arrêter (si réel et sans sortie) */}
+                          {/* Stop (real row and no check-out yet) */}
                           {!isSynthetic && !r.checkOutAt && (
                             <button
                               onClick={() =>
@@ -870,12 +870,12 @@ export default function PointagePage() {
                                 })
                               }
                               className="px-2 py-1 rounded-lg border hover:bg-gray-100"
-                              title="Arrêter (ajouter une sortie)"
+                              title="Stop (add check-out time)"
                             >
                               <LogOut className="w-4 h-4" />
                             </button>
                           )}
-                          {/* Supprimer (si réel) */}
+                          {/* Delete (real row only) */}
                           {!isSynthetic && (
                             <button
                               onClick={() =>
@@ -888,7 +888,7 @@ export default function PointagePage() {
                                 })
                               }
                               className="px-2 py-1 rounded-lg border hover:bg-rose-50"
-                              title="Supprimer ce pointage"
+                              title="Delete this attendance"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -901,7 +901,7 @@ export default function PointagePage() {
               ) : (
                 <tr>
                   <td className="py-4 text-center text-gray-500" colSpan={6}>
-                    Aucun pointage pour cette date.
+                    No attendance for this date.
                   </td>
                 </tr>
               )}
@@ -910,17 +910,18 @@ export default function PointagePage() {
         </div>
       </section>
 
-      {/* Popup ajout pointage */}
+      {/* Add attendance popup */}
       {addOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white/60 rounded-2xl shadow-xl p-8 w-full max-w-md animate-fadeIn text-left">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-800">
-                Ajouter un pointage
+                Add an attendance record
               </h2>
               <button
                 onClick={() => setAddOpen(false)}
                 className="p-2 rounded-lg hover:bg-gray-100"
+                title="Close"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -928,7 +929,7 @@ export default function PointagePage() {
 
             <form className="space-y-4" onSubmit={onSubmitAdd}>
               <label className="block text-sm font-medium">
-                Employé
+                Employee
                 <select
                   required
                   value={form.employeeId}
@@ -937,7 +938,7 @@ export default function PointagePage() {
                   }
                   className="w-full border border-gray-300 p-2 rounded-xl mt-1"
                 >
-                  <option value="">Sélectionner</option>
+                  <option value="">Select</option>
                   {users.map((u) => (
                     <option key={u.id} value={u.id}>
                       {u.firstName} {u.lastName}
@@ -959,7 +960,7 @@ export default function PointagePage() {
 
               <div className="flex gap-2">
                 <label className="block text-sm font-medium w-full">
-                  Entrée
+                  Check-in
                   <input
                     type="time"
                     required
@@ -971,7 +972,7 @@ export default function PointagePage() {
                   />
                 </label>
                 <label className="block text-sm font-medium w-full">
-                  Sortie (optionnel)
+                  Check-out (optional)
                   <input
                     type="time"
                     value={form.checkOut}
@@ -984,14 +985,14 @@ export default function PointagePage() {
               </div>
 
               <label className="block text-sm font-medium">
-                Statut
+                Status
                 <select
                   value={form.status}
                   onChange={(e) => setForm({ ...form, status: e.target.value })}
                   className="w-full border border-gray-300 p-2 rounded-xl mt-1"
                 >
-                  <option value="PRESENT">Présent</option>
-                  <option value="RETARD">Retard</option>
+                  <option value="PRESENT">Present</option>
+                  <option value="RETARD">Late</option>
                   <option value="ABSENT">Absent</option>
                 </select>
               </label>
@@ -1002,13 +1003,13 @@ export default function PointagePage() {
                   onClick={() => setAddOpen(false)}
                   className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
                 >
-                  Annuler
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition"
                 >
-                  Ajouter
+                  Add
                 </button>
               </div>
             </form>
@@ -1021,19 +1022,19 @@ export default function PointagePage() {
         </div>
       )}
 
-      {/* Popup CONFIRM DELETE */}
+      {/* CONFIRM DELETE popup */}
       {confirmDel.open && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white/60 rounded-2xl shadow-xl p-6 w-full max-w-sm animate-fadeIn text-left">
             <h3 className="text-lg font-semibold mb-3">
-              Supprimer ce pointage ?
+              Delete this attendance record?
             </h3>
             <p className="text-sm text-gray-700 mb-5">
-              Cette action est définitive.
+              This action is permanent.
               {confirmDel.name ? (
                 <>
                   {" "}
-                  Employé : <b>{confirmDel.name}</b>.
+                  Employee: <b>{confirmDel.name}</b>.
                 </>
               ) : null}
             </p>
@@ -1042,32 +1043,32 @@ export default function PointagePage() {
                 onClick={() => setConfirmDel({ open: false })}
                 className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100"
               >
-                Annuler
+                Cancel
               </button>
               <button
                 onClick={onDelete}
                 className="px-4 py-2 rounded-lg bg-rose-600 text-white hover:bg-rose-700"
               >
-                Supprimer
+                Delete
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Popup CONFIRM STOP */}
+      {/* CONFIRM STOP popup */}
       {confirmStop.open && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white/60 rounded-2xl shadow-xl p-6 w-full max-w-sm animate-fadeIn text-left">
             <h3 className="text-lg font-semibold mb-3">
-              Arrêter ce pointage ?
+              Stop this attendance record?
             </h3>
             <p className="text-sm text-gray-700 mb-5">
-              Cette action ajoutera une heure de sortie à l'employé.
+              This will add a check-out time for the employee.
               {confirmStop.name ? (
                 <>
                   {" "}
-                  Employé : <b>{confirmStop.name}</b>.
+                  Employee: <b>{confirmStop.name}</b>.
                 </>
               ) : null}
             </p>
@@ -1076,7 +1077,7 @@ export default function PointagePage() {
                 onClick={() => setConfirmStop({ open: false })}
                 className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100"
               >
-                Annuler
+                Cancel
               </button>
               <button
                 onClick={async () => {
@@ -1087,7 +1088,7 @@ export default function PointagePage() {
                 }}
                 className="px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700"
               >
-                Arrêter
+                Stop
               </button>
             </div>
           </div>

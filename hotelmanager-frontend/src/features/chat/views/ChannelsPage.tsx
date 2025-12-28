@@ -43,10 +43,10 @@ import {
   updateChannel,
   replaceChannelMembers,
   getChannelMembers,
-} from "../../../api/channelsApi";
+} from "../api/channelsApi";
 import type { Channel, ChannelType, ChatMessage } from "../Chat";
 import type { User } from "../../users/User";
-import { getUsersFromMyHotel } from "../../../api/userApi";
+import { getUsersFromMyHotel } from "../../users/api/userApi";
 import { getCrew, getCrews } from "../../users/api/crewApi";
 import ConfirmModal from "../../../shared/components/ConfirmModal";
 import clsx from "clsx";

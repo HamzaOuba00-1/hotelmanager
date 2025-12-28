@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import { login } from "../../api/authApi";
+import { login } from "../../auth/api/authApi";
 import { Mail, Lock, Loader2 } from "lucide-react";
 
 interface DecodedToken {

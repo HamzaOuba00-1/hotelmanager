@@ -32,12 +32,7 @@
   animation: fadeIn 0.4s ease-out;
 }
 
-@font-face {
-  font-family: "NotoSansArabic";
-  src: url("./fonts/NotoSansArabic-Regular.woff2") format("woff2");
-  font-display: swap;
-  unicode-range: U+0600-06FF; 
-}
+
 
 .export-pdf-scope {
   font-family: "NotoSansArabic", system-ui, sans-serif;

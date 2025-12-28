@@ -4,8 +4,8 @@ import {
 } from "lucide-react";
 import {
   listChannels, getMessages, sendMessage, createChannel, getChannelMembers
-} from "../../../api/channelsApi";
-import { getUsersFromMyHotel } from "../../../api/userApi";
+} from "../../chat/api/channelsApi";
+import { getUsersFromMyHotel } from "../../users/api/userApi";
 import { getCrew } from "../../users/api/crewApi";
 import type { Channel, ChatMessage } from "../Chat";
 import type { User } from "../../users/User";

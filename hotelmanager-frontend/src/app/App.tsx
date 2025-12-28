@@ -1,87 +1,90 @@
-// src/App.tsx
-import { Route, Routes } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
+import { AuthProvider } from "../features/auth/context/authContext";
+import PrivateRoute from "../router/PrivateRoute";
 
-import LoginPage from "./pages/login/LoginPage";
-import RegisterManagerPage from "./pages/register/RegisterManagerPage";
-import PublicRoomsPage from "./pages/PublicRoomsPage";
-import PublicHomePage from "./pages/PublicHomePage";
+/* ===== Public ===== */
+import PublicHomePage from "../features/public/pages/PublicHomePage";
+import PublicRoomsPage from "../features/public/pages/PublicRoomsPage";
+import LoginPage from "../features/auth/pages/LoginPage";
+import RegisterManagerPage from "../features/auth/pages/RegisterManagerPage";
 
-import ManagerDashboard from "./pages/dashboard/ManagerDashboard";
-import EmployeDashboard from "./pages/dashboard/EmployeDashboard";
-import ClientDashboard from "./pages/dashboard/ClientDashboard";
+/* ===== Layouts ===== */
+import ManagerLayout from "../layout/ManagerLayout";
+import EmployeLayout from "../layout/EmployeLayout";
+import ClientLayout from "../layout/ClientLayout";
 
-import PrivateRoute from "./router/PrivateRoute";
-import { AuthProvider } from "./auth/authContext";
+/* ===== Dashboard Views ===== */
+import DashboardAccueil from "../features/dashboard/views/DashboardAccueil";
+import DashboardAccueilEmploye from "../features/dashboard/views/DashboardAccueilEmploye";
 
-// Manager pages
-import DashboardAccueil from "./pages/dashboard/ManagerDashboardComponents/DashboardAccueil";
-import PlaceholderUtilisateurs from "./pages/dashboard/ManagerDashboardComponents/Utilisateurs";
-import HotelConfigPage from "./pages/dashboard/ManagerDashboardComponents/HotelConfigPage";
-import RoomsPage from "./pages/dashboard/ManagerDashboardComponents/RoomsPage";
-import ReservationsPage from "./pages/dashboard/ManagerDashboardComponents/ReservationsPage";
-import Planning from "./pages/dashboard/ManagerDashboardComponents/PlanningPage ";
-import Pointage from "./pages/dashboard/ManagerDashboardComponents/PointagePage";
-import Channels from "./pages/dashboard/ManagerDashboardComponents/ChannelsPage";
-import IssuesPage from "./pages/dashboard/ManagerDashboardComponents/IssuesPage";
-import ManagerProfilePage from "./pages/dashboard/ManagerDashboardComponents/ManagerProfilePage";
-import ManagerHomePage from "./pages/dashboard/ManagerDashboardComponents/ManagerHomePage";
+/* ===== Manager ===== */
+import ManagerHomePage from "../features/home/views/ManagerHomePage";
+import HotelConfigPage from "../features/hotel/pages/HotelConfigPage";
+import RoomsPage from "../features/rooms/pages/RoomsPage";
+import ReservationsPage from "../features/reservations/pages/ReservationsPage";
+import PlanningPageM from "../features/planning/views/PlanningPageM";
+import PointagePageM from "../features/attendance/views/PointagePageM";
+import ChannelsPage from "../features/chat/views/ChannelsPage";
+import IssuesPageM from "../features/issues/views/IssuesPageM";
+import ManagerProfilePage from "../features/profil/views/ManagerProfilePage";
+import UtilisateursPage from "../features/users/pages/Utilisateurs";
 
-// Employe pages
-import DashboardAccueilEmploye from "./pages/dashboard/EmployeDashboardComponents/DashboardAccueilEmploye";
-import PlanningPage from "./pages/dashboard/EmployeDashboardComponents/EmployeePlanningPage";
-import PointagePage from "./pages/dashboard/EmployeDashboardComponents/PointagePage";
-import EmployeeChatPage from "./pages/dashboard/EmployeDashboardComponents/EmployeeChatPage";
-import EmployeeIssuesPage from "./pages/dashboard/EmployeDashboardComponents/IssuesPage";
-import EmployeeProfilePage from "./pages/dashboard/EmployeDashboardComponents/EmployeeProfilePage";
+/* ===== Employe ===== */
+import EmployeePlanningPage from "../features/planning/views/EmployeePlanningPage";
+import PointagePageE from "../features/attendance/views/PointagePageE";
+import EmployeeChatPage from "../features/chat/views/EmployeeChatPage";
+import IssuesPageE from "../features/issues/views/IssuesPageE";
+import EmployeeProfilePage from "../features/profil/views/EmployeeProfilePage";
 
-// Client pages
-import ClientReservationsPage from "./pages/dashboard/ClientDashboardComponents/ClientReservationsPage";
-import ClientMessagesPage from "./pages/dashboard/ClientDashboardComponents/ClientMessagesPage";
-import ClientProfilePage from "./pages/dashboard/ClientDashboardComponents/ClientProfilePage";
+/* ===== Client ===== */
+import ClientReservationsPage from "../features/reservations/views/ClientReservationsPage";
+import ClientMessagesPage from "../features/chat/views/ClientMessagesPage";
+import ClientProfilePage from "../features/profil/views/ClientProfilePage";
 
 function App() {
   return (
     <AuthProvider>
       <Routes>
-        {/* Public */}
+
+        {/* ===== Public ===== */}
         <Route path="/" element={<PublicHomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterManagerPage />} />
         <Route path="/hotels/:hotelId/rooms" element={<PublicRoomsPage />} />
 
-        {/* Manager */}
+        {/* ===== Manager ===== */}
         <Route element={<PrivateRoute allowedRoles={["MANAGER"]} />}>
-          <Route path="/dashboard/manager" element={<ManagerDashboard />}>
+          <Route path="/dashboard/manager" element={<ManagerLayout />}>
             <Route index element={<DashboardAccueil />} />
             <Route path="home" element={<ManagerHomePage />} />
-            <Route path="users" element={<PlaceholderUtilisateurs />} />
+            <Route path="users" element={<UtilisateursPage />} />
             <Route path="configuration" element={<HotelConfigPage />} />
             <Route path="rooms" element={<RoomsPage />} />
             <Route path="reservations" element={<ReservationsPage />} />
-            <Route path="planning" element={<Planning />} />
-            <Route path="pointage" element={<Pointage />} />
-            <Route path="channels" element={<Channels />} />
-            <Route path="issues" element={<IssuesPage />} />
+            <Route path="planning" element={<PlanningPageM />} />
+            <Route path="pointage" element={<PointagePageM />} />
+            <Route path="channels" element={<ChannelsPage />} />
+            <Route path="issues" element={<IssuesPageM />} />
             <Route path="profil" element={<ManagerProfilePage />} />
           </Route>
         </Route>
 
-        {/* Employé */}
+        {/* ===== Employe ===== */}
         <Route element={<PrivateRoute allowedRoles={["EMPLOYE"]} />}>
-          <Route path="/dashboard/employe" element={<EmployeDashboard />}>
+          <Route path="/dashboard/employe" element={<EmployeLayout />}>
             <Route index element={<DashboardAccueilEmploye />} />
-            <Route path="planning" element={<PlanningPage />} />
-            <Route path="pointage" element={<PointagePage />} />
+            <Route path="planning" element={<EmployeePlanningPage />} />
+            <Route path="pointage" element={<PointagePageE />} />
             <Route path="rooms" element={<RoomsPage />} />
             <Route path="messages" element={<EmployeeChatPage />} />
-            <Route path="issues" element={<EmployeeIssuesPage />} />
+            <Route path="issues" element={<IssuesPageE />} />
             <Route path="profil" element={<EmployeeProfilePage />} />
           </Route>
         </Route>
 
-        {/* Client */}
+        {/* ===== Client ===== */}
         <Route element={<PrivateRoute allowedRoles={["CLIENT"]} />}>
-          <Route path="/dashboard/client" element={<ClientDashboard />}>
+          <Route path="/dashboard/client" element={<ClientLayout />}>
             <Route path="reservations" element={<ClientReservationsPage />} />
             <Route path="messages" element={<ClientMessagesPage />} />
             <Route path="profil" element={<ClientProfilePage />} />
@@ -89,11 +92,8 @@ function App() {
           </Route>
         </Route>
 
-        {/* 404 */}
-        <Route
-          path="*"
-          element={<div className="p-8">404 - Page introuvable</div>}
-        />
+        {/* ===== 404 ===== */}
+        <Route path="*" element={<div className="p-8">404 - Page introuvable</div>} />
       </Routes>
     </AuthProvider>
   );
