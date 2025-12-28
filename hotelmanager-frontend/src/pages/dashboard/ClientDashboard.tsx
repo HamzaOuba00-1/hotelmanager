@@ -1,78 +1,11 @@
 // src/pages/dashboard/client/ClientDashboard.tsx
 
-import React, { useEffect, useState } from "react";
-import {
-  Search,
-  LayoutDashboard,
-  CalendarCheck2,
-  MessageSquare,
-  User2,
-  LogOut,
-  X,
-} from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
+import { CalendarCheck2, MessageSquare, User2, LogOut, X } from "lucide-react";
+
 import { getMyHotel } from "../../api/hotelApi";
 import { useAuth } from "../../auth/authContext";
-
-/* -------------------- Logo -------------------- */
-const Logo: React.FC<{ src?: string; alt?: string }> = ({ src, alt }) => (
-  <div className="w-full h-14 flex items-center justify-center rounded-lg bg-white shadow overflow-hidden">
-    {src ? (
-      <img
-        src={src}
-        alt={alt ?? "Hotel logo"}
-        className="h-full w-auto object-contain"
-      />
-    ) : (
-      <span className="text-sm font-semibold text-gray-400">LOGO</span>
-    )}
-  </div>
-);
-
-/* -------------------- SidebarLink -------------------- */
-const SidebarLink: React.FC<{
-  to: string;
-  icon?: React.ReactNode;
-  children: React.ReactNode;
-  exact?: boolean;
-}> = ({ to, icon, children, exact = false }) => (
-  <NavLink
-    to={to}
-    end={exact}
-    className={({ isActive }) =>
-      `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
-      ${
-        isActive
-          ? "bg-emerald-600/10 text-emerald-700"
-          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-      }`
-    }
-  >
-    {icon}
-    {children}
-  </NavLink>
-);
-
-/* -------------------- SidebarAction -------------------- */
-const SidebarAction: React.FC<{
-  onClick: () => void;
-  icon?: React.ReactNode;
-  children: React.ReactNode;
-  tone?: "default" | "danger";
-}> = ({ onClick, icon, children, tone = "default" }) => (
-  <button
-    onClick={onClick}
-    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-left
-    ${
-      tone === "danger"
-        ? "text-rose-600 hover:bg-rose-50"
-        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-    }`}
-  >
-    {icon}
-    {children}
-  </button>
-);
 
 /* -------------------- Confirm Logout Modal -------------------- */
 const ConfirmLogoutModal: React.FC<{
@@ -87,14 +20,14 @@ const ConfirmLogoutModal: React.FC<{
       className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4"
       onClick={(e) => e.currentTarget === e.target && onClose()}
     >
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border p-6">
+      <div className="w-full max-w-md rounded-2xl border border-white/50 bg-white/80 backdrop-blur-xl shadow-[0_18px_45px_rgba(0,0,0,0.12)] p-6">
         <div className="flex items-center justify-between mb-3">
           <div className="text-lg font-semibold text-gray-900">
             Confirmer la déconnexion
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100"
+            className="p-2 rounded-xl hover:bg-gray-100/70 transition"
             title="Fermer"
           >
             <X className="w-4 h-4" />
@@ -108,13 +41,13 @@ const ConfirmLogoutModal: React.FC<{
         <div className="mt-6 flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl border text-sm hover:bg-gray-50"
+            className="px-4 py-2 rounded-xl border border-gray-200 bg-white/70 text-sm hover:bg-white transition"
           >
             Annuler
           </button>
           <button
             onClick={onConfirm}
-            className="px-4 py-2 rounded-xl bg-rose-600 text-white text-sm hover:bg-rose-700"
+            className="px-4 py-2 rounded-xl bg-rose-600 text-white text-sm hover:bg-rose-700 transition"
           >
             Se déconnecter
           </button>
@@ -124,75 +57,29 @@ const ConfirmLogoutModal: React.FC<{
   );
 };
 
-/* -------------------- Sidebar -------------------- */
-const Sidebar: React.FC<{
-  logoSrc?: string;
-  onAskLogout: () => void;
-}> = ({ logoSrc, onAskLogout }) => (
-  <aside className="w-64 shrink-0 bg-[#F6F8F7] h-screen p-6 flex flex-col">
-    <div className="mb-10">
-      <Logo src={logoSrc} />
-    </div>
-
-    <nav className="space-y-1 flex-1">
-      <SidebarLink
-        to="/dashboard/client"
-        icon={<LayoutDashboard size={18} />}
-        exact
-      >
-        Dashboard
-      </SidebarLink>
-
-      <SidebarLink
-        to="/dashboard/client/reservations"
-        icon={<CalendarCheck2 size={18} />}
-      >
-        Mes réservations
-      </SidebarLink>
-
-      <SidebarLink
-        to="/dashboard/client/messages"
-        icon={<MessageSquare size={18} />}
-      >
-        Messages
-      </SidebarLink>
-
-      <SidebarLink to="/dashboard/client/profil" icon={<User2 size={18} />}>
-        Mon profil
-      </SidebarLink>
-    </nav>
-
-    {/* Bas de sidebar */}
-    <div className="pt-4 border-t">
-      <SidebarAction
-        onClick={onAskLogout}
-        icon={<LogOut size={18} />}
-        tone="danger"
-      >
-        Déconnexion
-      </SidebarAction>
-    </div>
-  </aside>
-);
-
-/* -------------------- Topbar -------------------- */
-const Topbar: React.FC<{ avatarSrc?: string }> = ({ avatarSrc }) => (
-  <header className="h-16 bg-white shadow-sm flex items-center justify-between px-6">
-    <div className="relative w-72">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-      <input
-        type="search"
-        placeholder="Search"
-        className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-md bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-      />
-    </div>
-
-    <img
-      src={avatarSrc ?? "/avatar-placeholder.jpg"}
-      alt="Profil utilisateur"
-      className="h-9 w-9 rounded-full object-cover"
-    />
-  </header>
+/* -------------------- TopbarLink (same style as home) -------------------- */
+const TopbarLink: React.FC<{
+  to: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+  exact?: boolean;
+}> = ({ to, icon, children, exact = false }) => (
+  <NavLink
+    to={to}
+    end={exact}
+    className={({ isActive }) =>
+      [
+        "inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all",
+        "border",
+        isActive
+          ? "bg-emerald-50 text-emerald-700 border-emerald-100 shadow-sm"
+          : "bg-white/70 text-gray-700 border-white/60 hover:bg-white hover:shadow-md",
+      ].join(" ")
+    }
+  >
+    {icon}
+    {children}
+  </NavLink>
 );
 
 /* -------------------- ClientDashboard -------------------- */
@@ -203,12 +90,9 @@ const ClientDashboard: React.FC = () => {
   const { logout } = useAuth();
 
   useEffect(() => {
-    let mounted = true;
-
     const fetchHotelLogo = async () => {
       try {
         const hotel = await getMyHotel();
-        if (!mounted) return;
         setLogoUrl(hotel?.logoUrl ?? undefined);
       } catch (err) {
         console.error("Erreur récupération logo hôtel :", err);
@@ -216,32 +100,117 @@ const ClientDashboard: React.FC = () => {
     };
 
     fetchHotelLogo();
-
-    return () => {
-      mounted = false;
-    };
   }, []);
 
+  const brand = useMemo(() => {
+    return (
+      <div className="flex items-center gap-3">
+        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg flex items-center justify-center overflow-hidden">
+          {logoUrl ? (
+            <img
+              src={logoUrl}
+              alt="Hotel logo"
+              className="h-full w-full object-cover"
+              draggable={false}
+            />
+          ) : (
+            <span className="text-white font-semibold text-sm">HF</span>
+          )}
+        </div>
+
+        <div className="leading-tight">
+          <div className="text-lg font-semibold text-gray-900 tracking-tight">
+            Hotel<span className="text-emerald-600">Flow</span>
+          </div>
+          <p className="text-xs text-gray-500">Espace client</p>
+        </div>
+      </div>
+    );
+  }, [logoUrl]);
+
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
-      {/* Sidebar fixe */}
-      <Sidebar
-        logoSrc={logoUrl}
-        onAskLogout={() => setConfirmLogout(true)}
-      />
-
-      {/* Zone droite */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Topbar fixe */}
-        <Topbar />
-
-        {/* Seule cette zone scroll */}
-        <main className="flex-1 overflow-y-auto p-8">
-          <Outlet />
-        </main>
+    <div className="min-h-screen w-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-50 via-white to-emerald-50 font-sans">
+      {/* Background blobs like home */}
+      <div className="pointer-events-none fixed inset-0 -z-10">
+        <div className="absolute -top-24 -right-24 h-56 w-56 rounded-full bg-emerald-100/70 blur-3xl" />
+        <div className="absolute -bottom-28 -left-28 h-64 w-64 rounded-full bg-amber-100/60 blur-3xl" />
       </div>
 
-      {/* Modal déconnexion */}
+      {/* HEADER FULL WIDTH (same layout as PublicHomePage) */}
+      <header className="w-full px-6 sm:px-10 pt-6 pb-4 sticky top-0 z-40">
+        <div className="w-full flex items-center justify-between">
+          {/* Brand */}
+          {brand}
+
+          {/* Center nav (desktop) */}
+          <nav className="hidden md:flex items-center gap-3">
+            <TopbarLink
+              to="/dashboard/client/reservations"
+              icon={<CalendarCheck2 className="w-4 h-4" />}
+            >
+              Réservations
+            </TopbarLink>
+
+            <TopbarLink
+              to="/dashboard/client/messages"
+              icon={<MessageSquare className="w-4 h-4" />}
+            >
+              Messages
+            </TopbarLink>
+
+            <TopbarLink
+              to="/dashboard/client/profil"
+              icon={<User2 className="w-4 h-4" />}
+            >
+              Profil
+            </TopbarLink>
+          </nav>
+
+          {/* Right actions */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setConfirmLogout(true)}
+              className="text-sm font-semibold px-4 py-2 rounded-xl text-rose-700 bg-white/70 border border-white/60 shadow-sm hover:bg-rose-50 hover:border-rose-200 hover:shadow-md transition"
+              title="Déconnexion"
+            >
+              <span className="inline-flex items-center gap-2">
+                <LogOut className="w-4 h-4" />
+                Déconnexion
+              </span>
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile nav (same vibe) */}
+        <div className="md:hidden mt-4 flex items-center gap-2">
+          <TopbarLink
+            to="/dashboard/client/reservations"
+            icon={<CalendarCheck2 className="w-4 h-4" />}
+          >
+            Réserv.
+          </TopbarLink>
+
+          <TopbarLink
+            to="/dashboard/client/messages"
+            icon={<MessageSquare className="w-4 h-4" />}
+          >
+            Msg
+          </TopbarLink>
+
+          <TopbarLink to="/dashboard/client/profil" icon={<User2 className="w-4 h-4" />}>
+            Profil
+          </TopbarLink>
+        </div>
+      </header>
+
+      {/* MAIN FULL WIDTH like home */}
+      <main className="w-full px-6 sm:px-10 pb-16">
+        {/* Glass content wrapper like home cards */}
+        <div className="w-full rounded-3xl border border-white/50 bg-white/70 backdrop-blur-xl shadow-[0_18px_45px_rgba(0,0,0,0.10)] p-5 sm:p-7">
+          <Outlet />
+        </div>
+      </main>
+
       <ConfirmLogoutModal
         open={confirmLogout}
         onClose={() => setConfirmLogout(false)}
