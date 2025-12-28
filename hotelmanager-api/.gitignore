@@ -1,34 +1,65 @@
-HELP.md
+############################
+# Maven / Java
+############################
 target/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+*.class
+*.jar
+*.war
+*.ear
 
-### STS ###
+############################
+# Spring Boot
+############################
+application.yml
+application-*.yml
+application.properties
+application-*.properties
+
+############################
+# Uploads / Runtime files
+############################
+uploads/
+storage/
+files/
+media/
+
+############################
+# Logs
+############################
+*.log
+logs/
+
+############################
+# Lombok / Annotation processing
+############################
 .apt_generated
-.classpath
 .factorypath
+
+############################
+# Eclipse / STS
+############################
+.classpath
 .project
-.settings
+.settings/
 .springBeans
-.sts4-cache
+.sts4-cache/
 
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
+############################
+# IntelliJ (backend specific)
+############################
+.idea/
+out/
 
-### NetBeans ###
+############################
+# NetBeans
+############################
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-### VS Code ###
-.vscode/
-##src/main/resources/application.yml
+############################
+# Test reports
+############################
+surefire-reports/
