@@ -1,8 +1,9 @@
 package com.hotelmanager.hotel.mapper;
 
-import com.hotelmanager.hotel.Hotel;
 import com.hotelmanager.hotel.dto.HotelConfigRequest;
 import com.hotelmanager.hotel.dto.HotelConfigResponse;
+import com.hotelmanager.hotel.entity.Hotel;
+
 import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 

@@ -1,7 +1,7 @@
 package com.hotelmanager.user.dto;
 
-import com.hotelmanager.user.User;
-import com.hotelmanager.user.Role;
+import com.hotelmanager.user.entity.Role;
+import com.hotelmanager.user.entity.User;
 
 public record UserResponse(
     Long id,
@@ -20,7 +20,7 @@ public record UserResponse(
             user.getEmail(),
             user.getRole(),
             user.getHotel() != null ? user.getHotel().getId() : null,
-            null // pas de password ici
+            null
         );
     }
 

@@ -4,8 +4,9 @@ import com.hotelmanager.chat.dto.MessageSendRequest;
 import com.hotelmanager.chat.entity.Channel;
 import com.hotelmanager.chat.entity.Message;
 import com.hotelmanager.chat.model.MessageType;
-import com.hotelmanager.chat.repo.MessageRepository;
-import com.hotelmanager.user.User;
+import com.hotelmanager.chat.repository.MessageRepository;
+import com.hotelmanager.user.entity.User;
+
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.messaging.simp.SimpMessagingTemplate;

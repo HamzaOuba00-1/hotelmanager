@@ -1,7 +1,7 @@
 package com.hotelmanager.user.dto;
 
-import com.hotelmanager.hotel.Hotel;
-import com.hotelmanager.user.Role;
+import com.hotelmanager.hotel.entity.Hotel;
+import com.hotelmanager.user.entity.Role;
 
 public class EmployeeRequest {
     private String firstName;

@@ -1,7 +1,8 @@
 package com.hotelmanager.chat.entity;
 
-import com.hotelmanager.user.User;
 import com.hotelmanager.chat.model.ChannelRole;
+import com.hotelmanager.user.entity.User;
+
 import jakarta.persistence.*;
 import java.time.Instant;
 
@@ -31,13 +32,10 @@ public class ChannelMember {
     public ChannelMember() {}
     public ChannelMember(Channel c, User u, ChannelRole role) {
       this.channel = c; this.user = u; this.roleInChannel = role;
-      this.id =  null; // JPA will generate this
+      this.id =  null; 
     }
 
-    // getters/setters
 
-
-  // getters/setters…
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public Channel getChannel() { return channel; }

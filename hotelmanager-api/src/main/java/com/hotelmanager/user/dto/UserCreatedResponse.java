@@ -1,7 +1,7 @@
 package com.hotelmanager.user.dto;
 
-import com.hotelmanager.user.User;
-import com.hotelmanager.user.Role;
+import com.hotelmanager.user.entity.Role;
+import com.hotelmanager.user.entity.User;
 
 public record UserCreatedResponse(
     Long id,

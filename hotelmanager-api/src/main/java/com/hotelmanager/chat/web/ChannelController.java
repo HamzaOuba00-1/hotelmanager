@@ -3,8 +3,8 @@ package com.hotelmanager.chat.web;
 import com.hotelmanager.chat.dto.*;
 import com.hotelmanager.chat.entity.Channel;
 import com.hotelmanager.chat.service.ChannelService;
-import com.hotelmanager.user.User;
 import com.hotelmanager.user.dto.UserShortDto;
+import com.hotelmanager.user.entity.User;
 
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;

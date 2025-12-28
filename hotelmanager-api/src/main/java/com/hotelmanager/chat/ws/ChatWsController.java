@@ -1,12 +1,11 @@
 package com.hotelmanager.chat.ws;
 
-import com.hotelmanager.chat.dto.MessageResponse;
 import com.hotelmanager.chat.dto.MessageSendRequest;
 import com.hotelmanager.chat.service.MessageService;
-import com.hotelmanager.user.User;
+import com.hotelmanager.user.entity.User;
+
 import jakarta.validation.Valid;
 import org.springframework.messaging.handler.annotation.*;
-import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 

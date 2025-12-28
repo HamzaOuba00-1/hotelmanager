@@ -1,7 +1,7 @@
 package com.hotelmanager.issue;
 
-import com.hotelmanager.hotel.Hotel;
-import com.hotelmanager.user.User;
+import com.hotelmanager.hotel.entity.Hotel;
+import com.hotelmanager.user.entity.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
@@ -15,23 +15,19 @@ public class Issue {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Titre court
     @Column(nullable = false, length = 200)
     private String title;
 
-    // Description détaillée
     @Column(nullable = false, length = 2000)
     private String description;
 
-    // Importance
+    
     private boolean important = false;
 
-    // Etat métier
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private IssueStatus status = IssueStatus.OPEN;
 
-    // Timestamps
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

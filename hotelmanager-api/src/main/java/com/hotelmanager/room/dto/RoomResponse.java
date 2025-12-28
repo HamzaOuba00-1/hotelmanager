@@ -1,7 +1,7 @@
 package com.hotelmanager.room.dto;
 
-import com.hotelmanager.room.Room;
-import com.hotelmanager.room.RoomState;
+import com.hotelmanager.room.entity.Room;
+import com.hotelmanager.room.entity.RoomState;
 
 import java.time.LocalDateTime;
 

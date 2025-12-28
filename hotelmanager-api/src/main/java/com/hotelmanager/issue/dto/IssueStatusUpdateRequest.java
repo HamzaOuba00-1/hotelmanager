@@ -5,7 +5,7 @@ import com.hotelmanager.issue.IssueStatus;
 public class IssueStatusUpdateRequest {
 
     private IssueStatus status;
-    private Boolean important; // optionnel : permet aussi de modifier important
+    private Boolean important; 
 
     public IssueStatusUpdateRequest() {
     }

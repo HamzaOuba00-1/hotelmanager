@@ -1,8 +1,8 @@
 package com.hotelmanager.crew.dto;
 
-import com.hotelmanager.crew.Crew;
-import com.hotelmanager.crew.ServiceType;
-import com.hotelmanager.user.User;
+import com.hotelmanager.crew.entity.Crew;
+import com.hotelmanager.crew.entity.ServiceType;
+import com.hotelmanager.user.entity.User;
 
 import java.util.List;
 

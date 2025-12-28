@@ -1,9 +1,10 @@
 package com.hotelmanager.crew.dto;
 
-import com.hotelmanager.crew.ServiceType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
+
+import com.hotelmanager.crew.entity.ServiceType;
 
 public class CrewRequest {
     @NotBlank

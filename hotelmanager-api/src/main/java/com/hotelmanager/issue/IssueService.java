@@ -1,10 +1,11 @@
 package com.hotelmanager.issue;
 
-import com.hotelmanager.hotel.Hotel;
+import com.hotelmanager.hotel.entity.Hotel;
 import com.hotelmanager.issue.dto.IssueRequest;
 import com.hotelmanager.issue.dto.IssueResponse;
 import com.hotelmanager.issue.dto.IssueStatusUpdateRequest;
-import com.hotelmanager.user.User;
+import com.hotelmanager.user.entity.User;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

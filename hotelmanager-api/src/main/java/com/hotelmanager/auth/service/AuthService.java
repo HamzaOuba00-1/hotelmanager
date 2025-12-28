@@ -1,0 +1,88 @@
+package com.hotelmanager.auth.service;
+
+import com.hotelmanager.auth.dto.AuthRequest;
+import com.hotelmanager.auth.dto.AuthResponse;
+import com.hotelmanager.auth.dto.RegisterManagerRequest;
+import com.hotelmanager.config.security.JwtUtil;
+import com.hotelmanager.hotel.entity.Hotel;
+import com.hotelmanager.hotel.repository.HotelRepository;
+import com.hotelmanager.user.entity.Role;
+import com.hotelmanager.user.entity.User;
+import com.hotelmanager.user.repository.UserRepository;
+
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+@Service
+public class AuthService {
+
+        private final UserRepository userRepository;
+        private final HotelRepository hotelRepository;
+        private final PasswordEncoder passwordEncoder;
+        private final JwtUtil jwtUtil;
+        private final AuthenticationManager authenticationManager;
+
+        public AuthService(UserRepository userRepository,
+                        HotelRepository hotelRepository,
+                        PasswordEncoder passwordEncoder,
+                        JwtUtil jwtUtil,
+                        AuthenticationManager authenticationManager) {
+                this.userRepository = userRepository;
+                this.hotelRepository = hotelRepository;
+                this.passwordEncoder = passwordEncoder;
+                this.jwtUtil = jwtUtil;
+                this.authenticationManager = authenticationManager;
+        }
+
+        public AuthResponse registerManager(RegisterManagerRequest request) {
+                Hotel hotel = hotelRepository.findByCode(request.getHotelCode())
+                                .orElseGet(() -> {
+                                        Hotel newHotel = new Hotel();
+                                        newHotel.setName(request.getHotelName());
+                                        newHotel.setCode(request.getHotelCode());
+                                        return hotelRepository.save(newHotel);
+                                });
+
+                User user = new User();
+                user.setFirstName(request.getFirstName());
+                user.setLastName(request.getLastName());
+                user.setEmail(request.getEmail());
+                user.setPassword(passwordEncoder.encode(request.getPassword()));
+                user.setRole(Role.MANAGER);
+                user.setHotel(hotel);
+                user.setEnabled(true);
+
+                userRepository.save(user);
+                String token = jwtUtil.generateToken(user);
+                Hotel hotelForResponse = user.getHotel();
+                return new AuthResponse(
+                        token,
+                        hotelForResponse != null ? hotelForResponse.getId() : null,
+                        hotelForResponse != null ? hotelForResponse.getName() : null,
+                        user.getEmail());
+        }
+
+        public AuthResponse login(AuthRequest request) {
+                authenticationManager.authenticate(
+                                new UsernamePasswordAuthenticationToken(
+                                                request.getEmail(),
+                                                request.getPassword()));
+
+                User user = userRepository.findByEmail(request.getEmail())
+                                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+
+                String token = jwtUtil.generateToken(user);
+
+                Hotel hotel = user.getHotel(); 
+
+                return new AuthResponse(
+                                token,
+                                hotel != null ? hotel.getId() : null,
+                                hotel != null ? hotel.getName() : null,
+                                user.getEmail()
+                                );
+        }
+
+}

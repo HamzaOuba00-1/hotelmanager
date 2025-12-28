@@ -3,7 +3,8 @@ package com.hotelmanager.issue;
 import com.hotelmanager.issue.dto.IssueRequest;
 import com.hotelmanager.issue.dto.IssueResponse;
 import com.hotelmanager.issue.dto.IssueStatusUpdateRequest;
-import com.hotelmanager.user.User;
+import com.hotelmanager.user.entity.User;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

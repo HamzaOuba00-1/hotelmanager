@@ -4,7 +4,8 @@ import com.hotelmanager.chat.dto.MessageResponse;
 import com.hotelmanager.chat.dto.MessageSendRequest;
 import com.hotelmanager.chat.entity.Message;
 import com.hotelmanager.chat.service.MessageService;
-import com.hotelmanager.user.User;
+import com.hotelmanager.user.entity.User;
+
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

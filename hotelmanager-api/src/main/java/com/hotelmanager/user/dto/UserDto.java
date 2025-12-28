@@ -1,6 +1,7 @@
 package com.hotelmanager.user.dto;
 
-import com.hotelmanager.user.User;
+import com.hotelmanager.user.entity.User;
+
 import lombok.Data;
 
 @Data

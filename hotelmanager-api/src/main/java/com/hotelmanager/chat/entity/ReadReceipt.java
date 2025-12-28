@@ -1,8 +1,9 @@
 package com.hotelmanager.chat.entity;
 
-import com.hotelmanager.user.User;
 import jakarta.persistence.*;
 import java.time.Instant;
+
+import com.hotelmanager.user.entity.User;
 
 @Entity
 @Table(name="read_receipts", indexes = {

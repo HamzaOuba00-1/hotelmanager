@@ -1,7 +1,8 @@
 package com.hotelmanager.chat.entity;
 
-import com.hotelmanager.user.User;
 import com.hotelmanager.chat.model.MessageType;
+import com.hotelmanager.user.entity.User;
+
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import java.time.Instant;

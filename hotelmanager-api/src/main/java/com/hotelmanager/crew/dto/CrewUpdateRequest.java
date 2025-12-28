@@ -1,7 +1,8 @@
 package com.hotelmanager.crew.dto;
 
-import com.hotelmanager.crew.ServiceType;
 import java.util.List;
+
+import com.hotelmanager.crew.entity.ServiceType;
 
 public class CrewUpdateRequest {
   private String name;              

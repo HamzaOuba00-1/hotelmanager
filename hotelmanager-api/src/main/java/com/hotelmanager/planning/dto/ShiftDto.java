@@ -2,7 +2,7 @@ package com.hotelmanager.planning.dto;
 
 import java.time.format.DateTimeFormatter;
 
-import com.hotelmanager.planning.Shift;
+import com.hotelmanager.planning.entity.Shift;
 import com.hotelmanager.user.dto.UserDto;
 import lombok.Data;
 

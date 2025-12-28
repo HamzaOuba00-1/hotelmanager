@@ -1,9 +1,10 @@
 package com.hotelmanager.chat.entity;
 
-import com.hotelmanager.crew.Crew;
-import com.hotelmanager.hotel.Hotel;
-import com.hotelmanager.user.User;
+import com.hotelmanager.hotel.entity.Hotel;
+import com.hotelmanager.user.entity.User;
 import com.hotelmanager.chat.model.ChannelType;
+import com.hotelmanager.crew.entity.Crew;
+
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -50,7 +51,6 @@ public class Channel {
     @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ChannelMember> members = new HashSet<>();
 
-    // getters/setters
     public Long getId() {
         return id;
     }

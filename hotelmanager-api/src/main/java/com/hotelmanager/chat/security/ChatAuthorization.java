@@ -1,7 +1,8 @@
 package com.hotelmanager.chat.security;
 
-import com.hotelmanager.chat.repo.ChannelMemberRepository;
-import com.hotelmanager.user.User;
+import com.hotelmanager.chat.repository.ChannelMemberRepository;
+import com.hotelmanager.user.entity.User;
+
 import org.springframework.stereotype.Component;
 
 @Component("chatAuth")

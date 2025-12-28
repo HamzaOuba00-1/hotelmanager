@@ -1,4 +1,3 @@
-// com/hotelmanager/reservation/dto/PublicReservationResponse.java
 package com.hotelmanager.reservation.dto;
 
 public record PublicReservationResponse(

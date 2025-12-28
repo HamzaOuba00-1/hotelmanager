@@ -6,14 +6,14 @@ import com.hotelmanager.chat.entity.Channel;
 import com.hotelmanager.chat.entity.ChannelMember;
 import com.hotelmanager.chat.model.ChannelRole;
 import com.hotelmanager.chat.model.ChannelType;
-import com.hotelmanager.chat.repo.ChannelMemberRepository;
-import com.hotelmanager.chat.repo.ChannelRepository;
-import com.hotelmanager.crew.Crew;
-import com.hotelmanager.crew.CrewRepository;
-import com.hotelmanager.user.Role;
-import com.hotelmanager.user.User;
-import com.hotelmanager.user.UserRepository;
+import com.hotelmanager.chat.repository.ChannelMemberRepository;
+import com.hotelmanager.chat.repository.ChannelRepository;
+import com.hotelmanager.crew.entity.Crew;
+import com.hotelmanager.crew.repository.CrewRepository;
 import com.hotelmanager.user.dto.UserShortDto;
+import com.hotelmanager.user.entity.Role;
+import com.hotelmanager.user.entity.User;
+import com.hotelmanager.user.repository.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -59,7 +59,6 @@ public class ChannelService {
 
     Long hotelId = client.getHotel().getId();
 
-    // 1) chercher tous les canaux existants (tolérant aux doublons)
     List<Channel> existing = channelRepo
         .findAllByHotel_IdAndTypeAndServiceAndCreatedBy_Id(
             hotelId,
@@ -69,12 +68,10 @@ public class ChannelService {
         );
 
     if (!existing.isEmpty()) {
-      // ✅ garder le plus récent
       Channel keep = existing.stream()
           .max(Comparator.comparing(Channel::getCreatedAt))
           .orElse(existing.get(0));
 
-      // ✅ optionnel mais recommandé : cleanup des doublons
       for (Channel c : existing) {
         if (!c.getId().equals(keep.getId())) {
           memberRepo.deleteByChannelId(c.getId());
@@ -84,13 +81,11 @@ public class ChannelService {
       return keep;
     }
 
-    // 2) récupérer tous les managers de l’hôtel
     List<User> managers = userRepo.findAllByHotel_IdAndRole(hotelId, Role.MANAGER);
     if (managers.isEmpty()) {
       throw new IllegalArgumentException("Aucun manager trouvé dans cet hôtel.");
     }
 
-    // 3) créer le channel
     Channel c = new Channel();
     c.setHotel(client.getHotel());
     c.setType(ChannelType.DIRECT);
@@ -101,7 +96,6 @@ public class ChannelService {
 
     c = channelRepo.save(c);
 
-    // 4) membres uniques = client + managers
     LinkedHashSet<Long> userIds = new LinkedHashSet<>();
     userIds.add(client.getId());
     managers.forEach(m -> userIds.add(m.getId()));

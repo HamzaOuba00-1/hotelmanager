@@ -13,7 +13,6 @@ public class ChannelMemberId implements Serializable {
   public ChannelMemberId(Long channelId, Long userId) {
     this.channelId = channelId; this.userId = userId;
   }
-  // getters/setters, equals/hashCode
     public Long getChannelId() { return channelId; }
     public void setChannelId(Long channelId) { this.channelId = channelId; }
     public Long getUserId() { return userId; }
