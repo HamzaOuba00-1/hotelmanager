@@ -1,15 +1,11 @@
-
-
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   CalendarCheck2,
   User2,
-  DoorOpen,
   RefreshCw,
   XCircle,
   Search,
   Layers,
-  Info,
   Mail,
   Phone,
   ChevronRight,
@@ -23,8 +19,7 @@ import {
   isBefore,
   isAfter,
 } from "date-fns";
-import { fr } from "date-fns/locale";
-
+import { enUS } from "date-fns/locale";
 
 type ReservationStatus =
   | "PENDING"
@@ -56,12 +51,11 @@ interface Reservation {
   guestFirstName: string;
   guestLastName: string;
   guestPhone?: string;
-  startAt: string; // ISO
-  endAt: string; // ISO
+  startAt: string;
+  endAt: string;
   status: ReservationStatus;
   version?: number;
 }
-
 
 const FALLBACK_ALLOWED: Record<ReservationStatus, ReservationStatus[]> = {
   PENDING: ["CONFIRMED", "CANCELED"],
@@ -72,20 +66,17 @@ const FALLBACK_ALLOWED: Record<ReservationStatus, ReservationStatus[]> = {
   COMPLETED: [],
 };
 
-const STATUS_STYLE: Record<
-  ReservationStatus,
-  { label: string; badge: string }
-> = {
+const STATUS_STYLE: Record<ReservationStatus, { label: string; badge: string }> = {
   PENDING: {
-    label: "En attente",
+    label: "Pending",
     badge: "bg-amber-50 text-amber-700 border-amber-200",
   },
   CONFIRMED: {
-    label: "Confirmée",
+    label: "Confirmed",
     badge: "bg-emerald-50 text-emerald-700 border-emerald-200",
   },
   CHECKED_IN: {
-    label: "Check-in",
+    label: "Checked in",
     badge: "bg-indigo-50 text-indigo-700 border-indigo-200",
   },
   NO_SHOW: {
@@ -93,36 +84,31 @@ const STATUS_STYLE: Record<
     badge: "bg-rose-50 text-rose-700 border-rose-200",
   },
   CANCELED: {
-    label: "Annulée",
+    label: "Canceled",
     badge: "bg-gray-100 text-gray-600 border-gray-200",
   },
   COMPLETED: {
-    label: "Complétée",
+    label: "Completed",
     badge: "bg-cyan-50 text-cyan-700 border-cyan-200",
   },
 };
-
 
 const toDate = (iso: string) => parseISO(iso);
 const nights = (startIso: string, endIso: string) =>
   Math.max(1, differenceInCalendarDays(toDate(endIso), toDate(startIso)));
 
-
 export default function ReservationsPage() {
-  // Data
   const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [allowedMap, setAllowedMap] = useState<
-    Record<number, ReservationStatus[]>
-  >({});
+  const [allowedMap, setAllowedMap] = useState<Record<number, ReservationStatus[]>>({});
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  // UI
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] =
     useState<ReservationStatus | "ALL">("ALL");
-  const [onlyToday, setOnlyToday] =
-    useState<"ALL" | "ARRIVALS" | "DEPARTURES" | "INHOUSE">("ALL");
+  const [onlyToday, setOnlyToday] = useState<
+    "ALL" | "ARRIVALS" | "DEPARTURES" | "INHOUSE"
+  >("ALL");
   const [details, setDetails] = useState<Reservation | null>(null);
   const confirmBtnRef = useRef<HTMLButtonElement | null>(null);
   const [confirm, setConfirm] = useState<{
@@ -138,12 +124,11 @@ export default function ReservationsPage() {
       const data = await rApi.listReservations();
       setReservations(data);
     } catch (e: any) {
-      setErr(e?.message || "Erreur de chargement des réservations.");
+      setErr(e?.message || "Unable to load reservations.");
     } finally {
       setLoading(false);
     }
   }, []);
-
 
   useEffect(() => {
     fetchReservations();
@@ -193,67 +178,57 @@ export default function ReservationsPage() {
         const email = (r.client?.email || "").toLowerCase();
         const phone = (r.client?.phone || r.guestPhone || "").toLowerCase();
         const room = String(r.room?.roomNumber || "");
-        return guest.includes(q) || email.includes(q) || phone.includes(q) || room.includes(q);
+        return (
+          guest.includes(q) ||
+          email.includes(q) ||
+          phone.includes(q) ||
+          room.includes(q)
+        );
       })
-      .sort(
-        (a, b) =>
-          parseISO(a.startAt).getTime() - parseISO(b.startAt).getTime()
-      );
-  }, [reservations, query, statusFilter, onlyToday]);
+      .sort((a, b) => parseISO(a.startAt).getTime() - parseISO(b.startAt).getTime());
+  }, [reservations, query, statusFilter, onlyToday, today]);
 
   const kpis = useMemo(() => {
-    const arr = reservations.filter((r) =>
-      isSameDay(toDate(r.startAt), today)
-    ).length;
-    const dep = reservations.filter((r) =>
-      isSameDay(toDate(r.endAt), today)
-    ).length;
+    const arr = reservations.filter((r) => isSameDay(toDate(r.startAt), today)).length;
+    const dep = reservations.filter((r) => isSameDay(toDate(r.endAt), today)).length;
     const inH = reservations.filter(
-      (r) =>
-        isBefore(toDate(r.startAt), today) &&
-        isAfter(toDate(r.endAt), today)
+      (r) => isBefore(toDate(r.startAt), today) && isAfter(toDate(r.endAt), today)
     ).length;
     return { arr, dep, inH };
-  }, [reservations]);
+  }, [reservations, today]);
 
   const doTransition = async (id: number, target: ReservationStatus) => {
     try {
       await rApi.updateStatus(id, target);
       await fetchReservations();
     } catch (e: any) {
-      setErr(e?.message || "Transition refusée.");
+      setErr(e?.message || "Transition denied.");
     }
   };
 
-  const askConfirm = async (
-    res: Reservation,
-    target: ReservationStatus,
-    label: string
-  ) => {
+  const askConfirm = async (res: Reservation, target: ReservationStatus, label: string) => {
     const allowed = await ensureAllowedLoaded(res.id, res.status);
     if (!allowed.includes(target)) {
-      setErr(
-        `Transition non autorisée depuis ${res.status} vers ${target}.`
-      );
+      setErr(`Transition not allowed from ${res.status} to ${target}.`);
       return;
     }
     setConfirm({ res, target, label });
   };
+
   useEffect(() => {
     if (confirm?.res && confirmBtnRef.current) confirmBtnRef.current.focus();
   }, [confirm]);
 
-
   const Header = () => (
     <div className="flex flex-col items-center gap-2 mb-6 text-center">
       <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2 mb-4">
-        <CalendarCheck2 className="h-8 w-8 text-emerald-600" /> Agenda des
-        réservations
+        <CalendarCheck2 className="h-8 w-8 text-emerald-600" /> Reservations schedule
       </h1>
 
       <button
         onClick={fetchReservations}
         className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-xl shadow-lg hover:from-emerald-600 hover:to-emerald-700 transition-all"
+        aria-label="Refresh"
       >
         <RefreshCw className="w-4 h-4" />
       </button>
@@ -262,7 +237,9 @@ export default function ReservationsPage() {
 
   const StatusPill: React.FC<{ s: ReservationStatus }> = ({ s }) => (
     <span
-      className={`inline-flex items-center text-[11px] px-2 py-0.5 rounded-md border ${STATUS_STYLE[s].badge}`}
+      className={`inline-flex items-center text-[11px] px-2 py-0.5 rounded-md border ${
+        STATUS_STYLE[s].badge
+      }`}
     >
       {STATUS_STYLE[s].label}
     </span>
@@ -300,41 +277,36 @@ export default function ReservationsPage() {
 
       <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-gray-700">
         <InfoLine
-          label="Chambre"
+          label="Room"
           value={
             <span className="inline-flex items-center gap-1">
-              {String(r.room.roomNumber).padStart(3, "0")} • {r.room.roomType}{" "}
-              (Étage {r.room.floor})
+              {String(r.room.roomNumber).padStart(3, "0")} - {r.room.roomType} (Floor {r.room.floor})
             </span>
           }
         />
         <InfoLine
-          label="Arrivée"
-          value={format(toDate(r.startAt), "EEE d MMM HH:mm", { locale: fr })}
+          label="Arrival"
+          value={format(toDate(r.startAt), "EEE d MMM HH:mm", { locale: enUS })}
         />
         <InfoLine
-          label="Départ"
-          value={format(toDate(r.endAt), "EEE d MMM HH:mm", { locale: fr })}
+          label="Departure"
+          value={format(toDate(r.endAt), "EEE d MMM HH:mm", { locale: enUS })}
         />
-        <InfoLine label="Nuits" value={`${nights(r.startAt, r.endAt)}`} />
+        <InfoLine label="Nights" value={`${nights(r.startAt, r.endAt)}`} />
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
         {isAllowed(r, "CONFIRMED") && r.status === "PENDING" && (
           <Action
-            onClick={() =>
-              askConfirm(r, "CONFIRMED", "Confirmer la réservation ?")
-            }
+            onClick={() => askConfirm(r, "CONFIRMED", "Confirm this reservation?")}
             className="px-3 py-1.5 rounded-lg text-sm shadow-sm hover:shadow transition bg-emerald-600 text-white hover:bg-emerald-700"
           >
-            Confirmer
+            Confirm
           </Action>
         )}
         {isAllowed(r, "CHECKED_IN") && r.status === "CONFIRMED" && (
           <Action
-            onClick={() =>
-              askConfirm(r, "CHECKED_IN", "Enregistrer le check-in ?")
-            }
+            onClick={() => askConfirm(r, "CHECKED_IN", "Record check-in?")}
             className="px-3 py-1.5 rounded-lg text-sm shadow-sm hover:shadow transition bg-emerald-500 text-white hover:bg-emerald-800"
           >
             Check-in
@@ -342,7 +314,7 @@ export default function ReservationsPage() {
         )}
         {isAllowed(r, "NO_SHOW") && r.status === "CONFIRMED" && (
           <Action
-            onClick={() => askConfirm(r, "NO_SHOW", "Marquer en no-show ?")}
+            onClick={() => askConfirm(r, "NO_SHOW", "Mark as no-show?")}
             className="px-3 py-1.5 rounded-lg text-sm shadow-sm hover:shadow transition bg-rose-500 text-white hover:bg-rose-700"
           >
             No-show
@@ -350,9 +322,7 @@ export default function ReservationsPage() {
         )}
         {isAllowed(r, "COMPLETED") && r.status === "CHECKED_IN" && (
           <Action
-            onClick={() =>
-              askConfirm(r, "COMPLETED", "Clôturer le séjour (checkout) ?")
-            }
+            onClick={() => askConfirm(r, "COMPLETED", "Close stay (checkout)?")}
             className="px-3 py-1.5 rounded-lg text-sm shadow-sm hover:shadow transition bg-emerald-400 text-white hover:bg-emerald-600"
           >
             Checkout
@@ -361,12 +331,10 @@ export default function ReservationsPage() {
         {(r.status === "PENDING" || r.status === "CONFIRMED") &&
           isAllowed(r, "CANCELED") && (
             <Action
-              onClick={() =>
-                askConfirm(r, "CANCELED", "Annuler la réservation ?")
-              }
+              onClick={() => askConfirm(r, "CANCELED", "Cancel this reservation?")}
               className="px-3 py-1.5 rounded-lg text-sm shadow-sm hover:shadow transition border  bg-gray-200 hover:bg-gray-50"
             >
-              Annuler
+              Cancel
             </Action>
           )}
 
@@ -374,32 +342,28 @@ export default function ReservationsPage() {
           onClick={() => setDetails(r)}
           className="ml-auto inline-flex items-center gap-1 text-sm font-medium text-emerald-700 hover:text-emerald-800"
         >
-          Détails <ChevronRight className="w-4 h-4" />
+          Details <ChevronRight className="w-4 h-4" />
         </button>
       </div>
     </div>
   );
 
-
   return (
     <div className="p-6 text-center space-y-8">
       <Header />
 
-      {/* Filtres — style comme ta PlanningPage : clair, pills arrondies */}
       <div className="bg-white/60 rounded-2xl border shadow p-4">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_auto] items-center gap-4">
-          {/* Recherche */}
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Rechercher (nom, email, N° chambre)…"
+              placeholder="Search (name, email, room #)."
               className="w-full pl-9 pr-3 py-2 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white"
             />
           </div>
 
-          {/* Statuts (groupe séparé → plus de “fusion visuelle”) */}
           <div className="flex items-center gap-3 justify-start lg:justify-center">
             <Layers className="w-4 h-4 text-gray-400" />
             <div className="flex flex-wrap gap-2 bg-gray-100/70 border rounded-full px-2 py-1">
@@ -423,15 +387,12 @@ export default function ReservationsPage() {
                       : "bg-white hover:bg-gray-200 text-gray-700"
                   }`}
                 >
-                  {key === "ALL"
-                    ? "Tous"
-                    : STATUS_STYLE[key as ReservationStatus].label}
+                  {key === "ALL" ? "All" : STATUS_STYLE[key as ReservationStatus].label}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Dates du jour (deuxième groupe séparé) */}
           <div className="flex items-center gap-3 justify-start lg:justify-end">
             <div className="flex flex-wrap gap-2 bg-gray-100/70 border rounded-full px-2 py-1">
               {(["ALL", "ARRIVALS", "DEPARTURES", "INHOUSE"] as const).map(
@@ -441,17 +402,17 @@ export default function ReservationsPage() {
                     onClick={() => setOnlyToday(k)}
                     className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
                       onlyToday === k
-                      ? "bg-emerald-600 text-white shadow-md"
-                      : "bg-white hover:bg-gray-200 text-gray-700"
+                        ? "bg-emerald-600 text-white shadow-md"
+                        : "bg-white hover:bg-gray-200 text-gray-700"
                     }`}
                   >
                     {k === "ALL"
-                      ? "Toutes dates"
+                      ? "All dates"
                       : k === "ARRIVALS"
-                      ? "Arrivées du jour"
+                      ? "Today's arrivals"
                       : k === "DEPARTURES"
-                      ? "Départs du jour"
-                      : "En séjour aujourd’hui"}
+                      ? "Today's departures"
+                      : "Staying today"}
                   </button>
                 )
               )}
@@ -460,11 +421,10 @@ export default function ReservationsPage() {
         </div>
       </div>
 
-      {/* KPIs style “carte claire” comme Planning */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <Kpi label="Arrivées du jour" value={kpis.arr} />
-        <Kpi label="Départs du jour" value={kpis.dep} />
-        <Kpi label="En séjour aujourd’hui" value={kpis.inH} />
+        <Kpi label="Today's arrivals" value={kpis.arr} />
+        <Kpi label="Today's departures" value={kpis.dep} />
+        <Kpi label="Staying today" value={kpis.inH} />
       </div>
 
       {err && (
@@ -472,20 +432,17 @@ export default function ReservationsPage() {
           {err}
         </div>
       )}
-      {loading && <div className="text-sm text-gray-500">Chargement…</div>}
+      {loading && <div className="text-sm text-gray-500">Loading...</div>}
 
-      {/* Liste unique */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {filtered.map((r) => (
           <Row key={r.id} r={r} />
         ))}
         {!loading && filtered.length === 0 && (
-          <Empty message="Aucune réservation ne correspond aux filtres." />
+          <Empty message="No reservations match the selected filters." />
         )}
       </div>
 
-
-      {/* Modal Détails */}
       {details && (
         <div
           className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 animate-fadeIn"
@@ -498,49 +455,47 @@ export default function ReservationsPage() {
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2 text-lg font-semibold">
-                <User2 className="w-5 h-5 text-emerald-700" /> Détails
-                réservation
+                <User2 className="w-5 h-5 text-emerald-700" /> Reservation details
               </div>
-              <button className="text-sm text-gray-500 hover:text-gray-700" onClick={() => setDetails(null)}>
-                Fermer
+              <button
+                className="text-sm text-gray-500 hover:text-gray-700"
+                onClick={() => setDetails(null)}
+              >
+                Close
               </button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <InfoLine
-                label="Client"
+                label="Guest"
                 value={`${details.guestFirstName} ${details.guestLastName}`}
               />
-              <InfoLine label="Email" value={details.client?.email || "—"} />
+              <InfoLine label="Email" value={details.client?.email || "-"} />
               <InfoLine
-                label="Téléphone"
-                value={details.client?.phone || details.guestPhone || "—"}
+                label="Phone"
+                value={details.client?.phone || details.guestPhone || "-"}
               />
               <InfoLine
-                label="Chambre"
-                value={`#${String(details.room.roomNumber).padStart(
-                  3,
-                  "0"
-                )} – ${details.room.roomType} (Étage ${details.room.floor})`}
+                label="Room"
+                value={`#${String(details.room.roomNumber).padStart(3, "0")} - ${details.room.roomType} (Floor ${details.room.floor})`}
               />
               <InfoLine
-                label="Arrivée"
-                value={format(toDate(details.startAt), "PPPp", { locale: fr })}
+                label="Arrival"
+                value={format(toDate(details.startAt), "PPPp", { locale: enUS })}
               />
               <InfoLine
-                label="Départ"
-                value={format(toDate(details.endAt), "PPPp", { locale: fr })}
+                label="Departure"
+                value={format(toDate(details.endAt), "PPPp", { locale: enUS })}
               />
               <InfoLine
-                label="Nuits"
+                label="Nights"
                 value={`${nights(details.startAt, details.endAt)}`}
               />
-              <InfoLine label="Statut" value={<StatusPill s={details.status} />} />
+              <InfoLine label="Status" value={<StatusPill s={details.status} />} />
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal Confirmation */}
       {confirm?.res && (
         <div
           className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 animate-fadeIn"
@@ -559,15 +514,14 @@ export default function ReservationsPage() {
               {confirm.label}
             </p>
             <p className="text-sm text-gray-500">
-              {confirm?.res?.guestFirstName} {confirm?.res?.guestLastName} •
-              Chambre {String(confirm?.res?.room.roomNumber).padStart(3, "0")}
+              {confirm?.res?.guestFirstName} {confirm?.res?.guestLastName} - Room {String(confirm?.res?.room.roomNumber).padStart(3, "0")}
             </p>
             <div className="flex justify-center gap-3">
               <button
                 onClick={() => setConfirm(null)}
                 className="px-4 py-2 rounded-xl border text-sm hover:bg-gray-50"
               >
-                Annuler
+                Cancel
               </button>
               <button
                 ref={confirmBtnRef}
@@ -578,7 +532,7 @@ export default function ReservationsPage() {
                 }}
                 className="px-5 py-2 rounded-xl bg-emerald-600 text-white text-sm shadow hover:shadow-md"
               >
-                Confirmer
+                Confirm
               </button>
             </div>
           </div>
@@ -589,8 +543,6 @@ export default function ReservationsPage() {
     </div>
   );
 }
-
-/* --------------- Petits composants --------------- */
 
 const Empty: React.FC<{ message: string }> = ({ message }) => (
   <div className="col-span-full rounded-xl border bg-white/60 backdrop-blur p-4 text-sm text-gray-500 flex items-center gap-2">
@@ -628,20 +580,22 @@ const InfoLine: React.FC<{ label: string; value: React.ReactNode }> = ({
   </div>
 );
 
-
 if (typeof document !== "undefined") {
-  const style = document.createElement("style");
-  style.innerHTML = `
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+  if (!document.head.querySelector("style[data-reservations-m-animations]")) {
+    const style = document.createElement("style");
+    style.dataset.reservationsMAnimations = "true";
+    style.innerHTML = `
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn { animation: fadeIn .3s ease-out; }
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    .animate-slideIn { animation: slideIn .4s ease-out; }
+    `;
+    document.head.appendChild(style);
   }
-  .animate-fadeIn { animation: fadeIn .3s ease-out; }
-  @keyframes slideIn {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
-  .animate-slideIn { animation: slideIn .4s ease-out; }
-  `;
-  document.head.appendChild(style);
 }

@@ -16,13 +16,14 @@ export default function HotelServicesCard({
   form: UseFormReturn<HotelConfigForm>;
 }) {
   const { watch, setValue } = form;
+
   const services = watch("services") ?? {};
 
-  const toggle = (key: keyof HotelConfigForm["services"]) => {
+  const toggleService = (key: keyof HotelConfigForm["services"]) => {
     setValue(`services.${key}`, !services?.[key], { shouldDirty: true });
   };
 
-  const Card = ({
+  const ServiceButton = ({
     name,
     label,
     Icon,
@@ -36,7 +37,7 @@ export default function HotelServicesCard({
     return (
       <button
         type="button"
-        onClick={() => toggle(name)}
+        onClick={() => toggleService(name)}
         className={clsx(
           "flex flex-col items-center justify-center gap-2 p-4 rounded-xl border shadow transition-all backdrop-blur-md",
           isActive
@@ -52,27 +53,33 @@ export default function HotelServicesCard({
 
   return (
     <section className="rounded-xl border border-gray-100 bg-white/70 shadow-xl backdrop-blur-md transition-all duration-300">
+      {/* Header defining the hotel services configuration section */}
       <header className="bg-gradient-to-r from-emerald-500/80 to-emerald-700/70 text-white px-8 py-5 rounded-t-xl shadow backdrop-blur-sm">
         <div className="flex items-center justify-center gap-2">
           <Briefcase className="w-6 h-6 text-white" />
           <h2 className="text-lg font-semibold tracking-wide uppercase">
-            Services disponibles
+            Available services
           </h2>
         </div>
       </header>
 
-      {/* Sous-titre centré */}
+      {/* Instructional text guiding service selection */}
       <div className="px-8 pt-4 text-sm text-gray-600 font-medium text-center">
-        Sélectionnez les services disponibles dans votre établissement.
+        Select the services that are available in your hotel.
       </div>
 
+      {/* Interactive grid allowing toggling of hotel services */}
       <div className="p-8 pt-4 grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <Card name="hasRestaurant" label="Restaurant" Icon={Utensils} />
-        <Card name="hasLaundry" label="Blanchisserie" Icon={WashingMachine} />
-        <Card name="hasShuttle" label="Navette" Icon={BusFront} />
-        <Card name="hasGym" label="Salle de sport" Icon={Dumbbell} />
-        <Card name="hasPool" label="Piscine" Icon={Waves} />
-        <Card name="hasBusinessCenter" label="Business center" Icon={Briefcase} />
+        <ServiceButton name="hasRestaurant" label="Restaurant" Icon={Utensils} />
+        <ServiceButton name="hasLaundry" label="Laundry service" Icon={WashingMachine} />
+        <ServiceButton name="hasShuttle" label="Shuttle service" Icon={BusFront} />
+        <ServiceButton name="hasGym" label="Fitness center" Icon={Dumbbell} />
+        <ServiceButton name="hasPool" label="Swimming pool" Icon={Waves} />
+        <ServiceButton
+          name="hasBusinessCenter"
+          label="Business center"
+          Icon={Briefcase}
+        />
       </div>
     </section>
   );

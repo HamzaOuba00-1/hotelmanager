@@ -15,7 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
-import fr from "date-fns/locale/fr";
+import enUS from "date-fns/locale/en-US";
 import {
   getIssuesForMyHotel,
   createIssue,
@@ -25,7 +25,6 @@ import {
   type IssueStatus,
 } from "../api/issueApi";
 
-// petit helper pour les toasts
 const useToast = () => {
   const [toast, setToast] = useState<string | null>(null);
   const showToast = (msg: string) => {
@@ -36,9 +35,9 @@ const useToast = () => {
 };
 
 const statusLabel: Record<IssueStatus, string> = {
-  OPEN: "Ouvert",
-  RESOLVED: "Résolu",
-  DELETED: "Supprimé",
+  OPEN: "Open",
+  RESOLVED: "Resolved",
+  DELETED: "Deleted",
 };
 
 const statusColors: Record<
@@ -90,10 +89,10 @@ const initialForm: FormState = {
 };
 
 const formatDate = (iso?: string | null) => {
-  if (!iso) return "—";
+  if (!iso) return "-";
   try {
     const d = parseISO(iso);
-    return format(d, "dd/MM/yyyy HH:mm", { locale: fr });
+    return format(d, "dd/MM/yyyy HH:mm", { locale: enUS });
   } catch {
     return iso;
   }
@@ -116,7 +115,6 @@ const IssuesPage: React.FC = () => {
     title?: string;
   }>({ open: false });
 
-  // 👉 nouveau : issue sélectionné pour le détail
   const [detailsIssue, setDetailsIssue] = useState<Issue | null>(null);
 
   const { toast, showToast } = useToast();
@@ -128,10 +126,7 @@ const IssuesPage: React.FC = () => {
       setIssues(data || []);
     } catch (e: any) {
       console.error(e);
-      showToast(
-        e?.response?.data?.detail ??
-          "Impossible de charger les signalements."
-      );
+      showToast(e?.response?.data?.detail ?? "Unable to load issues.");
     } finally {
       setLoading(false);
     }
@@ -167,7 +162,7 @@ const IssuesPage: React.FC = () => {
   const onSubmitIssue = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title.trim() || !form.description.trim()) {
-      showToast("Titre et description sont obligatoires.");
+      showToast("Title and description are required.");
       return;
     }
     try {
@@ -176,15 +171,13 @@ const IssuesPage: React.FC = () => {
         description: form.description.trim(),
         important: form.important,
       });
-      showToast("Signalement créé ✅");
+      showToast("Issue created.");
       setModalOpen(false);
       setForm(initialForm);
       await loadIssues();
     } catch (e: any) {
       console.error(e);
-      showToast(
-        e?.response?.data?.detail ?? "Impossible de créer le signalement."
-      );
+      showToast(e?.response?.data?.detail ?? "Unable to create the issue.");
     }
   };
 
@@ -193,29 +186,24 @@ const IssuesPage: React.FC = () => {
       await updateIssueStatus(issue.id, { important: !issue.important });
       showToast(
         !issue.important
-          ? "Signalement marqué comme important ⭐"
-          : "Signalement marqué comme non important"
+          ? "Issue marked as important."
+          : "Issue marked as not important."
       );
       await loadIssues();
     } catch (e: any) {
       console.error(e);
-      showToast(
-        e?.response?.data?.detail ??
-          "Impossible de mettre à jour l'importance."
-      );
+      showToast(e?.response?.data?.detail ?? "Unable to update importance.");
     }
   };
 
   const changeStatus = async (issue: Issue, next: IssueStatus) => {
     try {
       await updateIssueStatus(issue.id, { status: next });
-      showToast(`Statut mis à jour (${statusLabel[next]}) ✅`);
+      showToast(`Status updated (${statusLabel[next]}).`);
       await loadIssues();
     } catch (e: any) {
       console.error(e);
-      showToast(
-        e?.response?.data?.detail ?? "Impossible de mettre à jour le statut."
-      );
+      showToast(e?.response?.data?.detail ?? "Unable to update status.");
     }
   };
 
@@ -224,26 +212,23 @@ const IssuesPage: React.FC = () => {
     try {
       await deleteIssue(confirmDel.id);
       setConfirmDel({ open: false });
-      showToast("Signalement supprimé 🗑️");
+      showToast("Issue deleted.");
       await loadIssues();
     } catch (e: any) {
       console.error(e);
-      showToast(
-        e?.response?.data?.detail ?? "Impossible de supprimer le signalement."
-      );
+      showToast(e?.response?.data?.detail ?? "Unable to delete the issue.");
     }
   };
 
   return (
     <div className="p-6">
-      {/* Header — aligné sur Planning */}
       <div className="flex flex-col items-center gap-2 mb-6 text-center">
         <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2 mb-1">
           <AlertTriangle className="h-8 w-8 text-emerald-600" />
-          Signalements de l’hôtel
+          Hotel Issues
         </h1>
         <p className="text-sm text-gray-500 max-w-2xl">
-          Suivi des problèmes remontés par les équipes et les managers.
+          Track issues reported by staff and managers.
         </p>
 
         <button
@@ -251,53 +236,45 @@ const IssuesPage: React.FC = () => {
           className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-xl shadow-lg hover:from-emerald-600 hover:to-emerald-700 transition-all mt-3"
         >
           <Plus className="w-4 h-4" />
-          Nouveau signalement
+          New issue
         </button>
       </div>
 
-      {/* KPIs */}
       <section className="grid sm:grid-cols-3 gap-4 mb-6">
         <div className="bg-white/60 rounded-2xl border shadow p-5">
           <div className="text-sm text-gray-500 flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-amber-500" />
-            Ouverts
+            Open
           </div>
           <div className="text-3xl font-bold mt-1">{stats.open}</div>
-          <p className="text-xs text-gray-500 mt-1">
-            Signalements à traiter en priorité.
-          </p>
+          <p className="text-xs text-gray-500 mt-1">Issues to handle first.</p>
         </div>
 
         <div className="bg-white/60 rounded-2xl border shadow p-5">
           <div className="text-sm text-gray-500 flex items-center gap-2">
             <CheckCircle className="w-4 h-4 text-emerald-500" />
-            Résolus
+            Resolved
           </div>
           <div className="text-3xl font-bold mt-1">{stats.resolved}</div>
-          <p className="text-xs text-gray-500 mt-1">
-            Problèmes déjà pris en charge.
-          </p>
+          <p className="text-xs text-gray-500 mt-1">Issues already handled.</p>
         </div>
 
         <div className="bg-white/60 rounded-2xl border shadow p-5">
           <div className="text-sm text-gray-500 flex items-center gap-2">
             <Star className="w-4 h-4 text-yellow-500" />
-            Importants
+            Important
           </div>
           <div className="text-3xl font-bold mt-1">{stats.important}</div>
-          <p className="text-xs text-gray-500 mt-1">
-            Marqués comme critiques par l’équipe.
-          </p>
+          <p className="text-xs text-gray-500 mt-1">Marked as critical.</p>
         </div>
       </section>
 
-      {/* Filtres */}
       <section className="bg-white/60 rounded-2xl border shadow p-4 mb-4 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
         <div className="flex items-center gap-2 bg-gray-50 border rounded-xl px-3 py-1.5 w-full md:w-72">
           <SearchIcon className="w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Rechercher par titre, description, auteur..."
+            placeholder="Search by title, description, author..."
             className="flex-1 bg-transparent outline-none text-sm"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -314,10 +291,10 @@ const IssuesPage: React.FC = () => {
                 setStatusFilter((e.target.value || "") as "" | IssueStatus)
               }
             >
-              <option value="">Tous les statuts</option>
-              <option value="OPEN">Ouverts</option>
-              <option value="RESOLVED">Résolus</option>
-              <option value="DELETED">Supprimés</option>
+              <option value="">All statuses</option>
+              <option value="OPEN">Open</option>
+              <option value="RESOLVED">Resolved</option>
+              <option value="DELETED">Deleted</option>
             </select>
           </div>
 
@@ -334,20 +311,19 @@ const IssuesPage: React.FC = () => {
             ) : (
               <StarOff className="w-4 h-4" />
             )}
-            Importants
+            Important
           </button>
         </div>
       </section>
 
-      {/* Tableau */}
       <section className="bg-white/60 rounded-2xl border shadow p-6">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-semibold text-gray-800 flex items-center gap-2">
             <Clock className="w-4 h-4 text-gray-500" />
-            Liste des signalements
+            Issues list
           </h2>
           <span className="text-xs text-gray-500">
-            {filteredIssues.length} résultat(s)
+            {filteredIssues.length} result(s)
           </span>
         </div>
 
@@ -356,11 +332,11 @@ const IssuesPage: React.FC = () => {
             <thead>
               <tr className="text-left text-gray-500 border-b">
                 <th className="py-2 w-10"></th>
-                <th className="py-2 w-1/5">Titre</th>
+                <th className="py-2 w-1/5">Title</th>
                 <th className="py-2 w-1/4">Description</th>
-                <th className="py-2 w-48">Statut</th>
-                <th className="py-2 w-48">Auteur</th>
-                <th className="py-2 w-48">Créé le</th>
+                <th className="py-2 w-48">Status</th>
+                <th className="py-2 w-48">Author</th>
+                <th className="py-2 w-48">Created at</th>
                 <th className="py-2 w-56">Actions</th>
               </tr>
             </thead>
@@ -368,7 +344,7 @@ const IssuesPage: React.FC = () => {
               {loading ? (
                 <tr>
                   <td colSpan={7} className="py-4 text-center text-gray-500">
-                    Chargement...
+                    Loading...
                   </td>
                 </tr>
               ) : filteredIssues.length ? (
@@ -378,7 +354,6 @@ const IssuesPage: React.FC = () => {
                     className="border-b last:border-0 hover:bg-gray-50/60 cursor-pointer"
                     onClick={() => setDetailsIssue(iss)}
                   >
-                    {/* important star */}
                     <td className="py-2 text-center">
                       <button
                         onClick={(e) => {
@@ -388,8 +363,8 @@ const IssuesPage: React.FC = () => {
                         className="p-1 rounded-full hover:bg-gray-100"
                         title={
                           iss.important
-                            ? "Retirer l'importance"
-                            : "Marquer important"
+                            ? "Unmark as important"
+                            : "Mark as important"
                         }
                       >
                         {iss.important ? (
@@ -406,7 +381,7 @@ const IssuesPage: React.FC = () => {
 
                     <td className="py-2 text-gray-600 align-top max-w-md">
                       <div className="line-clamp-2 overflow-hidden">
-                        {iss.description || "—"}
+                        {iss.description || "-"}
                       </div>
                     </td>
 
@@ -418,7 +393,7 @@ const IssuesPage: React.FC = () => {
                       <div className="flex items-center gap-1">
                         <UserIcon className="w-3.5 h-3.5 text-gray-400" />
                         <span>
-                          {iss.createdByName || "Inconnu"}{" "}
+                          {iss.createdByName || "Unknown"}{" "}
                           {iss.createdById ? (
                             <span className="text-xs text-gray-400">
                               (#{iss.createdById})
@@ -443,7 +418,7 @@ const IssuesPage: React.FC = () => {
                             className="px-2 py-1 rounded-lg border border-emerald-200 text-xs text-emerald-700 bg-emerald-50 hover:bg-emerald-100 inline-flex items-center gap-1"
                           >
                             <Check className="w-3.5 h-3.5" />
-                            Résoudre
+                            Resolve
                           </button>
                         ) : iss.status === "RESOLVED" ? (
                           <button
@@ -454,7 +429,7 @@ const IssuesPage: React.FC = () => {
                             className="px-2 py-1 rounded-lg border border-gray-200 text-xs text-gray-700 bg-white hover:bg-gray-100 inline-flex items-center gap-1"
                           >
                             <Clock className="w-3.5 h-3.5" />
-                            Rouvrir
+                            Reopen
                           </button>
                         ) : null}
 
@@ -471,7 +446,7 @@ const IssuesPage: React.FC = () => {
                             className="px-2 py-1 rounded-lg border border-rose-200 text-xs text-rose-700 bg-rose-50 hover:bg-rose-100 inline-flex items-center gap-1"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
-                            Supprimer
+                            Delete
                           </button>
                         )}
                       </div>
@@ -484,7 +459,7 @@ const IssuesPage: React.FC = () => {
                     colSpan={7}
                     className="py-4 text-center text-gray-500 text-sm"
                   >
-                    Aucun signalement ne correspond aux filtres.
+                    No issues match the filters.
                   </td>
                 </tr>
               )}
@@ -493,14 +468,13 @@ const IssuesPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Modal création issue */}
       {modalOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white/60 rounded-2xl shadow-xl p-8 w-full max-w-lg animate-fadeIn text-left">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-emerald-600" />
-                Nouveau signalement
+                New issue
               </h2>
               <button
                 onClick={() => setModalOpen(false)}
@@ -512,7 +486,7 @@ const IssuesPage: React.FC = () => {
 
             <form onSubmit={onSubmitIssue} className="space-y-4">
               <label className="block text-sm font-medium text-gray-700">
-                Titre
+                Title
                 <input
                   type="text"
                   value={form.title}
@@ -521,7 +495,7 @@ const IssuesPage: React.FC = () => {
                   }
                   required
                   className="mt-1 w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  placeholder="Ex : Fuite d'eau chambre 305"
+                  placeholder="e.g. Water leak in room 305"
                 />
               </label>
 
@@ -535,7 +509,7 @@ const IssuesPage: React.FC = () => {
                   required
                   rows={4}
                   className="mt-1 w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
-                  placeholder="Détaille le problème pour que le manager puisse agir rapidement…"
+                  placeholder="Provide enough detail so the manager can act quickly."
                 />
               </label>
 
@@ -548,7 +522,7 @@ const IssuesPage: React.FC = () => {
                   }
                   className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
                 />
-                Marquer comme important
+                Mark as important
               </label>
 
               <div className="flex justify-end gap-3 pt-2">
@@ -557,13 +531,13 @@ const IssuesPage: React.FC = () => {
                   onClick={() => setModalOpen(false)}
                   className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 text-sm"
                 >
-                  Annuler
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 text-sm"
                 >
-                  Créer le signalement
+                  Create issue
                 </button>
               </div>
             </form>
@@ -576,7 +550,6 @@ const IssuesPage: React.FC = () => {
         </div>
       )}
 
-      {/* Modal DÉTAILS issue */}
       {detailsIssue && (
         <div
           className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
@@ -589,7 +562,7 @@ const IssuesPage: React.FC = () => {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-emerald-600" />
-                Détails du signalement
+                Issue details
               </h2>
               <button
                 onClick={() => setDetailsIssue(null)}
@@ -623,25 +596,19 @@ const IssuesPage: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <UserIcon className="w-4 h-4 text-gray-400" />
                   <span>
-                    Créé par{" "}
-                    <b>{detailsIssue.createdByName || "Inconnu"}</b>
+                    Created by <b>{detailsIssue.createdByName || "Unknown"}</b>
                     {detailsIssue.createdById && (
-                      <span className="text-xs text-gray-400">
-                        {" "}
-                        (#{detailsIssue.createdById})
-                      </span>
+                      <span className="text-xs text-gray-400"> (#{detailsIssue.createdById})</span>
                     )}
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <span>
-                    Créé le :{" "}
-                    <b>{formatDate(detailsIssue.createdAt)}</b>
+                    Created at: <b>{formatDate(detailsIssue.createdAt)}</b>
                   </span>
                   {detailsIssue.resolvedAt && (
                     <span>
-                      Résolu le :{" "}
-                      <b>{formatDate(detailsIssue.resolvedAt)}</b>
+                      Resolved at: <b>{formatDate(detailsIssue.resolvedAt)}</b>
                     </span>
                   )}
                 </div>
@@ -653,7 +620,7 @@ const IssuesPage: React.FC = () => {
                 onClick={() => setDetailsIssue(null)}
                 className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 text-sm"
               >
-                Fermer
+                Close
               </button>
             </div>
           </div>
@@ -665,19 +632,16 @@ const IssuesPage: React.FC = () => {
         </div>
       )}
 
-      {/* Modal confirmation suppression */}
       {confirmDel.open && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white/60 rounded-2xl shadow-xl p-6 w-full max-w-sm animate-fadeIn text-left">
-            <h3 className="text-lg font-semibold mb-3">
-              Supprimer ce signalement ?
-            </h3>
+            <h3 className="text-lg font-semibold mb-3">Delete this issue?</h3>
             <p className="text-sm text-gray-700 mb-5">
-              Cette action le marquera comme supprimé (soft delete).
+              This action will mark it as deleted (soft delete).
               {confirmDel.title ? (
                 <>
                   <br />
-                  Signalement : <b>{confirmDel.title}</b>
+                  Issue: <b>{confirmDel.title}</b>
                 </>
               ) : null}
             </p>
@@ -686,21 +650,20 @@ const IssuesPage: React.FC = () => {
                 onClick={() => setConfirmDel({ open: false })}
                 className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 text-sm"
               >
-                Annuler
+                Cancel
               </button>
               <button
                 onClick={onDeleteIssue}
                 className="px-4 py-2 rounded-lg bg-rose-600 text-white hover:bg-rose-700 text-sm inline-flex items-center gap-1"
               >
                 <Trash2 className="w-4 h-4" />
-                Supprimer
+                Delete
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Toast */}
       {toast && (
         <div className="fixed bottom-6 right-6 px-5 py-3 rounded-lg bg-emerald-600 text-white shadow-xl animate-slideIn z-50">
           <div className="flex items-center gap-2">

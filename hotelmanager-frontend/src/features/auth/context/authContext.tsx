@@ -1,4 +1,3 @@
-// src/auth/authContext.tsx
 import React, {
   createContext,
   useContext,
@@ -7,6 +6,8 @@ import React, {
   ReactNode,
 } from "react";
 import { jwtDecode, JwtPayload } from "jwt-decode";
+
+/* ================== TYPES ================== */
 
 export interface User {
   email: string;
@@ -17,6 +18,7 @@ export interface User {
 
 interface AuthContextType {
   user: User | null;
+  loading: boolean;
   login: (token: string) => void;
   logout: () => void;
 }
@@ -24,9 +26,9 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used within an AuthProvider");
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  return ctx;
 };
 
 interface Props {
@@ -40,11 +42,18 @@ type TokenClaims = JwtPayload & {
   hotelId?: number;
 };
 
+/* ================== HELPERS ================== */
+
 function decodeToUser(token: string): User {
   const decoded = jwtDecode<TokenClaims>(token);
 
-  if (!decoded?.sub || !decoded?.role || !decoded?.userId || !decoded?.hotelId) {
-    throw new Error("Token claims manquants");
+  if (
+    !decoded.sub ||
+    !decoded.role ||
+    !decoded.userId ||
+    !decoded.hotelId
+  ) {
+    throw new Error("Missing token claims");
   }
 
   return {
@@ -55,35 +64,54 @@ function decodeToUser(token: string): User {
   };
 }
 
+/* ================== PROVIDER ================== */
+
 export const AuthProvider: React.FC<Props> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Chargement initial depuis localStorage
+  /**
+   * 🔑 RESTORE AUTH ON REFRESH
+   */
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) return;
+
+    if (!token) {
+      setLoading(false);
+      return;
+    }
 
     try {
-      setUser(decodeToUser(token));
+      const restoredUser = decodeToUser(token);
+      setUser(restoredUser);
     } catch (err) {
-      console.error("Token invalide :", err);
+      console.error("Invalid token:", err);
       localStorage.removeItem("token");
       setUser(null);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
+  /**
+   * 🔐 LOGIN
+   */
   const login = (token: string) => {
     localStorage.setItem("token", token);
     try {
-      setUser(decodeToUser(token));
+      const loggedUser = decodeToUser(token);
+      setUser(loggedUser);
     } catch (err) {
-      console.error("Token invalide :", err);
+      console.error("Invalid token on login:", err);
       localStorage.removeItem("token");
       setUser(null);
       window.location.replace("/login");
     }
   };
 
+  /**
+   * 🚪 LOGOUT
+   */
   const logout = () => {
     localStorage.removeItem("token");
     setUser(null);
@@ -91,7 +119,7 @@ export const AuthProvider: React.FC<Props> = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

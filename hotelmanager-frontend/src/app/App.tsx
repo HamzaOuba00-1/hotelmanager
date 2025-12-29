@@ -8,10 +8,7 @@ import PublicRoomsPage from "../features/public/pages/PublicRoomsPage";
 import LoginPage from "../features/auth/pages/LoginPage";
 import RegisterManagerPage from "../features/auth/pages/RegisterManagerPage";
 
-/* ===== Layouts ===== */
-import ManagerLayout from "../layout/ManagerLayout";
-import EmployeLayout from "../layout/EmployeLayout";
-import ClientLayout from "../layout/ClientLayout";
+
 
 /* ===== Dashboard Views ===== */
 import DashboardAccueil from "../features/dashboard/views/DashboardAccueil";
@@ -21,7 +18,7 @@ import DashboardAccueilEmploye from "../features/dashboard/views/DashboardAccuei
 import ManagerHomePage from "../features/home/views/ManagerHomePage";
 import HotelConfigPage from "../features/hotel/pages/HotelConfigPage";
 import RoomsPage from "../features/rooms/pages/RoomsPage";
-import ReservationsPage from "../features/reservations/pages/ReservationsPage";
+import ReservationsPage from "../features/reservations/views/ReservationsPageM";
 import PlanningPageM from "../features/planning/views/PlanningPageM";
 import PointagePageM from "../features/attendance/views/PointagePageM";
 import ChannelsPage from "../features/chat/views/ChannelsPage";
@@ -40,6 +37,8 @@ import EmployeeProfilePage from "../features/profil/views/EmployeeProfilePage";
 import ClientReservationsPage from "../features/reservations/views/ClientReservationsPage";
 import ClientMessagesPage from "../features/chat/views/ClientMessagesPage";
 import ClientProfilePage from "../features/profil/views/ClientProfilePage";
+import ManagerDashboard from "../layouts/ManagerDashboard";
+import EmployeDashboard from "../layouts/EmployeDashboard";
 
 function App() {
   return (
@@ -54,7 +53,7 @@ function App() {
 
         {/* ===== Manager ===== */}
         <Route element={<PrivateRoute allowedRoles={["MANAGER"]} />}>
-          <Route path="/dashboard/manager" element={<ManagerLayout />}>
+          <Route path="/dashboard/manager" element={<ManagerDashboard />}>
             <Route index element={<DashboardAccueil />} />
             <Route path="home" element={<ManagerHomePage />} />
             <Route path="users" element={<UtilisateursPage />} />
@@ -71,7 +70,7 @@ function App() {
 
         {/* ===== Employe ===== */}
         <Route element={<PrivateRoute allowedRoles={["EMPLOYE"]} />}>
-          <Route path="/dashboard/employe" element={<EmployeLayout />}>
+          <Route path="/dashboard/employe" element={<EmployeDashboard />}>
             <Route index element={<DashboardAccueilEmploye />} />
             <Route path="planning" element={<EmployeePlanningPage />} />
             <Route path="pointage" element={<PointagePageE />} />
@@ -84,7 +83,7 @@ function App() {
 
         {/* ===== Client ===== */}
         <Route element={<PrivateRoute allowedRoles={["CLIENT"]} />}>
-          <Route path="/dashboard/client" element={<ClientLayout />}>
+          <Route path="/dashboard/client" element={<ClientReservationsPage />}>
             <Route path="reservations" element={<ClientReservationsPage />} />
             <Route path="messages" element={<ClientMessagesPage />} />
             <Route path="profil" element={<ClientProfilePage />} />

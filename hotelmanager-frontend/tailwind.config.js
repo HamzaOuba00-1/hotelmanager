@@ -1,4 +1,3 @@
-// tailwind.config.js
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
@@ -16,15 +15,15 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ["Inter", "sans-serif"], // Utilisé par défaut partout
+        sans: ["Inter", "sans-serif"],
       },
       colors: {
         primary: {
-          DEFAULT: "#10b981", // emerald-500
+          DEFAULT: "#10b981", 
           light: "#6ee7b7",
           dark: "#047857",
         },
-        grayText: "#4B5563", // tailwind gray-700
+        grayText: "#4B5563", 
       },
       borderRadius: {
         DEFAULT: "0.5rem",
@@ -36,8 +35,8 @@ module.exports = {
         'input-x': '0.75rem',
       },
       fontSize: {
-        label: ['0.875rem', '1.25rem'], // text-sm with line height
-        base: ['1rem', '1.5rem'],       // text-base
+        label: ['0.875rem', '1.25rem'], 
+        base: ['1rem', '1.5rem'],       
       },
     },
   },

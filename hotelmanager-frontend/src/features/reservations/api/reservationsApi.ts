@@ -1,4 +1,3 @@
-// src/api/reservationsApi.ts
 import api from "../../../api/axios";
 
 export type ReservationStatus =

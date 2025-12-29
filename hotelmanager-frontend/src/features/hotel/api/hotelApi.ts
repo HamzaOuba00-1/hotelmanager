@@ -1,4 +1,3 @@
-// src/api/hotelApi.ts
 import http from "../../../api/http";
 
 export type Services = {

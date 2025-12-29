@@ -27,7 +27,6 @@ export const deleteUser = async (id: number): Promise<void> => {
   await axios.delete(`/users/${id}`, authHeader());
 };
 
-// ⚠️ si tu ajoutes plus tard PUT /users/{id} côté manager
 export const updateUser = async (
   id: number,
   payload: Partial<CreateUserPayload> & Partial<User>
@@ -38,13 +37,13 @@ export const updateUser = async (
 
 // ================= CLIENT SELF APIs =================
 
-// ✅ new
+
 export const getMyProfile = async (): Promise<User> => {
   const res = await axios.get<User>("/users/me", authHeader());
   return res.data;
 };
 
-// ✅ new
+
 export const updateMyProfile = async (
   payload: Partial<User>
 ): Promise<User> => {
@@ -52,7 +51,7 @@ export const updateMyProfile = async (
   return res.data;
 };
 
-// ✅ new
+
 export const changeMyPassword = async (
   currentPassword: string,
   newPassword: string

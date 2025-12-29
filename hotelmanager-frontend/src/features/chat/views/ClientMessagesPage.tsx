@@ -17,10 +17,8 @@ const input =
   "focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm";
 const btn =
   "inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition";
-const btnPrimary =
-  `${btn} bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm`;
-const btnGhost =
-  `${btn} bg-white border hover:bg-gray-50`;
+const btnPrimary = `${btn} bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm`;
+const btnGhost = `${btn} bg-white border hover:bg-gray-50`;
 
 export default function ClientMessagesPage() {
   const [channel, setChannel] = useState<Channel | null>(null);
@@ -41,7 +39,7 @@ export default function ClientMessagesPage() {
       setChannel(c);
       return c;
     } catch (e: any) {
-      setErr(e?.message || "Impossible d’ouvrir la messagerie de l’hôtel.");
+      setErr(e?.message || "Unable to open the hotel's messaging.");
       return null;
     } finally {
       setLoading(false);
@@ -55,7 +53,7 @@ export default function ClientMessagesPage() {
       const msgs = await getMessages(c.id, 120);
       setMessages(msgs.slice().reverse());
     } catch (e: any) {
-      setErr(e?.message || "Impossible de charger les messages.");
+      setErr(e?.message || "Unable to load messages.");
     } finally {
       setLoadingMsgs(false);
     }
@@ -87,7 +85,6 @@ export default function ClientMessagesPage() {
     try {
       let c = channel;
 
-      // ✅ sécurité UX : si channel pas encore chargé
       if (!c) {
         c = await loadSupport();
         if (!c) return;
@@ -97,13 +94,13 @@ export default function ClientMessagesPage() {
       setMessages((prev) => [...prev, msg]);
       setDraft("");
     } catch (e: any) {
-      setErr(e?.message || "Envoi impossible.");
+      setErr(e?.message || "Unable to send.");
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Header premium */}
+      {/* Premium header */}
       <div className={clsx(card, "p-6")}>
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
@@ -112,17 +109,17 @@ export default function ClientMessagesPage() {
             </div>
             <div>
               <div className="text-lg font-semibold text-gray-900">
-                Contacter l’hôtel
+                Contact the hotel
               </div>
               <div className="text-xs text-gray-500">
-                Vous écrivez directement à l’équipe de direction.
+                You are writing directly to the management team.
               </div>
             </div>
           </div>
 
           <button className={btnGhost} onClick={refresh}>
             <RefreshCw className="w-4 h-4" />
-            Actualiser
+            Refresh
           </button>
         </div>
 
@@ -141,45 +138,47 @@ export default function ClientMessagesPage() {
             {channel?.name ?? "Conversation"}
           </div>
           <div className="text-xs text-gray-500">
-            Discussion privée Client ↔ Managers
+            Private chat Client ↔ Managers
           </div>
         </div>
 
         {/* messages */}
         <div className="flex-1 p-5 overflow-y-auto space-y-3">
           {loading && (
-            <div className="text-sm text-gray-500">Ouverture du canal…</div>
+            <div className="text-sm text-gray-500">Opening channel…</div>
           )}
 
           {!loading && loadingMsgs && (
-            <div className="text-sm text-gray-500">Chargement des messages…</div>
+            <div className="text-sm text-gray-500">Loading messages…</div>
           )}
 
           {!loading && !loadingMsgs && !messages.length && (
             <div className={clsx("rounded-2xl border p-6", soft)}>
               <div className="text-sm text-gray-700">
-                Aucun message pour le moment.
+                No messages yet.
               </div>
               <div className="text-xs text-gray-500 mt-1">
-                Décrivez votre demande, un manager vous répondra ici.
+                Describe your request, a manager will reply here.
               </div>
             </div>
           )}
 
-          {!loading && !loadingMsgs && messages.map((m) => (
-            <div key={m.id} className="rounded-2xl border bg-white p-3">
-              <div className="text-[11px] text-gray-500">
-                <span className="font-medium text-gray-700">
-                  {m.senderFirstName} {m.senderLastName}
-                </span>
-                {" • "}
-                {new Date(m.createdAt).toLocaleString()}
+          {!loading &&
+            !loadingMsgs &&
+            messages.map((m) => (
+              <div key={m.id} className="rounded-2xl border bg-white p-3">
+                <div className="text-[11px] text-gray-500">
+                  <span className="font-medium text-gray-700">
+                    {m.senderFirstName} {m.senderLastName}
+                  </span>
+                  {" • "}
+                  {new Date(m.createdAt).toLocaleString()}
+                </div>
+                <div className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">
+                  {m.content}
+                </div>
               </div>
-              <div className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">
-                {m.content}
-              </div>
-            </div>
-          ))}
+            ))}
 
           <div ref={endRef} />
         </div>
@@ -189,7 +188,7 @@ export default function ClientMessagesPage() {
           <div className="flex items-center gap-2">
             <input
               className={input}
-              placeholder="Écrire un message… (Ctrl/Cmd+Entrée)"
+              placeholder="Write a message… (Ctrl/Cmd+Enter)"
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => {
@@ -204,7 +203,7 @@ export default function ClientMessagesPage() {
               disabled={!draft.trim()}
             >
               <Send className="w-4 h-4" />
-              Envoyer
+              Send
             </button>
           </div>
         </div>

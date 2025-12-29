@@ -77,7 +77,7 @@ const CrewSection: React.FC<Props> = ({ allUsers }) => {
 
   return (
     <div className="mt-12">
-      {/* Header + bouton d’ajout */}
+      {/* Header + add button */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold tracking-wide text-gray-800">
           Crews / Services
@@ -88,11 +88,11 @@ const CrewSection: React.FC<Props> = ({ allUsers }) => {
                      bg-gradient-to-br from-[#47B881] to-[#34A384] rounded-2xl shadow-lg
                      hover:scale-105 transition-transform"
         >
-          Ajouter un crew
+          Add crew
         </button>
       </div>
 
-      {/* Liste en carrés cliquables */}
+      {/* Clickable crew cards */}
       <div className="flex flex-wrap gap-6">
         {crews.map((c) => (
           <button
@@ -102,7 +102,7 @@ const CrewSection: React.FC<Props> = ({ allUsers }) => {
                        bg-white/50 backdrop-blur-xl border border-white/30 
                        shadow-[0_8px_24px_rgba(0,0,0,0.08)] ring-1 ring-white/20 
                        transition-transform duration-300 hover:scale-105 hover:shadow-xl"
-            title="Voir les détails"
+            title="View details"
           >
             <div className="h-10 w-10 text-[#47B881] mb-2 flex items-center justify-center">
               {serviceIcon(c.service)}
@@ -117,7 +117,9 @@ const CrewSection: React.FC<Props> = ({ allUsers }) => {
         ))}
       </div>
 
-      {loading && <div className="mt-4 text-sm text-gray-500">Chargement…</div>}
+      {loading && (
+        <div className="mt-4 text-sm text-gray-500">Loading…</div>
+      )}
 
       {showAddModal && (
         <AddCrewModal

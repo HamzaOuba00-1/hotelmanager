@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { UserRound, UsersRound, ContactRound} from "lucide-react";
+import { UserRound, UsersRound } from "lucide-react";
 import { Shift, getShiftsForHotel } from "../api/planningApi";
 import { format } from "date-fns";
 
@@ -42,7 +42,7 @@ const TodayTeamSection: React.FC = () => {
 
       setTeam(Object.values(uniqueEmployees));
     } catch (err) {
-      console.error("Erreur lors du chargement de l’équipe du jour :", err);
+      console.error("Error loading today�s team:", err);
     }
   };
 
@@ -52,22 +52,19 @@ const TodayTeamSection: React.FC = () => {
 
   return (
     <div className="mt-16 text-center">
-      {/* ✅ Titre avec icône */}
       <h2 className="text-3xl font-bold text-gray-800 mb-10 flex justify-center items-center gap-2">
         <UsersRound className="w-8 h-8 text-emerald-600" />
-        Équipe du jour
+        Today's Team
       </h2>
 
       <div className="flex flex-wrap justify-center gap-6">
         {team.length === 0 ? (
-          <p className="text-gray-500 text-center">Aucun shift prévu aujourd’hui.</p>
+          <p className="text-gray-500 text-center">No shifts scheduled today.</p>
         ) : (
           team.map((member) => (
             <div
               key={member.id}
-              className="flex flex-col items-center justify-center w-44 h-44 p-5 rounded-3xl 
-                bg-white border border-gray-100 shadow 
-                transition-transform duration-300 hover:scale-105 hover:shadow-lg"
+              className="flex flex-col items-center justify-center w-44 h-44 p-5 rounded-3xl bg-white border border-gray-100 shadow transition-transform duration-300 hover:scale-105 hover:shadow-lg"
             >
               <UserRound className="h-8 w-8 text-emerald-400 mb-2" />
               <div className="text-base font-semibold text-gray-800 text-center">
@@ -77,7 +74,7 @@ const TodayTeamSection: React.FC = () => {
                 {member.role}
               </div>
               <div className="text-sm text-gray-600 mt-2 font-medium">
-                {member.startTime} – {member.endTime}
+                {member.startTime} - {member.endTime}
               </div>
             </div>
           ))

@@ -51,7 +51,6 @@ import { getCrew, getCrews } from "../../users/api/crewApi";
 import ConfirmModal from "../../../shared/components/ConfirmModal";
 import clsx from "clsx";
 
-
 const card = "bg-white/60 rounded-2xl border shadow p-5";
 const btn = "inline-flex items-center gap-2 px-4 py-2 rounded-xl transition";
 const btnPrimary = `${btn} bg-emerald-600 text-white hover:bg-emerald-700`;
@@ -167,7 +166,7 @@ const CreateChannelModal: React.FC<{
     setCrewId(undefined);
   }, [open]);
 
-  // toggle et pick
+  // toggle + pick
   const toggleMember = (id: number) =>
     setMemberIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
@@ -175,7 +174,7 @@ const CreateChannelModal: React.FC<{
 
   const pickCrew = (c: CrewLite) => {
     setCrewId(c.id);
-    if (c.service) setService(c.service); // auto-fill service
+    if (c.service) setService(c.service);
   };
 
   if (!open) return null;
@@ -194,7 +193,7 @@ const CreateChannelModal: React.FC<{
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
               <MessageSquare className="w-5 h-5 text-emerald-600" />
-              Créer une chaîne
+              Create a channel
             </h2>
             <button
               className="p-2 rounded-lg hover:bg-gray-100"
@@ -205,7 +204,7 @@ const CreateChannelModal: React.FC<{
           </div>
         </div>
 
-        {/* body scrollable */}
+        {/* scrollable body */}
         <div className="p-6 max-h-[70vh] overflow-y-auto">
           <div className="grid gap-4 sm:grid-cols-3">
             <label className="text-sm font-medium sm:col-span-1">
@@ -217,22 +216,22 @@ const CreateChannelModal: React.FC<{
               >
                 <option value="CREW">Crew</option>
                 <option value="DIRECT">Direct</option>
-                <option value="ANNOUNCEMENT">Annonce</option>
+                <option value="ANNOUNCEMENT">Announcement</option>
               </select>
             </label>
 
             <label className="text-sm font-medium sm:col-span-1">
-              Nom
+              Name
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Ex: Housekeeping nuit"
+                placeholder="Ex: Night housekeeping"
                 className={`${input} mt-1`}
               />
             </label>
 
             <label className="text-sm font-medium sm:col-span-1">
-              Service (optionnel)
+              Service (optional)
               <select
                 value={service}
                 onChange={(e) => setService(e.target.value)}
@@ -247,12 +246,10 @@ const CreateChannelModal: React.FC<{
             </label>
           </div>
 
-          {/* CREW : tuiles avec icônes */}
+          {/* CREW: icon tiles */}
           {type === "CREW" && (
             <div className="mt-6">
-              <div className="text-sm text-gray-600 mb-2">
-                Sélectionner un crew
-              </div>
+              <div className="text-sm text-gray-600 mb-2">Select a crew</div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 max-h-[260px] overflow-y-auto px-2 py-2">
                 {crews.length ? (
                   crews.map((c) => (
@@ -267,19 +264,17 @@ const CreateChannelModal: React.FC<{
                   ))
                 ) : (
                   <div className="text-sm text-amber-600">
-                    Aucun crew — crée d’abord un crew.
+                    No crew — create a crew first.
                   </div>
                 )}
               </div>
             </div>
           )}
 
-          {/* DIRECT/ANNOUNCEMENT : membres en tuiles */}
+          {/* DIRECT/ANNOUNCEMENT: members as tiles */}
           {(type === "DIRECT" || type === "ANNOUNCEMENT") && (
             <div className="mt-6">
-              <div className="text-sm text-gray-600 mb-2">
-                Sélection des membres
-              </div>
+              <div className="text-sm text-gray-600 mb-2">Select members</div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 max-h-[260px] overflow-y-auto px-2 py-2">
                 {users.map((u) => (
                   <SelectTile
@@ -299,7 +294,7 @@ const CreateChannelModal: React.FC<{
         {/* footer */}
         <div className="p-6 border-t overflow-y-auto flex justify-end gap-3">
           <button className={btnGhost} onClick={onClose}>
-            <X className="w-4 h-4" /> Annuler
+            <X className="w-4 h-4" /> Cancel
           </button>
           <button
             className={btnPrimary}
@@ -321,14 +316,14 @@ const CreateChannelModal: React.FC<{
                 alert(
                   e?.response?.data?.detail ||
                     e?.response?.data?.message ||
-                    "Création impossible"
+                    "Creation failed"
                 );
               } finally {
                 setLoading(false);
               }
             }}
           >
-            <Plus className="w-4 h-4" /> {loading ? "Création…" : "Créer"}
+            <Plus className="w-4 h-4" /> {loading ? "Creating…" : "Create"}
           </button>
         </div>
       </div>
@@ -381,7 +376,7 @@ const ChannelSettingsModal: React.FC<{
           }
         }
       } catch (e) {
-        console.error("Impossible de charger les membres", e);
+        console.error("Unable to load members", e);
       }
     })();
   }, [open, channel]);
@@ -409,7 +404,7 @@ const ChannelSettingsModal: React.FC<{
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
               <MessageSquare className="w-5 h-5 text-emerald-600" />
-              Détails du canal
+              Channel details
             </h2>
             <button
               className="p-2 rounded-lg hover:bg-gray-100"
@@ -421,7 +416,7 @@ const ChannelSettingsModal: React.FC<{
 
           <div className="grid gap-4 sm:grid-cols-3">
             <label className="text-sm font-medium sm:col-span-1">
-              Nom
+              Name
               <input
                 className={`${input} mt-1`}
                 value={name}
@@ -448,16 +443,16 @@ const ChannelSettingsModal: React.FC<{
 
           <div className="mt-6 text-sm text-gray-600">
             <div>
-              Type : <b>{channel.type}</b>{" "}
+              Type: <b>{channel.type}</b>{" "}
               {channel.service ? (
                 <>
-                  • Service : <b>{channel.service}</b>
+                  • Service: <b>{channel.service}</b>
                 </>
               ) : null}
             </div>
             {isCrew && (
               <div className="text-xs text-gray-500 mt-1">
-                Canal lié à un crew — la gestion des membres se fait via le
+                Channel linked to a crew — member management is done from the
                 crew.
               </div>
             )}
@@ -466,11 +461,11 @@ const ChannelSettingsModal: React.FC<{
           {canEditMembers && (
             <div className="mt-6">
               <div className="text-sm text-gray-600 mb-2">
-                Membres (remplacement complet)
+                Members (full replacement)
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 max-h-[260px] overflow-y-auto px-2 py-2">
                 {users.map((u) => {
-                  const active = memberIds.includes(u.id); // ✅ sera vrai pour les membres existants
+                  const active = memberIds.includes(u.id); // ✅ true for existing members
                   return (
                     <div
                       key={u.id}
@@ -481,7 +476,9 @@ const ChannelSettingsModal: React.FC<{
                       className={clsx(
                         tileBase,
                         "cursor-pointer m-0.5",
-                        active ? "bg-emerald-50 border-emerald-300 ring-2 ring-emerald-200" : ""
+                        active
+                          ? "bg-emerald-50 border-emerald-300 ring-2 ring-emerald-200"
+                          : ""
                       )}
                       title={`${u.firstName} ${u.lastName}`}
                     >
@@ -497,8 +494,7 @@ const ChannelSettingsModal: React.FC<{
                 })}
               </div>
               <div className="text-xs text-gray-500 mt-2">
-                Si tu laisses la sélection telle quelle, les membres resteront
-                identiques.
+                If you keep the selection as-is, members will stay the same.
               </div>
             </div>
           )}
@@ -508,12 +504,12 @@ const ChannelSettingsModal: React.FC<{
               onClick={() => setConfirmDelete(true)}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50"
             >
-              <Trash2 className="w-4 h-4" /> Supprimer le canal
+              <Trash2 className="w-4 h-4" /> Delete channel
             </button>
 
             <div className="flex gap-3">
               <button className={btnGhost} onClick={onClose}>
-                <X className="w-4 h-4" /> Fermer
+                <X className="w-4 h-4" /> Close
               </button>
               <button
                 className={btnPrimary}
@@ -521,7 +517,7 @@ const ChannelSettingsModal: React.FC<{
                 disabled={!name.trim() || saving}
               >
                 <Edit2 className="w-4 h-4" />{" "}
-                {saving ? "Enregistrement…" : "Enregistrer"}
+                {saving ? "Saving…" : "Save"}
               </button>
             </div>
           </div>
@@ -533,9 +529,9 @@ const ChannelSettingsModal: React.FC<{
       {/* Confirm save */}
       <ConfirmModal
         open={confirmSave}
-        title="Enregistrer les modifications ?"
-        message="Confirme l’enregistrement des informations du canal."
-        confirmLabel="Enregistrer"
+        title="Save changes?"
+        message="Confirm saving the channel information."
+        confirmLabel="Save"
         onClose={() => setConfirmSave(false)}
         onConfirm={async () => {
           if (!channel) return;
@@ -565,17 +561,17 @@ const ChannelSettingsModal: React.FC<{
       <ConfirmModal
         open={confirmDelete}
         tone="danger"
-        title="Supprimer ce canal ?"
+        title="Delete this channel?"
         message={
           <>
-            Cette action est irréversible. Canal : <b>{channel?.name}</b>.
+            This action is irreversible. Channel: <b>{channel?.name}</b>.
           </>
         }
-        confirmLabel="Supprimer"
+        confirmLabel="Delete"
         onClose={() => setConfirmDelete(false)}
         onConfirm={async () => {
           if (!channel) return;
-          await deleteChannel(channel.id); // supprime en DB
+          await deleteChannel(channel.id); 
           setConfirmDelete(false);
           onDeleted();
           onClose();
@@ -639,7 +635,7 @@ const ChannelsPage: React.FC = () => {
           all.map((c) => ({ id: c.id, name: c.name, service: c.service }))
         )
       )
-      .catch((e) => console.error("Impossible de charger les crews", e));
+      .catch((e) => console.error("Unable to load crews", e));
   }, []);
 
   useEffect(() => {
@@ -682,18 +678,18 @@ const ChannelsPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col items-center gap-2">
         <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
-          <MessageSquare className="h-8 w-8 text-emerald-600" /> Chaînes de
-          communication
+          <MessageSquare className="h-8 w-8 text-emerald-600" /> Communication
+          channels
         </h1>
         <div className="flex gap-2">
           <button className={btnPrimary} onClick={() => setOpenCreate(true)}>
-            <Plus className="w-4 h-4" /> Créer
+            <Plus className="w-4 h-4" /> Create
           </button>
           <div className="relative">
             <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               className="pl-9 pr-3 py-2 rounded-xl border bg-white/80"
-              placeholder="Rechercher une chaîne…"
+              placeholder="Search a channel…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
@@ -703,9 +699,9 @@ const ChannelsPage: React.FC = () => {
 
       {/* Layout */}
       <section className="grid lg:grid-cols-[360px_1fr] gap-6">
-        {/* Liste (scroll) */}
+        {/* List (scroll) */}
         <div className={`${card}`}>
-          <h2 className="font-semibold mb-3">Mes chaînes</h2>
+          <h2 className="font-semibold mb-3">My channels</h2>
           <div className="grid gap-3 max-h-[60vh] overflow-y-auto pr-1">
             {filtered.map((c) => (
               <div
@@ -729,15 +725,14 @@ const ChannelsPage: React.FC = () => {
                       <div className="font-medium">{c.name}</div>
                       <div className="text-xs text-gray-500">
                         {c.type} {c.service ? `• ${c.service}` : ""} •{" "}
-                        {c.memberCount} membres
+                        {c.memberCount} members
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {/* Renommer -> ouvre la modale d'édition (comme ⋮) */}
                     <button
                       className="p-2 rounded-lg hover:bg-gray-100"
-                      title="Modifier"
+                      title="Edit"
                       onClick={(e) => {
                         e.stopPropagation();
                         setActive(c);
@@ -748,7 +743,7 @@ const ChannelsPage: React.FC = () => {
                     </button>
                     <button
                       className="p-2 rounded-lg hover:bg-rose-50"
-                      title="Supprimer"
+                      title="Delete"
                       onClick={(e) => {
                         e.stopPropagation();
                         askDeleteFromList(c);
@@ -761,12 +756,11 @@ const ChannelsPage: React.FC = () => {
               </div>
             ))}
             {!filtered.length && (
-              <div className="text-sm text-gray-500">Aucune chaîne.</div>
+              <div className="text-sm text-gray-500">No channels.</div>
             )}
           </div>
         </div>
 
-        {/* Chat (scroll) */}
         <div className={`${card} min-h-[520px] flex flex-col`}>
           {active ? (
             <>
@@ -784,10 +778,9 @@ const ChannelsPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* ⋮ ouvre la même modale d'édition */}
                 <button
                   className="p-2 rounded-lg hover:bg-gray-100"
-                  title="Infos / Réglages"
+                  title="Info / Settings"
                   onClick={() => setOpenSettings(true)}
                 >
                   <EllipsisVertical className="w-5 h-5" />
@@ -797,7 +790,7 @@ const ChannelsPage: React.FC = () => {
               <div className="flex-1 overflow-y-auto space-y-2 pr-1 max-h-[60vh]">
                 {loadingMsgs ? (
                   <div className="text-sm text-gray-500">
-                    Chargement des messages…
+                    Loading messages…
                   </div>
                 ) : messages.length ? (
                   messages.map((m) => (
@@ -809,7 +802,6 @@ const ChannelsPage: React.FC = () => {
                         <Users className="w-4 h-4 text-emerald-700" />
                       </div>
                       <div>
-                        {/* ⬇️ CHANGEMENT ICI : affiche nom + prénom + date */}
                         <div className="text-xs text-gray-500">
                           <span className="font-medium text-gray-700">
                             {m.senderFirstName} {m.senderLastName}
@@ -823,7 +815,7 @@ const ChannelsPage: React.FC = () => {
                   ))
                 ) : (
                   <div className="text-sm text-gray-500">
-                    Aucun message pour l’instant.
+                    No messages yet.
                   </div>
                 )}
               </div>
@@ -831,7 +823,7 @@ const ChannelsPage: React.FC = () => {
               <div className="mt-4 flex items-center gap-2">
                 <input
                   className={`${input}`}
-                  placeholder="Écrire un message… (Ctrl/Cmd+Entrée pour envoyer)"
+                  placeholder="Write a message… (Ctrl/Cmd+Enter to send)"
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   onKeyDown={(e) => {
@@ -839,19 +831,19 @@ const ChannelsPage: React.FC = () => {
                   }}
                 />
                 <button className={btnPrimary} onClick={onSend}>
-                  <Send className="w-4 h-4" /> Envoyer
+                  <Send className="w-4 h-4" /> Send
                 </button>
               </div>
             </>
           ) : (
             <div className="text-sm text-gray-500">
-              Sélectionne une chaîne à gauche.
+              Select a channel on the left.
             </div>
           )}
         </div>
       </section>
 
-      {/* Modales */}
+      {/* Modals */}
       <CreateChannelModal
         open={openCreate}
         onClose={() => setOpenCreate(false)}
@@ -873,18 +865,17 @@ const ChannelsPage: React.FC = () => {
         users={users}
       />
 
-      {/* Confirm delete (depuis la liste) */}
       <ConfirmModal
         open={confirmListDelete.open}
         tone="danger"
-        title="Supprimer ce canal ?"
+        title="Delete this channel?"
         message={
           <>
-            Cette action est irréversible. Canal :{" "}
+            This action is irreversible. Channel:{" "}
             <b>{confirmListDelete.channel?.name}</b>.
           </>
         }
-        confirmLabel="Supprimer"
+        confirmLabel="Delete"
         onClose={() => setConfirmListDelete({ open: false })}
         onConfirm={confirmDeleteFromList}
       />

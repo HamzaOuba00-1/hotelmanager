@@ -1,9 +1,7 @@
 import {
-  Trash2,
   Layers3,
   Building2,
   BedDouble,
-  Landmark,
   Hotel,
   Warehouse,
   CheckCircle2,
@@ -20,7 +18,7 @@ export const DEFAULT_ROOM_TYPES = [
   "Twin",
   "Suite",
   "Deluxe",
-  "Familiale",
+  "Family",
 ] as const;
 
 const roomTypeOptions = [
@@ -29,7 +27,7 @@ const roomTypeOptions = [
   { label: "Twin", icon: BedDouble },
   { label: "Suite", icon: Hotel },
   { label: "Deluxe", icon: Hotel },
-  { label: "Familiale", icon: Warehouse },
+  { label: "Family", icon: Warehouse },
 ];
 
 export default function HotelStructureCard({
@@ -49,7 +47,7 @@ export default function HotelStructureCard({
     if (floors > 0) {
       const current = [...(getValues("floorLabels") ?? [])];
       const updated = Array.from({ length: floors }, (_, i) =>
-        current[i] ?? (i === 0 ? "RDC" : `Étage ${i}`)
+        current[i] ?? (i === 0 ? "Ground floor" : `Floor ${i}`)
       );
       setValue("floorLabels", updated, { shouldDirty: true });
     } else {
@@ -63,17 +61,16 @@ export default function HotelStructureCard({
     setValue("floorLabels", current, { shouldDirty: true });
   };
 
-  const resetLabel = (index: number) => {
-    updateLabel(index, index === 0 ? "RDC" : `Étage ${index}`);
-  };
-
   const toggleRoomType = (label: string) => {
-    if (isLocked) return; // ✅ verrouillage demandé
+    if (isLocked) return;
+
     const current = getValues("roomTypes") ?? [];
     const exists = current.includes(label);
+
     const updated = exists
       ? current.filter((v) => v !== label)
       : [...current, label];
+
     setValue("roomTypes", updated, { shouldDirty: true });
   };
 
@@ -84,34 +81,38 @@ export default function HotelStructureCard({
 
   return (
     <section className="rounded-xl border border-gray-100 bg-white/70 shadow-xl backdrop-blur-md transition-all duration-300">
+      {/* Hotel structure configuration header */}
       <header className="bg-gradient-to-r from-emerald-500/80 to-emerald-700/70 text-white px-8 py-5 rounded-t-xl shadow backdrop-blur-sm">
         <div className="flex items-center justify-center gap-2">
           <Layers3 className="w-6 h-6 text-white" />
           <h2 className="text-lg font-semibold tracking-wide uppercase">
-            Structure de l'hôtel
+            Hotel structure
           </h2>
         </div>
       </header>
 
       <div className="p-8 grid gap-8">
-        {/* Étages & chambres */}
+        {/* Floors and room capacity configuration */}
         <div className="grid md:grid-cols-2 gap-6">
           <label className={labelClass}>
             <div className="flex items-center gap-2">
               <Building2 className="w-4 h-4 text-emerald-500" />
-              Nombre d'étages
+              Number of floors
               {isLocked && <Lock className="w-3.5 h-3.5 text-gray-400 ml-1" />}
             </div>
             <input
               type="number"
               disabled={isLocked}
-              className={clsx(inputClass, isLocked && "opacity-60 cursor-not-allowed")}
+              className={clsx(
+                inputClass,
+                isLocked && "opacity-60 cursor-not-allowed"
+              )}
               {...register("floors", { valueAsNumber: true })}
-              placeholder="Ex: 5"
+              placeholder="e.g. 5"
             />
             {isLocked && (
               <span className="text-[11px] text-gray-500 italic">
-                Défini une seule fois
+                Can only be defined once
               </span>
             )}
           </label>
@@ -119,34 +120,35 @@ export default function HotelStructureCard({
           <label className={labelClass}>
             <div className="flex items-center gap-2">
               <BedDouble className="w-4 h-4 text-emerald-500" />
-              Chambres par étage
+              Rooms per floor
               {isLocked && <Lock className="w-3.5 h-3.5 text-gray-400 ml-1" />}
             </div>
             <input
               type="number"
               disabled={isLocked}
-              className={clsx(inputClass, isLocked && "opacity-60 cursor-not-allowed")}
+              className={clsx(
+                inputClass,
+                isLocked && "opacity-60 cursor-not-allowed"
+              )}
               {...register("roomsPerFloor", { valueAsNumber: true })}
-              placeholder="Ex: 10"
+              placeholder="e.g. 10"
             />
             {isLocked && (
               <span className="text-[11px] text-gray-500 italic">
-                Défini une seule fois
+                Can only be defined once
               </span>
             )}
           </label>
         </div>
 
-        
-
-        {/* Types de chambres */}
+        {/* Available room types selection */}
         <div className="grid gap-2">
           <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
             <Hotel className="w-4 h-4 text-emerald-500" />
-            Types de chambres disponibles
+            Available room types
             {isLocked && (
               <span className="inline-flex items-center gap-1 text-[11px] text-gray-500">
-                <Lock className="w-3.5 h-3.5" /> Verrouillé
+                <Lock className="w-3.5 h-3.5" /> Locked
               </span>
             )}
           </div>
@@ -154,20 +156,20 @@ export default function HotelStructureCard({
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {roomTypeOptions.map(({ label, icon: Icon }) => {
               const active = roomTypes.includes(label);
-              const disabled = isLocked;
 
               return (
                 <button
                   key={label}
                   type="button"
-                  disabled={disabled}
+                  disabled={isLocked}
                   onClick={() => toggleRoomType(label)}
                   className={clsx(
                     "flex flex-col items-center justify-center p-4 rounded-xl border transition shadow backdrop-blur-md relative",
                     active
                       ? "bg-emerald-500/90 border-emerald-600 text-white shadow-lg"
                       : "bg-white/50 border-gray-200 text-gray-700 hover:bg-white/60",
-                    disabled && "opacity-60 cursor-not-allowed hover:bg-white/50"
+                    isLocked &&
+                      "opacity-60 cursor-not-allowed hover:bg-white/50"
                   )}
                 >
                   <Icon className="w-6 h-6 mb-1" />
@@ -182,7 +184,7 @@ export default function HotelStructureCard({
 
           {!roomTypes.length && !isLocked && (
             <p className="text-xs text-gray-500 italic">
-              Astuce : sélectionnez au moins un type pour l’hôtel.
+              Tip: select at least one room type for the hotel.
             </p>
           )}
         </div>

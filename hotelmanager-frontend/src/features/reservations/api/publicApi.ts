@@ -6,7 +6,7 @@ export interface PublicReservationRequest {
   roomId: number;
   firstName: string;
   lastName: string;
-  guestPhone: string;        // ✅ NEW
+  guestPhone: string;        
   startAt: string;
   endAt: string;
 }

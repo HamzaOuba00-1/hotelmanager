@@ -2,9 +2,17 @@ import { useState } from "react";
 import axios from "axios";
 import { Tag, Bed, Layers3, FileText, Activity } from "lucide-react";
 
+/* ---------- Types ---------- */
 interface RoomEditModalProps {
   token: string;
-  room: { id: number; roomNumber: number; roomType: string; floor: number; description: string; roomState: string };
+  room: {
+    id: number;
+    roomNumber: number;
+    roomType: string;
+    floor: number;
+    description: string;
+    roomState: string;
+  };
   roomTypes: string[];
   onUpdated: () => void;
   onClose: () => void;
@@ -21,22 +29,32 @@ export default function RoomEditModal({
   const [loading, setLoading] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
+  /* ---------- Handle form changes ---------- */
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => setForm({ ...form, [e.target.name]: e.target.value });
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
+  /* ---------- Submit update ---------- */
   const handleSubmit = async () => {
     setLoading(true);
     try {
       await axios.put(
         `http://localhost:8080/api/rooms/${room.id}`,
         form,
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       onUpdated();
       onClose();
     } catch (err) {
-      console.error("Erreur mise à jour chambre :", err);
+      console.error("Room update failed:", err);
     } finally {
       setLoading(false);
       setShowConfirm(false);
@@ -45,20 +63,21 @@ export default function RoomEditModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/40 backdrop-blur-sm">
+      {/* ---------- Modal ---------- */}
       <div className="w-full max-w-2xl rounded-3xl bg-white/60 backdrop-blur-xl shadow-xl border border-white/20 p-8 animate-fade-in">
-        {/* Titre */}
+        {/* Title */}
         <div className="flex justify-center mb-6">
           <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
             <Tag className="w-5 h-5 text-emerald-600" />
-            Modifier la chambre
+            Edit room
           </h2>
         </div>
 
-        {/* Formulaire */}
+        {/* Form */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <InputField
             icon={<Bed className="w-4 h-4 text-emerald-500" />}
-            label="Numéro de chambre"
+            label="Room number"
             name="roomNumber"
             value={form.roomNumber}
             onChange={handleChange}
@@ -66,16 +85,16 @@ export default function RoomEditModal({
 
           <SelectField
             icon={<FileText className="w-4 h-4 text-emerald-500" />}
-            label="Type de chambre"
+            label="Room type"
             name="roomType"
             value={form.roomType}
             onChange={handleChange}
-            options={roomTypes} 
+            options={roomTypes}
           />
 
           <InputField
             icon={<Layers3 className="w-4 h-4 text-emerald-500" />}
-            label="Étage"
+            label="Floor"
             name="floor"
             value={form.floor}
             onChange={handleChange}
@@ -83,11 +102,11 @@ export default function RoomEditModal({
 
           <SelectField
             icon={<Activity className="w-4 h-4 text-emerald-500" />}
-            label="État"
+            label="Status"
             name="roomState"
             value={form.roomState}
             onChange={handleChange}
-            options={["LIBRE", "OCCUPEE", "EN_NETTOYAGE"]}
+            options={["AVAILABLE", "OCCUPIED", "CLEANING"]}
           />
 
           <TextareaField
@@ -106,49 +125,52 @@ export default function RoomEditModal({
             onClick={onClose}
             className="px-5 py-2.5 rounded-xl border border-gray-300 text-gray-600 hover:bg-gray-100 transition"
           >
-            Annuler
+            Cancel
           </button>
           <button
             onClick={() => setShowConfirm(true)}
             disabled={loading}
             className="px-6 py-2.5 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-md hover:shadow-lg transition disabled:opacity-50"
           >
-            {loading ? "Mise à jour..." : "Mettre à jour"}
+            {loading ? "Updating..." : "Update"}
           </button>
         </div>
       </div>
 
-      {/* Confirmation */}
+      {/* ---------- Confirmation dialog ---------- */}
       {showConfirm && (
         <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl space-y-5 animate-fade-in">
             <p className="text-center text-gray-700 font-medium">
-              Confirmez-vous la modification de cette chambre&nbsp;?
+              Do you confirm the update of this room?
             </p>
             <div className="flex justify-center gap-4">
               <button
                 onClick={() => setShowConfirm(false)}
                 className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100"
               >
-                Retour
+                Back
               </button>
               <button
                 onClick={handleSubmit}
                 className="px-4 py-2 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white hover:shadow-lg"
               >
-                Confirmer
+                Confirm
               </button>
             </div>
           </div>
         </div>
       )}
 
+      {/* ---------- Animations & styles ---------- */}
       <style>{`
         @keyframes fade-in {
           from { opacity: 0; transform: scale(.95); }
-          to   { opacity: 1; transform: scale(1); }
+          to { opacity: 1; transform: scale(1); }
         }
-        .animate-fade-in { animation: fade-in .25s ease-out; }
+        .animate-fade-in {
+          animation: fade-in .25s ease-out;
+        }
         .input-premium {
           border-radius: .75rem;
           border: 1px solid rgba(0,0,0,.1);
@@ -166,24 +188,39 @@ export default function RoomEditModal({
   );
 }
 
-/* -------- Composants champs -------- */
-function InputField(props: React.ComponentProps<"input"> & { icon: React.ReactNode; label: string }) {
+/* ---------- Field components ---------- */
+function InputField(
+  props: React.ComponentProps<"input"> & {
+    icon: React.ReactNode;
+    label: string;
+  }
+) {
   const { icon, label, ...rest } = props;
   return (
     <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
-      <span className="flex items-center gap-2">{icon} {label}</span>
+      <span className="flex items-center gap-2">
+        {icon} {label}
+      </span>
       <input {...rest} className="input-premium" />
     </label>
   );
 }
 
-function SelectField(props: React.ComponentProps<"select"> & { icon: React.ReactNode; label: string; options: string[] }) {
+function SelectField(
+  props: React.ComponentProps<"select"> & {
+    icon: React.ReactNode;
+    label: string;
+    options: string[];
+  }
+) {
   const { icon, label, options, ...rest } = props;
   return (
     <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
-      <span className="flex items-center gap-2">{icon} {label}</span>
+      <span className="flex items-center gap-2">
+        {icon} {label}
+      </span>
       <select {...rest} className="input-premium">
-        {options.map(opt => (
+        {options.map((opt) => (
           <option key={opt} value={opt}>
             {opt}
           </option>
@@ -194,12 +231,21 @@ function SelectField(props: React.ComponentProps<"select"> & { icon: React.React
 }
 
 function TextareaField(
-  props: React.ComponentProps<"textarea"> & { icon: React.ReactNode; label: string }
+  props: React.ComponentProps<"textarea"> & {
+    icon: React.ReactNode;
+    label: string;
+  }
 ) {
   const { icon, label, className, ...rest } = props;
   return (
-    <label className={`flex flex-col gap-1 text-sm font-medium text-gray-700 ${className ?? ""}`}>
-      <span className="flex items-center gap-2">{icon} {label}</span>
+    <label
+      className={`flex flex-col gap-1 text-sm font-medium text-gray-700 ${
+        className ?? ""
+      }`}
+    >
+      <span className="flex items-center gap-2">
+        {icon} {label}
+      </span>
       <textarea rows={3} {...rest} className="input-premium" />
     </label>
   );

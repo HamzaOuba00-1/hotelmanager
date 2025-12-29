@@ -1,5 +1,3 @@
-// src/pages/PublicRoomsPage.tsx
-
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getAvailableRooms, reserveRoom } from "../../reservations/api/publicApi";
@@ -46,7 +44,7 @@ export default function PublicRoomsPage() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  // ------- Infos hôtel -------
+  // ------- Hotel info -------
   const [hotel, setHotel] = useState<HotelConfigDTO | null>(null);
   const [hotelLoading, setHotelLoading] = useState(false);
   const [hotelErr, setHotelErr] = useState<string | null>(null);
@@ -66,15 +64,15 @@ export default function PublicRoomsPage() {
   const [generatedPassword, setGeneratedPassword] = useState("");
   const [copied, setCopied] = useState<"email" | "password" | null>(null);
 
-  // ------- Chargement des chambres dispo -------
+  // ------- Load available rooms -------
   const loadAvailable = useCallback(async () => {
     if (!HOTEL_ID || Number.isNaN(HOTEL_ID)) {
-      setErr("Hôtel invalide.");
+      setErr("Invalid hotel.");
       return;
     }
     if (!arrival || !departure) return;
     if (new Date(arrival) >= new Date(departure)) {
-      setErr("La date d'arrivée doit être antérieure à la date de départ.");
+      setErr("Arrival date must be before the departure date.");
       return;
     }
     setLoading(true);
@@ -84,7 +82,7 @@ export default function PublicRoomsPage() {
       setPublicRooms(data);
     } catch (e: any) {
       setErr(
-        e?.response?.data?.detail || e?.message || "Erreur de chargement."
+        e?.response?.data?.detail || e?.message || "Loading error."
       );
     } finally {
       setLoading(false);
@@ -95,7 +93,7 @@ export default function PublicRoomsPage() {
     loadAvailable();
   }, [loadAvailable]);
 
-  // ------- Chargement des infos de l'hôtel -------
+  // ------- Load hotel info -------
   useEffect(() => {
     const loadHotel = async () => {
       if (!HOTEL_ID || Number.isNaN(HOTEL_ID)) return;
@@ -103,18 +101,18 @@ export default function PublicRoomsPage() {
       setHotelLoading(true);
       setHotelErr(null);
       try {
-        // simple : on réutilise la liste publique et on filtre
+        // Simple approach: reuse the public list and filter it
         const data = await listPublicHotels();
         const found = (data || []).find((h) => h.id === HOTEL_ID) || null;
         if (!found) {
-          setHotelErr("Hôtel introuvable.");
+          setHotelErr("Hotel not found.");
         }
         setHotel(found);
       } catch (e: any) {
         setHotelErr(
           e?.response?.data?.detail ||
             e?.message ||
-            "Impossible de charger les informations de l'hôtel."
+            "Unable to load hotel information."
         );
       } finally {
         setHotelLoading(false);
@@ -144,11 +142,11 @@ export default function PublicRoomsPage() {
     if (!selectedRoom || !HOTEL_ID) return;
 
     if (!firstName.trim() || !lastName.trim()) {
-      setReserveError("Veuillez saisir votre prénom et votre nom.");
+      setReserveError("Please enter your first and last name.");
       return;
     }
     if (!validatePhone(guestPhone)) {
-      setReserveError("Veuillez saisir un numéro de téléphone valide.");
+      setReserveError("Please enter a valid phone number.");
       return;
     }
 
@@ -176,12 +174,12 @@ export default function PublicRoomsPage() {
       const pd: ProblemDetail | undefined = e?.response?.data;
       if ((e?.response?.status ?? 0) === 409) {
         setReserveError(
-          pd?.detail || "Créneau déjà pris. Actualisation des disponibilités…"
+          pd?.detail || "Time slot already taken. Refreshing availability…"
         );
         await loadAvailable();
       } else {
         setReserveError(
-          pd?.detail || pd?.title || e?.message || "Réservation impossible."
+          pd?.detail || pd?.title || e?.message || "Unable to complete booking."
         );
       }
     } finally {
@@ -208,7 +206,7 @@ export default function PublicRoomsPage() {
             </div>
             <div className="min-w-0">
               <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                Réservation
+                Booking
                 {hotel && (
                   <>
                     <span className="text-gray-300">•</span>
@@ -221,14 +219,14 @@ export default function PublicRoomsPage() {
               <p className="text-xs sm:text-sm text-gray-500 truncate">
                 {hotel?.address
                   ? hotel.address
-                  : "Choisissez vos dates et réservez votre séjour."}
+                  : "Choose your dates and book your stay."}
               </p>
             </div>
           </div>
         </header>
       </div>
 
-      {/* Carte d'info de l'hôtel */}
+      {/* Hotel info card */}
       <div className="max-w-6xl mx-auto px-6">
         {hotelLoading ? (
           <div className="mb-4 h-24 rounded-3xl border border-white/40 bg-white/70 backdrop-blur-xl animate-pulse" />
@@ -269,7 +267,7 @@ export default function PublicRoomsPage() {
                 {totalRooms && totalRooms > 0 && (
                   <span className="mt-1 sm:mt-0 inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-[11px] text-emerald-700">
                     <BedDouble className="w-3.5 h-3.5" />
-                    ≈ {totalRooms} chambres
+                    ≈ {totalRooms} rooms
                   </span>
                 )}
               </div>
@@ -297,13 +295,13 @@ export default function PublicRoomsPage() {
                 {hotel.minAge != null && (
                   <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-50 border border-gray-100">
                     <ShieldCheck className="w-3 h-3 text-emerald-500" />
-                    Âge min. {hotel.minAge} ans
+                    Min age {hotel.minAge} years
                   </span>
                 )}
                 {hotel.petsAllowed && (
                   <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700">
                     <PawPrint className="w-3 h-3" />
-                    Animaux acceptés
+                    Pets allowed
                   </span>
                 )}
               </div>
@@ -317,12 +315,12 @@ export default function PublicRoomsPage() {
                 )}
                 {hotel.services?.hasGym && (
                   <span className="px-2 py-0.5 rounded-full bg-gray-50 border border-gray-100">
-                    Salle de sport
+                    Gym
                   </span>
                 )}
                 {hotel.services?.hasPool && (
                   <span className="px-2 py-0.5 rounded-full bg-sky-50 border border-sky-100">
-                    Piscine
+                    Pool
                   </span>
                 )}
                 {hotel.services?.hasBusinessCenter && (
@@ -332,7 +330,7 @@ export default function PublicRoomsPage() {
                 )}
                 {!hotel.services && (
                   <span className="px-2 py-0.5 rounded-full bg-gray-50 border border-gray-100">
-                    Services standard
+                    Standard services
                   </span>
                 )}
               </div>
@@ -345,7 +343,7 @@ export default function PublicRoomsPage() {
         ) : null}
       </div>
 
-      {/* Barre dates */}
+      {/* Date selection */}
       <div className="max-w-6xl mx-auto px-6">
         <div className="rounded-3xl border border-white/40 bg-white/80 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.06)] p-5">
           <div className="flex items-center gap-3 mb-4">
@@ -354,10 +352,10 @@ export default function PublicRoomsPage() {
             </div>
             <div>
               <h2 className="text-lg font-semibold text-gray-800">
-                Sélectionnez vos dates
+                Select your dates
               </h2>
               <p className="text-xs text-gray-500">
-                L&apos;affichage des chambres se met à jour automatiquement.
+                Room availability updates automatically.
               </p>
             </div>
           </div>
@@ -365,7 +363,7 @@ export default function PublicRoomsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
             <div className="sm:col-span-2">
               <label className="block text-xs font-medium text-gray-500 mb-1">
-                Arrivée
+                Arrival
               </label>
               <input
                 type="date"
@@ -377,7 +375,7 @@ export default function PublicRoomsPage() {
 
             <div className="sm:col-span-2">
               <label className="block text-xs font-medium text-gray-500 mb-1">
-                Départ
+                Departure
               </label>
               <input
                 type="date"
@@ -400,7 +398,7 @@ export default function PublicRoomsPage() {
                   }
                 `}
               >
-                Rechercher
+                Search
               </button>
             </div>
           </div>
@@ -409,7 +407,7 @@ export default function PublicRoomsPage() {
         </div>
       </div>
 
-      {/* Liste des chambres dispo */}
+      {/* Available rooms */}
       <div className="max-w-6xl mx-auto px-6 mt-8 pb-16">
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -422,8 +420,7 @@ export default function PublicRoomsPage() {
           </div>
         ) : publicRooms.length === 0 ? (
           <div className="text-center py-16 text-gray-600">
-            Aucune chambre disponible sur cet intervalle. Essayez d’autres
-            dates.
+            No rooms available for this date range. Try other dates.
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -433,14 +430,14 @@ export default function PublicRoomsPage() {
                 className="group relative overflow-hidden rounded-3xl border border-white/40 bg-white/80 backdrop-blur-xl p-5 shadow-[0_10px_30px_rgba(0,0,0,0.05)] hover:shadow-[0_18px_40px_rgba(16,185,129,0.15)] transition-all duration-300"
               >
                 <div className="absolute -top-10 -right-10 h-28 w-28 rounded-full bg-emerald-50 group-hover:bg-emerald-100 transition" />
-                <div className="flex items-center justify-between relative z-10">
-                  <div className="text-xs text-gray-500">
-                    Étage {room.floor}
+                  <div className="flex items-center justify-between relative z-10">
+                    <div className="text-xs text-gray-500">
+                      Floor {room.floor}
+                    </div>
+                    <span className="px-2 py-0.5 text-[11px] rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      Available
+                    </span>
                   </div>
-                  <span className="px-2 py-0.5 text-[11px] rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    Disponible
-                  </span>
-                </div>
 
                 <div className="mt-3 flex items-center gap-2 text-2xl font-bold text-gray-800 relative z-10">
                   <DoorOpen className="w-6 h-6 text-emerald-600" />
@@ -458,13 +455,13 @@ export default function PublicRoomsPage() {
                 <div className="mt-4 flex items-center justify-between relative z-10">
                   <div className="flex items-center gap-2 text-emerald-700 text-sm">
                     <BedDouble className="w-4 h-4" />
-                    Confort premium
+                    Premium comfort
                   </div>
                   <button
                     onClick={() => openReserveFor(room)}
                     className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm font-medium shadow-md hover:shadow-lg hover:scale-[1.03] transition"
                   >
-                    Réserver
+                    Book
                   </button>
                 </div>
               </div>
@@ -473,7 +470,7 @@ export default function PublicRoomsPage() {
         )}
       </div>
 
-      {/* Modal Réserver */}
+      {/* Booking modal */}
       {openReserve && selectedRoom && (
         <div
           role="dialog"
@@ -492,11 +489,11 @@ export default function PublicRoomsPage() {
                 id="reserve-title"
                 className="text-lg font-semibold text-gray-800"
               >
-                Finaliser la réservation
+                Complete your booking
               </h3>
             </div>
             <p className="text-sm text-gray-500 mb-4">
-              Chambre{" "}
+              Room{" "}
               <strong>
                 {String(selectedRoom.roomNumber).padStart(3, "0")}
               </strong>{" "}
@@ -506,7 +503,7 @@ export default function PublicRoomsPage() {
             <form onSubmit={submitReserve} className="space-y-3">
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">
-                  Prénom
+                  First name
                 </label>
                 <input
                   required
@@ -518,7 +515,7 @@ export default function PublicRoomsPage() {
 
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">
-                  Nom
+                  Last name
                 </label>
                 <input
                   required
@@ -530,12 +527,12 @@ export default function PublicRoomsPage() {
 
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">
-                  Téléphone
+                  Phone
                 </label>
                 <div className="flex items-center gap-2">
                   <span className="inline-flex items-center gap-1 text-xs text-gray-500 px-2 py-1 rounded-lg bg-gray-50 border">
                     <Phone className="w-3 h-3 text-gray-400" />
-                    Contact du séjour
+                    Stay contact
                   </span>
                 </div>
                 <input
@@ -558,14 +555,14 @@ export default function PublicRoomsPage() {
                   onClick={() => setOpenReserve(false)}
                   className="px-4 py-2 rounded-xl border text-sm hover:bg-gray-50"
                 >
-                  Annuler
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={reserveLoading}
                   className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm font-medium shadow-md hover:shadow-lg"
                 >
-                  {reserveLoading ? "Réservation…" : "Confirmer"}
+                  {reserveLoading ? "Booking…" : "Confirm"}
                 </button>
               </div>
             </form>
@@ -573,7 +570,6 @@ export default function PublicRoomsPage() {
         </div>
       )}
 
-      {/* Modal Succès (identifiants affichés une seule fois) */}
       {openSuccess && (
         <div
           role="dialog"
@@ -592,12 +588,11 @@ export default function PublicRoomsPage() {
                 id="success-title"
                 className="text-lg font-semibold text-gray-800"
               >
-                Compte client créé
+                Guest account created
               </h3>
             </div>
             <p className="text-sm text-gray-500 mb-4">
-              Conservez ces identifiants : ils sont affichés{" "}
-              <strong>une seule fois</strong>.
+              Save these credentials: they are shown <strong>only once</strong>.
             </p>
 
             <div className="space-y-3">
@@ -614,7 +609,7 @@ export default function PublicRoomsPage() {
                 copied={copied === "email"}
               />
               <CopyRow
-                label="Mot de passe"
+                label="Password"
                 value={generatedPassword}
                 onCopy={() =>
                   quickCopy(
@@ -633,7 +628,7 @@ export default function PublicRoomsPage() {
                 onClick={() => setOpenSuccess(false)}
                 className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm font-medium shadow-md hover:shadow-lg"
               >
-                Terminer
+                Done
               </button>
             </div>
           </div>
@@ -673,7 +668,7 @@ function CopyRow({
         ) : (
           <Copy className="w-4 h-4" />
         )}
-        {copied ? "Copié" : "Copier"}
+        {copied ? "Copied" : "Copy"}
       </button>
     </div>
   );

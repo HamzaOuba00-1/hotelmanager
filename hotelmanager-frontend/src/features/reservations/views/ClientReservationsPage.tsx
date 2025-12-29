@@ -1,5 +1,3 @@
-// src/pages/dashboard/client/ClientReservationsPage.tsx
-
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   CalendarCheck2,
@@ -22,7 +20,7 @@ import {
   isBefore,
   isAfter,
 } from "date-fns";
-import { fr } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 
 type ReservationStatus =
   | "PENDING"
@@ -53,57 +51,55 @@ interface Reservation {
   guestFirstName: string;
   guestLastName: string;
   guestPhone?: string;
-  startAt: string; // ISO
-  endAt: string; // ISO
+  startAt: string;
+  endAt: string;
   status: ReservationStatus;
   version?: number;
 }
 
-/* ---------- Style statuses (identique manager) ---------- */
-const STATUS_STYLE: Record<ReservationStatus, { label: string; badge: string }> =
-  {
-    PENDING: {
-      label: "En attente",
-      badge: "bg-amber-50 text-amber-700 border-amber-200",
-    },
-    CONFIRMED: {
-      label: "Confirmée",
-      badge: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    },
-    CHECKED_IN: {
-      label: "Check-in",
-      badge: "bg-indigo-50 text-indigo-700 border-indigo-200",
-    },
-    NO_SHOW: {
-      label: "No-show",
-      badge: "bg-rose-50 text-rose-700 border-rose-200",
-    },
-    CANCELED: {
-      label: "Annulée",
-      badge: "bg-gray-100 text-gray-600 border-gray-200",
-    },
-    COMPLETED: {
-      label: "Complétée",
-      badge: "bg-cyan-50 text-cyan-700 border-cyan-200",
-    },
-  };
+/* ---------- Status styling (same as manager) ---------- */
+const STATUS_STYLE: Record<ReservationStatus, { label: string; badge: string }> = {
+  PENDING: {
+    label: "Pending",
+    badge: "bg-amber-50 text-amber-700 border-amber-200",
+  },
+  CONFIRMED: {
+    label: "Confirmed",
+    badge: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  },
+  CHECKED_IN: {
+    label: "Checked in",
+    badge: "bg-indigo-50 text-indigo-700 border-indigo-200",
+  },
+  NO_SHOW: {
+    label: "No-show",
+    badge: "bg-rose-50 text-rose-700 border-rose-200",
+  },
+  CANCELED: {
+    label: "Canceled",
+    badge: "bg-gray-100 text-gray-600 border-gray-200",
+  },
+  COMPLETED: {
+    label: "Completed",
+    badge: "bg-cyan-50 text-cyan-700 border-cyan-200",
+  },
+};
 
 const toDate = (iso: string) => parseISO(iso);
 const nights = (startIso: string, endIso: string) =>
   Math.max(1, differenceInCalendarDays(toDate(endIso), toDate(startIso)));
 
 export default function ClientReservationsPage() {
-  // Data
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  // UI
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] =
     useState<ReservationStatus | "ALL">("ALL");
-  const [onlyToday, setOnlyToday] =
-    useState<"ALL" | "ARRIVALS" | "DEPARTURES" | "INHOUSE">("ALL");
+  const [onlyToday, setOnlyToday] = useState<
+    "ALL" | "ARRIVALS" | "DEPARTURES" | "INHOUSE"
+  >("ALL");
   const [details, setDetails] = useState<Reservation | null>(null);
 
   const confirmBtnRef = useRef<HTMLButtonElement | null>(null);
@@ -119,7 +115,7 @@ export default function ClientReservationsPage() {
       const data = await rApi.listMyReservations();
       setReservations(data ?? []);
     } catch (e: any) {
-      setErr(e?.message || "Erreur de chargement de vos réservations.");
+      setErr(e?.message || "Unable to load your reservations.");
     } finally {
       setLoading(false);
     }
@@ -179,45 +175,34 @@ export default function ClientReservationsPage() {
       );
   }, [reservations, query, statusFilter, onlyToday, today]);
 
-  const kpis = useMemo(() => {
-    const arr = reservations.filter((r) => isSameDay(toDate(r.startAt), today))
-      .length;
-    const dep = reservations.filter((r) => isSameDay(toDate(r.endAt), today))
-      .length;
-    const inH = reservations.filter(
-      (r) =>
-        isBefore(toDate(r.startAt), today) && isAfter(toDate(r.endAt), today)
-    ).length;
-    return { arr, dep, inH };
-  }, [reservations, today]);
-
   const doCancel = async (id: number) => {
     try {
       await rApi.cancelMyReservation(id);
       await fetchMyReservations();
     } catch (e: any) {
-      setErr(e?.message || "Annulation refusée.");
+      setErr(e?.message || "Cancellation denied.");
     }
   };
 
   const askCancel = (res: Reservation) => {
     if (!canCancel(res)) {
-      setErr("Annulation non autorisée pour cette réservation.");
+      setErr("Cancellation is not allowed for this reservation.");
       return;
     }
-    setConfirm({ res, label: "Annuler votre réservation ?" });
+    setConfirm({ res, label: "Cancel your reservation?" });
   };
 
   const Header = () => (
     <div className="flex flex-col items-center gap-2 mb-6 text-center">
       <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2 mb-4">
         <CalendarCheck2 className="h-8 w-8 text-emerald-600" />
-        Mes réservations
+        My reservations
       </h1>
 
       <button
         onClick={fetchMyReservations}
         className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-xl shadow-lg hover:from-emerald-600 hover:to-emerald-700 transition-all"
+        aria-label="Refresh"
       >
         <RefreshCw className="w-4 h-4" />
       </button>
@@ -226,7 +211,9 @@ export default function ClientReservationsPage() {
 
   const StatusPill: React.FC<{ s: ReservationStatus }> = ({ s }) => (
     <span
-      className={`inline-flex items-center text-[11px] px-2 py-0.5 rounded-md border ${STATUS_STYLE[s].badge}`}
+      className={`inline-flex items-center text-[11px] px-2 py-0.5 rounded-md border ${
+        STATUS_STYLE[s].badge
+      }`}
     >
       {STATUS_STYLE[s].label}
     </span>
@@ -264,24 +251,23 @@ export default function ClientReservationsPage() {
 
       <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-gray-700">
         <InfoLine
-          label="Chambre"
+          label="Room"
           value={
             <span className="inline-flex items-center gap-1">
               <DoorOpen className="w-4 h-4 text-emerald-600" />
-              {String(r.room.roomNumber).padStart(3, "0")} • {r.room.roomType}{" "}
-              (Étage {r.room.floor})
+              {String(r.room.roomNumber).padStart(3, "0")} � {r.room.roomType} (Floor {r.room.floor})
             </span>
           }
         />
         <InfoLine
-          label="Arrivée"
-          value={format(toDate(r.startAt), "EEE d MMM HH:mm", { locale: fr })}
+          label="Arrival"
+          value={format(toDate(r.startAt), "EEE d MMM HH:mm", { locale: enUS })}
         />
         <InfoLine
-          label="Départ"
-          value={format(toDate(r.endAt), "EEE d MMM HH:mm", { locale: fr })}
+          label="Departure"
+          value={format(toDate(r.endAt), "EEE d MMM HH:mm", { locale: enUS })}
         />
-        <InfoLine label="Nuits" value={`${nights(r.startAt, r.endAt)}`} />
+        <InfoLine label="Nights" value={`${nights(r.startAt, r.endAt)}`} />
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
@@ -290,7 +276,7 @@ export default function ClientReservationsPage() {
             onClick={() => askCancel(r)}
             className="px-3 py-1.5 rounded-lg text-sm shadow-sm hover:shadow transition border bg-gray-200 hover:bg-gray-50"
           >
-            Annuler
+            Cancel
           </Action>
         )}
 
@@ -298,7 +284,7 @@ export default function ClientReservationsPage() {
           onClick={() => setDetails(r)}
           className="ml-auto inline-flex items-center gap-1 text-sm font-medium text-emerald-700 hover:text-emerald-800"
         >
-          Détails <ChevronRight className="w-4 h-4" />
+          Details <ChevronRight className="w-4 h-4" />
         </button>
       </div>
     </div>
@@ -308,21 +294,18 @@ export default function ClientReservationsPage() {
     <div className="p-6 text-center space-y-8">
       <Header />
 
-      {/* Filtres — même style manager */}
       <div className="bg-white/60 rounded-2xl border shadow p-4">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_auto] items-center gap-4">
-          {/* Recherche */}
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Rechercher (nom, email, N° chambre)…"
+              placeholder="Search (name, email, room #)."
               className="w-full pl-9 pr-3 py-2 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white"
             />
           </div>
 
-          {/* Statuts */}
           <div className="flex items-center gap-3 justify-start lg:justify-center">
             <Layers className="w-4 h-4 text-gray-400" />
             <div className="flex flex-wrap gap-2 bg-gray-100/70 border rounded-full px-2 py-1">
@@ -346,15 +329,12 @@ export default function ClientReservationsPage() {
                       : "bg-white hover:bg-gray-200 text-gray-700"
                   }`}
                 >
-                  {key === "ALL"
-                    ? "Tous"
-                    : STATUS_STYLE[key as ReservationStatus].label}
+                  {key === "ALL" ? "All" : STATUS_STYLE[key as ReservationStatus].label}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Dates du jour */}
           <div className="flex items-center gap-3 justify-start lg:justify-end">
             <div className="flex flex-wrap gap-2 bg-gray-100/70 border rounded-full px-2 py-1">
               {(["ALL", "ARRIVALS", "DEPARTURES", "INHOUSE"] as const).map(
@@ -369,12 +349,12 @@ export default function ClientReservationsPage() {
                     }`}
                   >
                     {k === "ALL"
-                      ? "Toutes dates"
+                      ? "All dates"
                       : k === "ARRIVALS"
-                      ? "Arrivées du jour"
+                      ? "Today�s arrivals"
                       : k === "DEPARTURES"
-                      ? "Départs du jour"
-                      : "En séjour aujourd’hui"}
+                      ? "Today�s departures"
+                      : "Staying today"}
                   </button>
                 )
               )}
@@ -383,26 +363,22 @@ export default function ClientReservationsPage() {
         </div>
       </div>
 
-  
-
       {err && (
         <div className="rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm p-3">
           {err}
         </div>
       )}
-      {loading && <div className="text-sm text-gray-500">Chargement…</div>}
+      {loading && <div className="text-sm text-gray-500">Loading...</div>}
 
-      {/* Liste */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {filtered.map((r) => (
           <Row key={r.id} r={r} />
         ))}
         {!loading && filtered.length === 0 && (
-          <Empty message="Aucune réservation ne correspond aux filtres." />
+          <Empty message="No reservations match the selected filters." />
         )}
       </div>
 
-      {/* Modal Détails */}
       {details && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 animate-fadeIn">
           <div
@@ -412,47 +388,40 @@ export default function ClientReservationsPage() {
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2 text-lg font-semibold">
-                <User2 className="w-5 h-5 text-emerald-700" /> Détails
-                réservation
+                <User2 className="w-5 h-5 text-emerald-700" /> Reservation details
               </div>
               <button
                 className="text-sm text-gray-500 hover:text-gray-700"
                 onClick={() => setDetails(null)}
               >
-                Fermer
+                Close
               </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <InfoLine
-                label="Client"
+                label="Guest"
                 value={`${details.guestFirstName} ${details.guestLastName}`}
               />
-              <InfoLine label="Email" value={details.client?.email || "—"} />
+              <InfoLine label="Email" value={details.client?.email || "-"} />
               <InfoLine
-                label="Téléphone"
-                value={details.client?.phone || details.guestPhone || "—"}
+                label="Phone"
+                value={details.client?.phone || details.guestPhone || "-"}
               />
               <InfoLine
-                label="Chambre"
-                value={`#${String(details.room.roomNumber).padStart(
-                  3,
-                  "0"
-                )} – ${details.room.roomType} (Étage ${details.room.floor})`}
+                label="Room"
+                value={`#${String(details.room.roomNumber).padStart(3, "0")} - ${details.room.roomType} (Floor ${details.room.floor})`}
               />
               <InfoLine
-                label="Arrivée"
-                value={format(toDate(details.startAt), "PPPp", { locale: fr })}
+                label="Arrival"
+                value={format(toDate(details.startAt), "PPPp", { locale: enUS })}
               />
               <InfoLine
-                label="Départ"
-                value={format(toDate(details.endAt), "PPPp", { locale: fr })}
+                label="Departure"
+                value={format(toDate(details.endAt), "PPPp", { locale: enUS })}
               />
-              <InfoLine
-                label="Nuits"
-                value={`${nights(details.startAt, details.endAt)}`}
-              />
-              <InfoLine label="Statut" value={<StatusPill s={details.status} />} />
+              <InfoLine label="Nights" value={`${nights(details.startAt, details.endAt)}`} />
+              <InfoLine label="Status" value={<StatusPill s={details.status} />} />
             </div>
 
             {canCancel(details) && (
@@ -464,7 +433,7 @@ export default function ClientReservationsPage() {
                   }}
                   className="px-4 py-2 rounded-xl border text-sm hover:bg-gray-50"
                 >
-                  Annuler la réservation
+                  Cancel reservation
                 </button>
               </div>
             )}
@@ -472,7 +441,6 @@ export default function ClientReservationsPage() {
         </div>
       )}
 
-      {/* Modal Confirmation annulation */}
       {confirm?.res && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 animate-fadeIn">
           <div
@@ -488,15 +456,14 @@ export default function ClientReservationsPage() {
               {confirm.label}
             </p>
             <p className="text-sm text-gray-500">
-              {confirm?.res?.guestFirstName} {confirm?.res?.guestLastName} •
-              Chambre {String(confirm?.res?.room.roomNumber).padStart(3, "0")}
+              {confirm?.res?.guestFirstName} {confirm?.res?.guestLastName} � Room {String(confirm?.res?.room.roomNumber).padStart(3, "0")}
             </p>
             <div className="flex justify-center gap-3">
               <button
                 onClick={() => setConfirm(null)}
                 className="px-4 py-2 rounded-xl border text-sm hover:bg-gray-50"
               >
-                Retour
+                Back
               </button>
               <button
                 ref={confirmBtnRef}
@@ -507,7 +474,7 @@ export default function ClientReservationsPage() {
                 }}
                 className="px-5 py-2 rounded-xl bg-emerald-600 text-white text-sm shadow hover:shadow-md"
               >
-                Confirmer
+                Confirm
               </button>
             </div>
           </div>
@@ -519,21 +486,11 @@ export default function ClientReservationsPage() {
   );
 }
 
-/* --------------- Petits composants --------------- */
+/* --------------- Small components --------------- */
 
 const Empty: React.FC<{ message: string }> = ({ message }) => (
   <div className="col-span-full rounded-xl border bg-white/60 backdrop-blur p-4 text-sm text-gray-500 flex items-center gap-2">
     <span className="inline-block h-2 w-2 rounded-full bg-gray-300" /> {message}
-  </div>
-);
-
-const Kpi: React.FC<{ label: string; value: number | string }> = ({
-  label,
-  value,
-}) => (
-  <div className="rounded-2xl border bg-white/60 backdrop-blur p-5 shadow-sm">
-    <div className="text-sm text-gray-500">{label}</div>
-    <div className="text-3xl font-bold mt-1">{value}</div>
   </div>
 );
 
@@ -558,18 +515,21 @@ const InfoLine: React.FC<{ label: string; value: React.ReactNode }> = ({
 );
 
 if (typeof document !== "undefined") {
-  const style = document.createElement("style");
-  style.innerHTML = `
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+  if (!document.head.querySelector("style[data-client-res-animations]")) {
+    const style = document.createElement("style");
+    style.dataset.clientResAnimations = "true";
+    style.innerHTML = `
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn { animation: fadeIn .3s ease-out; }
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    .animate-slideIn { animation: slideIn .4s ease-out; }
+    `;
+    document.head.appendChild(style);
   }
-  .animate-fadeIn { animation: fadeIn .3s ease-out; }
-  @keyframes slideIn {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
-  .animate-slideIn { animation: slideIn .4s ease-out; }
-  `;
-  document.head.appendChild(style);
 }

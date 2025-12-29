@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Cog } from "lucide-react";
 import { getMyHotel, updateMyHotel, uploadLogo } from "../api/hotelApi";
@@ -14,7 +14,6 @@ import HotelScheduleCard from "../components/HotelScheduleCard";
 import HotelPolicyCard from "../components/HotelPolicyCard";
 import HotelSecurityCard from "../components/HotelSecurityCard";
 import useUnsavedChangesPrompt from "../../../shared/hooks/useUnsavedChangesPrompt";
-import type { Resolver } from "react-hook-form";
 
 export default function HotelConfigPage() {
   const [hotelData, setHotelData] = useState<any>(null);
@@ -50,6 +49,7 @@ export default function HotelConfigPage() {
   });
 
   const { formState } = form;
+
   useUnsavedChangesPrompt(formState.isDirty);
 
   useEffect(() => {
@@ -59,10 +59,9 @@ export default function HotelConfigPage() {
         setHotelData(hotel);
         form.reset(hotel);
       } catch (error) {
-        console.error("Erreur lors de la récupération de l’hôtel :", error);
         setToast({
           type: "error",
-          message: "Impossible de charger les données de l'hôtel",
+          message: "Unable to load hotel configuration data",
         });
       }
     };
@@ -71,18 +70,18 @@ export default function HotelConfigPage() {
   }, [form]);
 
   const isLocked = useMemo(() => {
-    const f = hotelData?.floors;
-    const r = hotelData?.roomsPerFloor;
-    return !!f && !!r && f > 0 && r > 0;
+    const floors = hotelData?.floors;
+    const roomsPerFloor = hotelData?.roomsPerFloor;
+    return !!floors && !!roomsPerFloor && floors > 0 && roomsPerFloor > 0;
   }, [hotelData]);
 
-  // ✅ Pop-up d’info au 1er setup
   useEffect(() => {
     if (!hotelData) return;
-    const key = `structure-info-shown-${hotelData.id ?? "me"}`;
-    const already = localStorage.getItem(key);
 
-    if (!isLocked && !already) {
+    const key = `structure-info-shown-${hotelData.id ?? "me"}`;
+    const alreadyShown = localStorage.getItem(key);
+
+    if (!isLocked && !alreadyShown) {
       setShowSetupInfo(true);
       localStorage.setItem(key, "1");
     }
@@ -90,6 +89,7 @@ export default function HotelConfigPage() {
 
   const confirmSave = async () => {
     if (!pendingValues) return;
+
     try {
       const merged = { ...hotelData, ...pendingValues };
       const saved = await updateMyHotel(merged);
@@ -98,15 +98,13 @@ export default function HotelConfigPage() {
       setShowConfirmModal(false);
       setToast({
         type: "success",
-        message: "Configuration enregistrée avec succès ✅",
+        message: "Configuration successfully saved",
       });
     } catch (err: any) {
-      console.error("❌ Erreur d'enregistrement :", err);
-
       const msg =
         err?.response?.data?.message ||
         err?.message ||
-        "Erreur lors de l'enregistrement ❌";
+        "An error occurred while saving the configuration";
 
       setToast({ type: "error", message: msg });
     }
@@ -117,13 +115,13 @@ export default function HotelConfigPage() {
       if (!hotelData) return;
 
       const floorsChanged = values.floors !== hotelData.floors;
-      const rpfChanged = values.roomsPerFloor !== hotelData.roomsPerFloor;
+      const roomsChanged = values.roomsPerFloor !== hotelData.roomsPerFloor;
       const typesChanged =
         JSON.stringify(values.roomTypes ?? []) !==
         JSON.stringify(hotelData.roomTypes ?? []);
 
       const forbiddenChange =
-        isLocked && (floorsChanged || rpfChanged || typesChanged);
+        isLocked && (floorsChanged || roomsChanged || typesChanged);
 
       setPendingValues(values);
 
@@ -132,9 +130,6 @@ export default function HotelConfigPage() {
       } else {
         setShowConfirmModal(true);
       }
-    },
-    (errors) => {
-      console.error("⛔ Erreurs de validation Zod :", errors);
     }
   );
 
@@ -144,15 +139,15 @@ export default function HotelConfigPage() {
   };
 
   useEffect(() => {
-    if (toast) {
-      const timer = setTimeout(() => setToast(null), 3000);
-      return () => clearTimeout(timer);
-    }
+    if (!toast) return;
+
+    const timer = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(timer);
   }, [toast]);
 
-  // ✅ Animations safe
   useEffect(() => {
     if (typeof document === "undefined") return;
+
     const style = document.createElement("style");
     style.innerHTML = `
       @keyframes fadeIn {
@@ -160,6 +155,7 @@ export default function HotelConfigPage() {
         to { opacity: 1; transform: translateY(0); }
       }
       .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
+
       @keyframes slideIn {
         from { transform: translateX(120%); opacity: 0; }
         to { transform: translateX(0); opacity: 1; }
@@ -167,6 +163,7 @@ export default function HotelConfigPage() {
       .animate-slideIn { animation: slideIn 0.4s ease-out; }
     `;
     document.head.appendChild(style);
+
     return () => {
       document.head.removeChild(style);
     };
@@ -174,15 +171,14 @@ export default function HotelConfigPage() {
 
   return (
     <div className="container mx-auto p-6">
-      {/* ✅ Header aligné sur Planning */}
       <div className="flex flex-col items-center gap-2 mb-6 text-center">
         <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2 mb-1">
           <Cog className="h-8 w-8 text-emerald-600" />
-          Configuration de l'hôtel
+          Hotel configuration
         </h1>
         <p className="text-sm text-gray-500 max-w-2xl">
-          Gérez les informations générales, la structure, les services, les
-          horaires, les politiques et la sécurité.
+          Manage general information, structure, services, schedules, policies,
+          and security settings.
         </p>
       </div>
 
@@ -194,111 +190,108 @@ export default function HotelConfigPage() {
         <HotelPolicyCard form={form} />
         <HotelSecurityCard form={form} />
 
-        {/* ✅ Actions harmonisées */}
         <div className="flex justify-end gap-3 pt-2">
           <button
             type="button"
             onClick={() => form.reset(hotelData)}
             className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
           >
-            Réinitialiser
+            Reset
           </button>
           <button
             type="submit"
             disabled={formState.isSubmitting}
             className="px-5 py-2.5 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg hover:from-emerald-600 hover:to-emerald-700 transition-all disabled:opacity-50"
           >
-            Enregistrer
+            Save
           </button>
         </div>
       </form>
 
-      {/* ✅ Pop-up INFO 1er setup */}
       {showSetupInfo && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md animate-fadeIn">
             <h2 className="text-xl font-bold text-emerald-700 mb-4">
-              Configuration initiale
+              Initial setup information
             </h2>
             <p className="text-gray-700 mb-4">
-              Le nombre d’étages, le nombre de chambres par étage et les types
-              de chambres disponibles constituent le setup initial des chambres.
+              The number of floors, rooms per floor, and available room types
+              define the initial room setup.
             </p>
             <p className="text-gray-700 mb-6">
-              Une fois les chambres générées, ces paramètres seront verrouillés.
+              Once rooms are generated, these settings will be permanently
+              locked.
             </p>
             <div className="flex justify-end">
               <button
                 onClick={() => setShowSetupInfo(false)}
                 className="px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition"
               >
-                Compris
+                Understood
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ✅ Pop-up interdit si tentative de changement */}
       {showStructureWarning && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md animate-fadeIn">
             <h2 className="text-xl font-bold text-red-600 mb-4">
-              ⚠️ Structure verrouillée
+              Locked structure
             </h2>
             <p className="text-gray-700 mb-6">
-              Le setup des chambres se fait une seule fois.
-              Les paramètres suivants ne peuvent plus être modifiés :
-              <br />• Nombre d’étages
-              <br />• Chambres par étage
-              <br />• Types de chambres disponibles
+              Room structure can only be configured once. The following settings
+              can no longer be modified:
+              <br />• Number of floors
+              <br />• Rooms per floor
+              <br />• Available room types
             </p>
-            <div className="flex justify-end gap-4">
+            <div className="flex justify-end">
               <button
                 onClick={() => setShowStructureWarning(false)}
                 className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
               >
-                Fermer
+                Close
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ✅ Modal confirmation classique */}
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md animate-fadeIn">
             <h2 className="text-xl font-bold text-gray-800 mb-4">
-              Confirmer l'enregistrement
+              Confirm save
             </h2>
             <p className="text-gray-600 mb-6">
-              Êtes-vous sûr de vouloir enregistrer les modifications apportées à
-              la configuration de l'hôtel ?
+              Are you sure you want to save the changes made to the hotel
+              configuration?
             </p>
             <div className="flex justify-end gap-4">
               <button
                 onClick={() => setShowConfirmModal(false)}
                 className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
               >
-                Annuler
+                Cancel
               </button>
               <button
                 onClick={confirmSave}
                 className="px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition"
               >
-                Confirmer
+                Confirm
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Toast */}
       {toast && (
         <div
-          className={`fixed bottom-6 right-6 px-5 py-3 rounded-lg shadow-lg text-white animate-slideIn z-50
-          ${toast.type === "success" ? "bg-emerald-600" : "bg-red-500"}`}
+          className={`fixed bottom-6 right-6 px-5 py-3 rounded-lg shadow-lg text-white animate-slideIn z-50 ${
+            toast.type === "success" ? "bg-emerald-600" : "bg-red-500"
+          }`}
         >
           {toast.message}
         </div>

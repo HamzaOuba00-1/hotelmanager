@@ -1,18 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Trash, CalendarDays, Plus, ChevronLeft, ChevronRight, RefreshCcw, RotateCcw, ClipboardCopy, BicepsFlexed } from "lucide-react";
-import { exportElementToPDF } from "../../../shared/utils/exportPdf";
+import { Trash, CalendarDays, Plus, ChevronLeft, ChevronRight, RefreshCcw, ClipboardCopy, BicepsFlexed } from "lucide-react";
 import ExportPdfButton from "../components/ExportPdfButton";
 import { format, startOfWeek, addDays } from "date-fns";
-import { fr } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 import TodayTeamSection from "../components/TodayTeamSection";
-import {
-  getShiftsForHotel,
-  createShift,
-  Shift,
-} from "../api/planningApi";
+import { getShiftsForHotel, createShift, Shift, deleteShift } from "../api/planningApi";
 import { getUsersFromMyHotel } from "../../users/api/userApi";
 import { User } from "../../users/User";
-import { deleteShift } from "../api/planningApi"; 
 
 const hours = Array.from({ length: 24 }, (_, i) => i);
 const colors = [
@@ -44,9 +38,7 @@ export default function PlanningPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [confirmCopyOpen, setConfirmCopyOpen] = useState(false);
   const [confirmRefreshOpen, setConfirmRefreshOpen] = useState(false);
-  const [weekStart, setWeekStart] = useState(
-    startOfWeek(new Date(), { weekStartsOn: 1 })
-  );
+  const [weekStart, setWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [availableWeeks, setAvailableWeeks] = useState<Date[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -64,16 +56,16 @@ export default function PlanningPage() {
     const res = await getShiftsForHotel(start, end);
     setShifts(splitOvernightShifts(res.data));
   };
-  
 
-  const splitOvernightShifts = (shifts: Shift[]) => {
+  const splitOvernightShifts = (allShifts: Shift[]) => {
     const result: Shift[] = [];
-    for (const shift of shifts) {
+    for (const shift of allShifts) {
       const [startH, startM] = shift.startTime.split(":").map(Number);
       const [endH, endM] = shift.endTime.split(":").map(Number);
       const overnight = endH < startH || (endH === startH && endM < startM);
-      if (!overnight) result.push(shift);
-      else {
+      if (!overnight) {
+        result.push(shift);
+      } else {
         result.push({ ...shift, endTime: "23:59" });
         const nextDate = new Date(shift.date);
         nextDate.setDate(nextDate.getDate() + 1);
@@ -90,15 +82,17 @@ export default function PlanningPage() {
   useEffect(() => {
     loadShifts();
   }, [weekStart]);
+
   useEffect(() => {
     getUsersFromMyHotel().then(setUsers).catch(console.error);
   }, []);
+
   useEffect(() => {
     generateWeeksAround(startOfWeek(new Date(), { weekStartsOn: 1 }));
   }, []);
 
   const generateWeeksAround = (center: Date) => {
-    const newWeeks = [];
+    const newWeeks = [] as Date[];
     for (let i = -WEEKS_BEFORE; i <= WEEKS_AFTER; i++) {
       newWeeks.push(addDays(center, i * 7));
     }
@@ -106,8 +100,7 @@ export default function PlanningPage() {
   };
 
   const uniqueEmployees = Array.from(new Set(shifts.map((s) => s.employee.id)));
-  const getColorForEmployee = (id: number) =>
-    colors[uniqueEmployees.indexOf(id) % colors.length];
+  const getColorForEmployee = (id: number) => colors[uniqueEmployees.indexOf(id) % colors.length];
 
   const getLeft = (time: string) => {
     const [h, m] = time.split(":").map(Number);
@@ -120,7 +113,7 @@ export default function PlanningPage() {
 
     let startMinutes = sh * 60 + sm;
     let endMinutes = eh * 60 + em;
-    if (endMinutes <= startMinutes) endMinutes += 1440; // overnight shift
+    if (endMinutes <= startMinutes) endMinutes += 1440;
 
     const duration = endMinutes - startMinutes;
     return (duration / 60) * COLUMN_WIDTH;
@@ -133,15 +126,14 @@ export default function PlanningPage() {
     <div className="p-6 text-center">
       <div className="flex flex-col items-center gap-2 mb-6">
         <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2 mb-4">
-          <CalendarDays className="h-8 w-8 text-emerald-600" /> Planning
-          hebdomadaire
+          <CalendarDays className="h-8 w-8 text-emerald-600" /> Weekly schedule
         </h1>
 
         <button
           onClick={() => setIsModalOpen(true)}
           className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-xl shadow-lg hover:from-emerald-600 hover:to-emerald-700 transition-all mb-8"
         >
-          <Plus className="w-4 h-4" /> Ajouter un shift
+          <Plus className="w-4 h-4" /> Add shift
         </button>
 
         <div className="flex gap-2">
@@ -154,12 +146,12 @@ export default function PlanningPage() {
             className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition"
           >
             <RefreshCcw className="w-4 h-4" />
-            Aujourd’hui
+            Today
           </button>
         </div>
       </div>
 
-      {/* ✅ Navigation par semaines */}
+      {/* Week navigation */}
       <div className="flex justify-center items-center gap-2 mb-8 flex-wrap">
         <button
           onClick={() => {
@@ -175,17 +167,14 @@ export default function PlanningPage() {
         {availableWeeks.map((week, idx) => {
           const start = format(week, "dd/MM");
           const end = format(addDays(week, 6), "dd/MM");
-          const isActive =
-            format(weekStart, "yyyy-MM-dd") === format(week, "yyyy-MM-dd");
+          const isActive = format(weekStart, "yyyy-MM-dd") === format(week, "yyyy-MM-dd");
 
           return (
             <button
               key={idx}
               onClick={() => setWeekStart(week)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                isActive
-                  ? "bg-emerald-600 text-white shadow-md"
-                  : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                isActive ? "bg-emerald-600 text-white shadow-md" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
               }`}
             >
               {start} - {end}
@@ -195,10 +184,7 @@ export default function PlanningPage() {
 
         <button
           onClick={() => {
-            const newCenter = addDays(
-              availableWeeks[availableWeeks.length - 1],
-              7
-            );
+            const newCenter = addDays(availableWeeks[availableWeeks.length - 1], 7);
             generateWeeksAround(newCenter);
             setWeekStart(newCenter);
           }}
@@ -214,7 +200,7 @@ export default function PlanningPage() {
           className="flex items-center gap-2 px-4 py-2 bg-green-100 text-emerald-800 rounded-xl hover:bg-green-200 hover:text-emerald-900 transition font-medium"
         >
           <ClipboardCopy className="w-4 h-4" />
-          Copier semaine précédente
+          Copy previous week
         </button>
 
         <button
@@ -222,12 +208,12 @@ export default function PlanningPage() {
           className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-800 rounded-xl hover:bg-red-200 hover:text-red-900 transition font-medium"
         >
           <RefreshCcw className="w-4 h-4" />
-          Rafraîchir la semaine
+          Clear this week
         </button>
         <ExportPdfButton
           targetRef={gridRef}
-          fileName={`Planning_${format(weekStart, "yyyy-MM-dd")}_${format(addDays(weekStart, 6), "yyyy-MM-dd")}.pdf`}
-          headerText={`Planning : ${format(weekStart, "dd/MM/yyyy")} - ${format(addDays(weekStart, 6), "dd/MM/yyyy")}`}
+          fileName={`Schedule_${format(weekStart, "yyyy-MM-dd")}_${format(addDays(weekStart, 6), "yyyy-MM-dd")}.pdf`}
+          headerText={`Schedule: ${format(weekStart, "dd/MM/yyyy")} - ${format(addDays(weekStart, 6), "dd/MM/yyyy")}`}
         />
       </div>
 
@@ -240,7 +226,7 @@ export default function PlanningPage() {
           width: 150 + 24 * COLUMN_WIDTH,
         }}
       >
-        <div className="p-2 text-center font-semibold border">Jour</div>
+        <div className="p-2 text-center font-semibold border">Day</div>
         {hours.map((h) => (
           <div
             key={h}
@@ -254,7 +240,7 @@ export default function PlanningPage() {
         {Array.from({ length: 7 }, (_, i) => {
           const date = addDays(weekStart, i);
           const dateStr = format(date, "yyyy-MM-dd");
-          const label = format(date, "EEEE dd/MM", { locale: fr });
+          const label = format(date, "EEEE dd/MM", { locale: enUS });
           const dayShifts = shifts.filter((s) => s.date === dateStr);
           const placed: Shift[][] = [];
 
@@ -263,11 +249,7 @@ export default function PlanningPage() {
               if (!placed[r]) placed[r] = [];
               if (
                 !placed[r].some(
-                  (s) =>
-                    !(
-                      s.endTime <= shift.startTime ||
-                      s.startTime >= shift.endTime
-                    )
+                  (s) => !(s.endTime <= shift.startTime || s.startTime >= shift.endTime)
                 )
               ) {
                 placed[r].push(shift);
@@ -285,10 +267,7 @@ export default function PlanningPage() {
 
           return (
             <React.Fragment key={i}>
-              <div
-                className="p-2 font-medium border bg-white/70"
-                style={{ height: rowHeight }}
-              >
+              <div className="p-2 font-medium border bg-white/70" style={{ height: rowHeight }}>
                 {label}
               </div>
 
@@ -322,16 +301,14 @@ export default function PlanningPage() {
                       <button
                         onClick={() => setShiftToDelete(shift)}
                         className="flex-shrink-0 hover:opacity-80"
-                        title="Supprimer"
+                        title="Delete"
                       >
                         <Trash className="w-3.5 h-3.5 text-white" />
                       </button>
                       <span className="whitespace-nowrap overflow-visible">
-                        {shift.employee.firstName} {shift.employee.lastName} -{" "}
-                        {shift.startTime} - {shift.endTime}
+                        {shift.employee.firstName} {shift.employee.lastName} - {shift.startTime} - {shift.endTime}
                       </span>
                     </div>
-
                   </div>
                 );
               })}
@@ -345,14 +322,12 @@ export default function PlanningPage() {
           <div className="bg-white/60 rounded-2xl shadow-xl p-8 w-full max-w-md animate-fadeIn">
             <div className="flex items-center justify-center gap-2 mb-6">
               <BicepsFlexed className="h-8 w-8 text-[#47B881]" />
-              <h2 className="text-xl font-bold text-gray-800">Ajouter un Shift</h2>
+              <h2 className="text-xl font-bold text-gray-800">Add shift</h2>
             </div>
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
-                const employee = users.find(
-                  (u) => u.id === parseInt(form.employeeId)
-                );
+                const employee = users.find((u) => u.id === parseInt(form.employeeId));
                 if (!employee) return;
                 await createShift({
                   employee,
@@ -361,30 +336,22 @@ export default function PlanningPage() {
                   endTime: form.endTime,
                   service: form.service,
                 });
-                setToast("Shift ajouté ✅");
+                setToast("Shift added.");
                 setIsModalOpen(false);
-                setForm({
-                  employeeId: "",
-                  date: "",
-                  startTime: "",
-                  endTime: "",
-                  service: "",
-                });
+                setForm({ employeeId: "", date: "", startTime: "", endTime: "", service: "" });
                 loadShifts();
               }}
               className="space-y-4"
             >
               <label className="block text-sm font-medium">
-                Employé
+                Employee
                 <select
                   required
                   value={form.employeeId}
-                  onChange={(e) =>
-                    setForm({ ...form, employeeId: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, employeeId: e.target.value })}
                   className="w-full border border-gray-300 p-2 rounded-xl mt-1"
                 >
-                  <option value="">Sélectionner un employé</option>
+                  <option value="">Select an employee</option>
                   {users.map((u) => (
                     <option key={u.id} value={u.id}>
                       {u.firstName} {u.lastName}
@@ -404,38 +371,32 @@ export default function PlanningPage() {
               </label>
               <div className="flex gap-2">
                 <label className="block text-sm font-medium w-full">
-                  Début
+                  Start
                   <input
                     type="time"
                     required
                     value={form.startTime}
-                    onChange={(e) =>
-                      setForm({ ...form, startTime: e.target.value })
-                    }
+                    onChange={(e) => setForm({ ...form, startTime: e.target.value })}
                     className="w-full border border-gray-300 p-2 rounded-xl mt-1"
                   />
                 </label>
                 <label className="block text-sm font-medium w-full">
-                  Fin
+                  End
                   <input
                     type="time"
                     required
                     value={form.endTime}
-                    onChange={(e) =>
-                      setForm({ ...form, endTime: e.target.value })
-                    }
+                    onChange={(e) => setForm({ ...form, endTime: e.target.value })}
                     className="w-full border border-gray-300 p-2 rounded-xl mt-1"
                   />
                 </label>
               </div>
               <label className="block text-sm font-medium">
-                Service (optionnel)
+                Service (optional)
                 <input
                   type="text"
                   value={form.service}
-                  onChange={(e) =>
-                    setForm({ ...form, service: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, service: e.target.value })}
                   className="w-full border border-gray-300 p-2 rounded-xl mt-1"
                 />
               </label>
@@ -445,13 +406,13 @@ export default function PlanningPage() {
                   onClick={() => setIsModalOpen(false)}
                   className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
                 >
-                  Annuler
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition"
                 >
-                  Ajouter
+                  Add
                 </button>
               </div>
             </form>
@@ -462,48 +423,43 @@ export default function PlanningPage() {
       {confirmRefreshOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-sm animate-fadeIn text-left">
-            <h2 className="text-xl font-bold text-red-600 mb-4">
-              Supprimer tous les shifts de cette semaine ?
-            </h2>
+            <h2 className="text-xl font-bold text-red-600 mb-4">Delete all shifts for this week?</h2>
             <p className="text-gray-700 mb-6">
-              Cette action est irréversible. Elle va supprimer tous les shifts
-              planifiés entre <strong>{format(weekStart, "dd/MM/yyyy")}</strong>{" "}
-              et <strong>{format(addDays(weekStart, 6), "dd/MM/yyyy")}</strong>.
+              This action cannot be undone. It will remove all shifts scheduled between
+              <strong> {format(weekStart, "dd/MM/yyyy")} </strong>
+              and
+              <strong> {format(addDays(weekStart, 6), "dd/MM/yyyy")} </strong>.
             </p>
             <div className="flex justify-end gap-4">
               <button
                 onClick={() => setConfirmRefreshOpen(false)}
                 className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
               >
-                Annuler
+                Cancel
               </button>
               <button
                 onClick={async () => {
                   const weekStartStr = format(weekStart, "yyyy-MM-dd");
-                  const weekEndStr = format(
-                    addDays(weekStart, 6),
-                    "yyyy-MM-dd"
-                  );
+                  const weekEndStr = format(addDays(weekStart, 6), "yyyy-MM-dd");
                   const res = await getShiftsForHotel(weekStartStr, weekEndStr);
 
                   for (const shift of res.data) {
                     await deleteShift(shift.id!);
                   }
 
-                  setToast("Semaine supprimée ❌");
+                  setToast("Week cleared.");
                   setConfirmRefreshOpen(false);
                   loadShifts();
                 }}
                 className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
               >
-                Supprimer
+                Delete
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ✅ Toast notification */}
       {toast && (
         <div className="fixed bottom-6 right-6 px-5 py-3 rounded-lg bg-emerald-600 text-white shadow-xl animate-slideIn z-50">
           {toast}
@@ -513,19 +469,14 @@ export default function PlanningPage() {
       {confirmCopyOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-sm animate-fadeIn text-left">
-            <h2 className="text-xl font-bold text-emerald-600 mb-4">
-              Copier la semaine précédente ?
-            </h2>
-            <p className="text-gray-700 mb-6">
-              Cette action va dupliquer tous les shifts de la semaine passée
-              vers celle-ci.
-            </p>
+            <h2 className="text-xl font-bold text-emerald-600 mb-4">Copy previous week?</h2>
+            <p className="text-gray-700 mb-6">This will duplicate all shifts from last week into this one.</p>
             <div className="flex justify-end gap-4">
               <button
                 onClick={() => setConfirmCopyOpen(false)}
                 className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
               >
-                Annuler
+                Cancel
               </button>
               <button
                 onClick={async () => {
@@ -551,48 +502,43 @@ export default function PlanningPage() {
                     await createShift(newShift);
                   }
 
-                  setToast("Semaine copiée avec succès ✅");
+                  setToast("Week copied successfully.");
                   setConfirmCopyOpen(false);
                   loadShifts();
                 }}
                 className="px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition"
               >
-                Confirmer
+                Confirm
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ✅ Modal de confirmation suppression */}
       {shiftToDelete && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-sm animate-fadeIn text-left">
-            <h2 className="text-xl font-bold text-red-600 mb-4">
-              Supprimer ce shift ?
-            </h2>
+            <h2 className="text-xl font-bold text-red-600 mb-4">Delete this shift?</h2>
             <p className="text-gray-700 mb-6">
-              {shiftToDelete.employee.firstName}{" "}
-              {shiftToDelete.employee.lastName} – {shiftToDelete.date} •{" "}
-              {shiftToDelete.startTime} - {shiftToDelete.endTime}
+              {shiftToDelete.employee.firstName} {shiftToDelete.employee.lastName} - {shiftToDelete.date} | {shiftToDelete.startTime} - {shiftToDelete.endTime}
             </p>
             <div className="flex justify-end gap-4">
               <button
                 onClick={() => setShiftToDelete(null)}
                 className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
               >
-                Annuler
+                Cancel
               </button>
               <button
                 onClick={async () => {
                   await deleteShift(shiftToDelete.id!);
-                  setToast("Shift supprimé 🗑️");
+                  setToast("Shift deleted.");
                   setShiftToDelete(null);
                   loadShifts();
                 }}
                 className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
               >
-                Supprimer
+                Delete
               </button>
             </div>
           </div>
@@ -603,7 +549,7 @@ export default function PlanningPage() {
   );
 }
 
-// 🌟 Animations
+// Shared animations (injected once)
 const style = document.createElement("style");
 style.innerHTML = `
 @keyframes fadeIn {
@@ -621,4 +567,7 @@ style.innerHTML = `
   animation: slideIn 0.4s ease-out;
 }
 `;
-document.head.appendChild(style);
+if (!document.head.querySelector("style[data-planning-animations]")) {
+  style.dataset.planningAnimations = "true";
+  document.head.appendChild(style);
+}

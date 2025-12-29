@@ -36,14 +36,14 @@ export default function ManagerHomePage() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  const canSearch =
-    arrival && departure && new Date(arrival) < new Date(departure);
+  const canSearch = arrival && departure && new Date(arrival) < new Date(departure);
 
-  // 1) Charger l’hôtel du manager
+  // 1) Load the manager's hotel configuration
   useEffect(() => {
     const loadHotel = async () => {
       setHotelLoading(true);
       setHotelErr(null);
+
       try {
         const h = await getMyHotel();
         setHotel(h);
@@ -51,38 +51,40 @@ export default function ManagerHomePage() {
         setHotelErr(
           e?.response?.data?.detail ||
             e?.message ||
-            "Impossible de charger l’hôtel du manager."
+            "Unable to load the manager's hotel."
         );
       } finally {
         setHotelLoading(false);
       }
     };
+
     loadHotel();
   }, []);
 
-  // 2) Charger les chambres dispo (pour l’hôtel du manager)
+  // 2) Load available rooms for the manager's hotel
   const loadAvailable = useCallback(async () => {
     if (!hotel?.id) return;
 
     if (!arrival || !departure) return;
     if (new Date(arrival) >= new Date(departure)) {
-      setErr("La date d'arrivée doit être antérieure à la date de départ.");
+      setErr("Arrival date must be earlier than the departure date.");
       return;
     }
 
     setLoading(true);
     setErr(null);
+
     try {
       const data = await getAvailableRooms(Number(hotel.id), startAtISO, endAtISO);
       setRooms(data || []);
     } catch (e: any) {
-      setErr(e?.response?.data?.detail || e?.message || "Erreur de chargement.");
+      setErr(e?.response?.data?.detail || e?.message || "Loading error.");
     } finally {
       setLoading(false);
     }
   }, [hotel?.id, arrival, departure, startAtISO, endAtISO]);
 
-  // Auto-refresh quand hôtel + dates changent
+  // Auto-refresh when hotel and/or dates change
   useEffect(() => {
     if (!hotel?.id) return;
     loadAvailable();
@@ -93,20 +95,18 @@ export default function ManagerHomePage() {
 
   return (
     <div className="space-y-6">
-      {/* Titre */}
       <div className="flex justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-semibold text-gray-900 flex items-center justify-center gap-2">
             <Crown className="w-5 h-5 text-emerald-600" />
-            Accueil manager
+            Manager overview
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Visualisez rapidement les chambres disponibles de votre hôtel.
+            Quickly view the available rooms for your hotel.
           </p>
         </div>
       </div>
 
-      {/* Card Hôtel */}
       {hotelLoading ? (
         <div className="h-28 rounded-3xl border border-white/40 bg-white/70 backdrop-blur-xl animate-pulse" />
       ) : hotelErr ? (
@@ -117,10 +117,9 @@ export default function ManagerHomePage() {
         <section className="rounded-3xl border border-white/40 bg-white/80 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.06)] p-5">
           <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
             <div className="flex items-center gap-3 min-w-0">
-                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white text-xl font-semibold flex items-center justify-center">
-                  {hotel.name?.[0]?.toUpperCase() ?? "H"}
-                </div>
-              
+              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white text-xl font-semibold flex items-center justify-center">
+                {hotel.name?.[0]?.toUpperCase() ?? "H"}
+              </div>
 
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
@@ -130,7 +129,7 @@ export default function ManagerHomePage() {
                   {totalRooms && (
                     <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-[11px] text-emerald-700">
                       <BedDouble className="w-3.5 h-3.5" />
-                      ≈ {totalRooms} chambres
+                      ≈ {totalRooms} rooms
                     </span>
                   )}
                 </div>
@@ -166,13 +165,13 @@ export default function ManagerHomePage() {
               {hotel.minAge != null && (
                 <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-50 border border-gray-100">
                   <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                  Âge min {hotel.minAge}
+                  Min age {hotel.minAge}
                 </span>
               )}
               {hotel.petsAllowed && (
                 <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700">
                   <PawPrint className="w-3 h-3" />
-                  Animaux OK
+                  Pets allowed
                 </span>
               )}
             </div>
@@ -180,18 +179,15 @@ export default function ManagerHomePage() {
         </section>
       ) : null}
 
-      {/* Barre dates */}
       <section className="rounded-3xl border border-white/40 bg-white/80 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.06)] p-5">
         <div className="flex items-center gap-3 mb-4">
           <div className="h-9 w-9 rounded-2xl bg-emerald-50 flex items-center justify-center">
             <CalendarRange className="w-5 h-5 text-emerald-600" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-800">
-              Disponibilités
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-800">Availability</h3>
             <p className="text-xs text-gray-500">
-              Choisissez un intervalle pour voir les chambres libres.
+              Select a date range to see which rooms are free.
             </p>
           </div>
         </div>
@@ -199,7 +195,7 @@ export default function ManagerHomePage() {
         <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
           <div className="sm:col-span-2">
             <label className="block text-xs font-medium text-gray-500 mb-1">
-              Arrivée
+              Arrival
             </label>
             <input
               type="date"
@@ -211,7 +207,7 @@ export default function ManagerHomePage() {
 
           <div className="sm:col-span-2">
             <label className="block text-xs font-medium text-gray-500 mb-1">
-              Départ
+              Departure
             </label>
             <input
               type="date"
@@ -233,7 +229,7 @@ export default function ManagerHomePage() {
                     : "bg-gray-300 cursor-not-allowed shadow-none"
                 }`}
             >
-              Rechercher
+              Search
             </button>
           </div>
         </div>
@@ -241,7 +237,6 @@ export default function ManagerHomePage() {
         {err && <div className="mt-3 text-sm text-rose-600">{err}</div>}
       </section>
 
-      {/* Liste chambres dispo */}
       <section className="pb-2">
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -254,7 +249,7 @@ export default function ManagerHomePage() {
           </div>
         ) : rooms.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-gray-200 bg-white/70 p-10 text-center text-gray-600">
-            Aucune chambre disponible sur cet intervalle.
+            No rooms available for this date range.
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -266,9 +261,9 @@ export default function ManagerHomePage() {
                 <div className="absolute -top-10 -right-10 h-28 w-28 rounded-full bg-emerald-50 group-hover:bg-emerald-100 transition" />
 
                 <div className="relative z-10 flex items-center justify-between">
-                  <div className="text-xs text-gray-500">Étage {room.floor}</div>
+                  <div className="text-xs text-gray-500">Floor {room.floor}</div>
                   <span className="px-2 py-0.5 text-[11px] rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    Libre
+                    Available
                   </span>
                 </div>
 
@@ -277,9 +272,7 @@ export default function ManagerHomePage() {
                   {String(room.roomNumber).padStart(3, "0")}
                 </div>
 
-                <div className="relative z-10 text-sm text-gray-500">
-                  {room.roomType}
-                </div>
+                <div className="relative z-10 text-sm text-gray-500">{room.roomType}</div>
 
                 {room.description && (
                   <div className="relative z-10 text-xs text-gray-400 mt-1 line-clamp-2">
@@ -290,11 +283,9 @@ export default function ManagerHomePage() {
                 <div className="relative z-10 mt-4 flex items-center justify-between">
                   <div className="flex items-center gap-2 text-emerald-700 text-sm">
                     <BedDouble className="w-4 h-4" />
-                    Disponible
+                    Available
                   </div>
-                  <span className="text-xs text-gray-400">
-                    (Réservation côté public)
-                  </span>
+                  <span className="text-xs text-gray-400">(Public-side reservation)</span>
                 </div>
               </div>
             ))}
@@ -304,7 +295,7 @@ export default function ManagerHomePage() {
         {loading && (
           <div className="mt-4 flex items-center gap-2 text-xs text-gray-500">
             <Loader2 className="w-4 h-4 animate-spin" />
-            Chargement…
+            Loading…
           </div>
         )}
       </section>

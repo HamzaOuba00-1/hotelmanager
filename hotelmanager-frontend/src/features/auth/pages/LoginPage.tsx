@@ -1,28 +1,39 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
-import { login } from "../../auth/api/authApi";
+import { useNavigate, Navigate, Link } from "react-router-dom";
 import { Mail, Lock, Loader2 } from "lucide-react";
-
-interface DecodedToken {
-  sub: string;
-  role: string;
-  userId: number;
-  hotelId: number;
-  iat: number;
-  exp: number;
-}
-
-
+import { login as loginApi } from "../../auth/api/authApi";
+import { useAuth } from "../../auth/context/authContext";
 
 const LoginPage: React.FC = () => {
-  const [credentials, setCredentials] = useState({ email: "", password: "" });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { user, login, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setCredentials({ ...credentials, [e.target.name]: e.target.value });
+  const [credentials, setCredentials] = useState({
+    email: "",
+    password: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  if (!authLoading && user) {
+    switch (user.role) {
+      case "MANAGER":
+        return <Navigate to="/dashboard/manager" replace />;
+      case "EMPLOYE":
+        return <Navigate to="/dashboard/employe" replace />;
+      case "CLIENT":
+        return <Navigate to="/dashboard/client" replace />;
+      default:
+        return <Navigate to="/login" replace />;
+    }
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCredentials((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,33 +41,17 @@ const LoginPage: React.FC = () => {
     setLoading(true);
 
     try {
-      const { token, hotelId, hotelName } = await login(credentials);
-      localStorage.setItem("token", token);
+      const { token, hotelId, hotelName } = await loginApi(credentials);
+
+      login(token);
+
       localStorage.setItem("hotelId", String(hotelId));
       localStorage.setItem("hotelName", hotelName ?? "");
       localStorage.setItem("email", credentials.email.toLowerCase());
-      
-      
 
-      
-
-      const decoded = jwtDecode<DecodedToken>(token);
-      switch (decoded.role) {
-        case "MANAGER":
-          navigate("/dashboard/manager");
-          break;
-        case "EMPLOYE":
-          navigate("/dashboard/employe");
-          break;
-        case "CLIENT":
-          navigate("/dashboard/client");
-          break;
-        default:
-          navigate("/dashboard");
-      }
     } catch (err) {
       console.error(err);
-      setError("Échec de la connexion. Vérifiez vos identifiants.");
+      setError("Login failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }
@@ -64,13 +59,12 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-emerald-100 overflow-hidden font-sans">
-      {/* Halo décoratif */}
       <div className="absolute -top-20 -left-20 h-96 w-96 rounded-full bg-emerald-200 opacity-30 blur-3xl" />
       <div className="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-emerald-300 opacity-20 blur-2xl" />
 
       <div className="relative w-full max-w-md bg-white/40 backdrop-blur-lg border border-white/60 shadow-2xl rounded-3xl p-8 sm:p-10">
         <h1 className="text-3xl font-semibold text-emerald-700 mb-8 text-center tracking-tight">
-          Bienvenue
+          Welcome
         </h1>
 
         {error && (
@@ -84,7 +78,7 @@ const LoginPage: React.FC = () => {
             icon={Mail}
             name="email"
             type="email"
-            placeholder="Adresse email"
+            placeholder="Email address"
             value={credentials.email}
             onChange={handleChange}
             autoComplete="email"
@@ -95,7 +89,7 @@ const LoginPage: React.FC = () => {
             icon={Lock}
             name="password"
             type="password"
-            placeholder="Mot de passe"
+            placeholder="Password"
             value={credentials.password}
             onChange={handleChange}
             autoComplete="current-password"
@@ -108,18 +102,26 @@ const LoginPage: React.FC = () => {
             className="w-full inline-flex items-center justify-center gap-2 bg-emerald-600/90 hover:bg-emerald-700 text-white font-medium py-3 rounded-xl shadow-md transition disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {loading && <Loader2 className="h-5 w-5 animate-spin" />}
-            Se connecter
+            Sign in
           </button>
         </form>
+
+        <div className="mt-6 text-center text-sm text-gray-600">
+          Don’t have an account?{" "}
+          <Link
+            to="/register"
+            className="font-medium text-emerald-700 hover:underline"
+          >
+            Sign up
+          </Link>
+        </div>
       </div>
     </div>
   );
 };
 
-
-interface InputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
-  icon: React.ComponentType<{ className?: string; size?: number }>;
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  icon: React.ComponentType<{ className?: string }>;
 }
 
 const Input: React.FC<InputProps> = ({ icon: Icon, className, ...props }) => (

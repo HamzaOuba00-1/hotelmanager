@@ -1,5 +1,3 @@
-// src/pages/dashboard/employe/DashboardAccueilEmploye.tsx
-
 import React, { useEffect, useState, useMemo, type CSSProperties } from "react";
 import { Calendar, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -18,7 +16,7 @@ type IssueStats = {
   important: number;
 };
 
-/* ---------- Mini KPI (même composant que manager) ---------- */
+/* ---------- Mini KPI (same component as manager) ---------- */
 const MiniKpi: React.FC<{ label: string; value: number | string }> = ({
   label,
   value,
@@ -44,15 +42,14 @@ const DashboardAccueilEmploye: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userLoading, setUserLoading] = useState(false);
 
-  // ---------- Signalements ----------
+  // ---------- Reports ----------
   const [issues, setIssues] = useState<Issue[]>([]);
   const [loadingIssues, setLoadingIssues] = useState(false);
 
-  // ---------- Planning ----------
+  // ---------- Schedule ----------
   const [myShifts, setMyShifts] = useState<Shift[]>([]);
   const [loadingShifts, setLoadingShifts] = useState(false);
 
-  // 1) Charger les signalements de l'hôtel
   useEffect(() => {
     const loadIssues = async () => {
       setLoadingIssues(true);
@@ -60,7 +57,7 @@ const DashboardAccueilEmploye: React.FC = () => {
         const { data } = await getIssuesForMyHotel();
         setIssues(data || []);
       } catch (e) {
-        console.error("Erreur chargement issues :", e);
+        console.error("Error loading issues:", e);
       } finally {
         setLoadingIssues(false);
       }
@@ -68,7 +65,7 @@ const DashboardAccueilEmploye: React.FC = () => {
     loadIssues();
   }, []);
 
-  // 2) Charger l'utilisateur courant ✅
+
   useEffect(() => {
     const loadCurrentUser = async () => {
       setUserLoading(true);
@@ -84,7 +81,7 @@ const DashboardAccueilEmploye: React.FC = () => {
 
         setCurrentUser(meUser);
       } catch (e) {
-        console.error("Erreur chargement utilisateur courant :", e);
+        console.error("Error loading current user:", e);
         setCurrentUser(null);
       } finally {
         setUserLoading(false);
@@ -94,7 +91,6 @@ const DashboardAccueilEmploye: React.FC = () => {
     loadCurrentUser();
   }, []);
 
-  // 3) Charger mon planning (semaine courante + prochaine)
   useEffect(() => {
     const loadMyShifts = async () => {
       setLoadingShifts(true);
@@ -108,7 +104,7 @@ const DashboardAccueilEmploye: React.FC = () => {
         const res = await getMyShifts(rangeStart, rangeEnd);
         setMyShifts(res.data || []);
       } catch (e) {
-        console.error("Erreur chargement shifts employé :", e);
+        console.error("Error loading employee shifts:", e);
       } finally {
         setLoadingShifts(false);
       }
@@ -117,7 +113,7 @@ const DashboardAccueilEmploye: React.FC = () => {
     loadMyShifts();
   }, []);
 
-  // ===================== SIGNALMENTS STATS =====================
+  // ===================== REPORTS STATS =====================
 
   const ownStats: IssueStats = useMemo(() => {
     if (!currentUser || !currentUser.id) {
@@ -171,7 +167,7 @@ const DashboardAccueilEmploye: React.FC = () => {
           )`,
         };
 
-  // ===================== PLANNING KPIs =====================
+  // ===================== SCHEDULE KPIs =====================
 
   const parseTimeToMinutes = (t: string) => {
     const [h, m] = t.split(":").map(Number);
@@ -222,7 +218,7 @@ const DashboardAccueilEmploye: React.FC = () => {
   }, [myShifts]);
 
   const nextShiftLabel = useMemo(() => {
-    if (!nextShift) return "Aucun shift à venir";
+    if (!nextShift) return "No upcoming shift";
 
     const d = parseISO(nextShift.date);
     const dayName = format(d, "EEEE", { locale: fr });
@@ -234,10 +230,10 @@ const DashboardAccueilEmploye: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* ✅ Header EXACTEMENT dans l’esprit du manager */}
+      {/* ✅ Header aligned with the manager’s style */}
       <div>
         <div className="text-lg font-bold text-gray-800">
-          Bienvenue sur le Dashboard
+          Welcome to the Dashboard
           {userLoading
             ? ""
             : currentUser?.firstName
@@ -245,40 +241,46 @@ const DashboardAccueilEmploye: React.FC = () => {
             : ""}
         </div>
         <div className="text-sm text-gray-500 mt-1">
-          Voici votre résumé planning et signalements.
+          Here is your schedule and reports summary.
         </div>
       </div>
 
-      {/* Planning + Signalements */}
+      {/* Schedule + Reports */}
       <section>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* ================= PLANNING CARD ================= */}
+          {/* ================= SCHEDULE CARD ================= */}
           <div className="relative overflow-hidden rounded-3xl border border-white/30 bg-white/40 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.08)] p-6">
             <div className="relative">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-emerald-600" />
-                  Mon planning
+                  My schedule
                 </p>
                 <Link
                   to="/dashboard/employe/planning"
                   className="text-xs text-emerald-700 hover:text-emerald-900 underline-offset-2 hover:underline"
                 >
-                  Voir
+                  View
                 </Link>
               </div>
 
               {loadingShifts ? (
                 <div className="text-xs text-gray-500">
-                  Chargement de votre planning…
+                  Loading your schedule…
                 </div>
               ) : (
                 <div className="space-y-4">
                   <div className="grid grid-cols-3 gap-3">
-                    <MiniKpi label="Heures semaine" value={`${hoursThisWeek}h`} />
-                    <MiniKpi label="Shifts semaine" value={weeklyShifts.length} />
                     <MiniKpi
-                      label="Période"
+                      label="Weekly hours"
+                      value={`${hoursThisWeek}h`}
+                    />
+                    <MiniKpi
+                      label="Weekly shifts"
+                      value={weeklyShifts.length}
+                    />
+                    <MiniKpi
+                      label="Period"
                       value={`${format(weekStartDate, "dd/MM")}-${format(
                         weekEndDate,
                         "dd/MM"
@@ -286,11 +288,10 @@ const DashboardAccueilEmploye: React.FC = () => {
                     />
                   </div>
 
-                  {/* Prochain shift (tu peux le réactiver si tu veux) */}
                   {nextShift && (
                     <div className="rounded-2xl border border-white/50 bg-white/60 backdrop-blur-xl p-4 ring-1 ring-white/40">
                       <div className="text-[10px] tracking-wide text-gray-500">
-                        Prochain shift
+                        Next shift
                       </div>
                       <div className="text-sm font-medium text-gray-900 mt-1">
                         {nextShiftLabel}
@@ -302,24 +303,23 @@ const DashboardAccueilEmploye: React.FC = () => {
             </div>
           </div>
 
-          {/* ================= SIGNALMENTS CARD ================= */}
+          {/* ================= REPORTS CARD ================= */}
           <div className="relative overflow-hidden rounded-3xl border border-white/30 bg-white/40 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.08)] p-6">
             <div className="relative">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 text-emerald-600" />
-                  Mes signalements
+                  My reports
                 </p>
                 <Link
                   to="/dashboard/employe/issues"
                   className="text-xs text-emerald-700 hover:text-emerald-900 underline-offset-2 hover:underline"
                 >
-                  Voir
+                  View
                 </Link>
               </div>
 
               <div className="flex items-center gap-4">
-                {/* Donut */}
                 <div className="relative">
                   <div className="w-24 h-24 rounded-full" style={circleStyle} />
                   <div className="absolute inset-2 rounded-full bg-white flex flex-col items-center justify-center">
@@ -330,26 +330,25 @@ const DashboardAccueilEmploye: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Légende */}
                 <div className="flex-1 space-y-1 text-sm">
                   {loadingIssues ? (
-                    <div className="text-xs text-gray-500">Chargement…</div>
+                    <div className="text-xs text-gray-500">Loading…</div>
                   ) : (
                     <>
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-700">Ouverts</span>
+                        <span className="text-gray-700">Open</span>
                         <span className="font-medium text-gray-800">
                           {ownStats.open}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-700">Résolus</span>
+                        <span className="text-gray-700">Resolved</span>
                         <span className="font-medium text-gray-800">
                           {ownStats.resolved}
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-xs text-gray-500 pt-1">
-                        <span>Importants</span>
+                        <span>Important</span>
                         <span className="font-medium text-gray-700">
                           {ownStats.important}
                         </span>
@@ -359,10 +358,9 @@ const DashboardAccueilEmploye: React.FC = () => {
                 </div>
               </div>
 
-              {/* Hint optionnel */}
               {!loadingIssues && total === 0 && (
                 <div className="mt-3 text-[11px] text-gray-500">
-                  Aucun signalement créé pour le moment.
+                  No reports created yet.
                 </div>
               )}
             </div>

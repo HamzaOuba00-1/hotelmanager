@@ -13,7 +13,6 @@ export type Channel = {
   memberCount: number;
 };
 
-// src/types/Chat.ts
 export type ChatMessage = {
   id: number;
   channelId: number;
