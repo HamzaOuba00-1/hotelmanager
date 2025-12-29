@@ -11,26 +11,26 @@ import RegisterManagerPage from "../features/auth/pages/RegisterManagerPage";
 
 
 /* ===== Dashboard Views ===== */
-import DashboardAccueil from "../features/dashboard/views/DashboardAccueil";
-import DashboardAccueilEmploye from "../features/dashboard/views/DashboardAccueilEmploye";
+import DashboardAccueil from "../features/dashboard/views/ManagerDashboardHomePage";
+import DashboardAccueilEmploye from "../features/dashboard/views/EmployeeDashboardHomePage";
 
 /* ===== Manager ===== */
 import ManagerHomePage from "../features/home/views/ManagerHomePage";
-import HotelConfigPage from "../features/hotel/pages/HotelConfigPage";
+import HotelConfigPage from "../features/hotel/pages/HotelSettingsPage";
 import RoomsPage from "../features/rooms/pages/RoomsPage";
-import ReservationsPage from "../features/reservations/views/ReservationsPageM";
-import PlanningPageM from "../features/planning/views/PlanningPageM";
-import PointagePageM from "../features/attendance/views/PointagePageM";
-import ChannelsPage from "../features/chat/views/ChannelsPage";
-import IssuesPageM from "../features/issues/views/IssuesPageM";
+import ReservationsPage from "../features/reservations/views/ManagerReservationsPage";
+import PlanningPageM from "../features/planning/views/ManagerPlanningPage";
+import PointagePageM from "../features/attendance/views/ManagerAttendancePage";
+import ChannelsPage from "../features/chat/views/ManagerChannelsPage";
+import IssuesPageM from "../features/issues/views/ManagerIssuesPage";
 import ManagerProfilePage from "../features/profil/views/ManagerProfilePage";
-import UtilisateursPage from "../features/users/pages/Utilisateurs";
+import UtilisateursPage from "../features/users/pages/UsersManagementPage";
 
 /* ===== Employe ===== */
 import EmployeePlanningPage from "../features/planning/views/EmployeePlanningPage";
-import PointagePageE from "../features/attendance/views/PointagePageE";
-import EmployeeChatPage from "../features/chat/views/EmployeeChatPage";
-import IssuesPageE from "../features/issues/views/IssuesPageE";
+import PointagePageE from "../features/attendance/views/EmployeeAttendancePage";
+import EmployeeChatPage from "../features/chat/views/EmployeeMessagesPage";
+import IssuesPageE from "../features/issues/views/EmployeeIssuesPage";
 import EmployeeProfilePage from "../features/profil/views/EmployeeProfilePage";
 
 /* ===== Client ===== */
@@ -39,6 +39,7 @@ import ClientMessagesPage from "../features/chat/views/ClientMessagesPage";
 import ClientProfilePage from "../features/profil/views/ClientProfilePage";
 import ManagerDashboard from "../layouts/ManagerDashboard";
 import EmployeDashboard from "../layouts/EmployeDashboard";
+import ClientDashboard from "../layouts/ClientDashboard";
 
 function App() {
   return (
@@ -83,7 +84,8 @@ function App() {
 
         {/* ===== Client ===== */}
         <Route element={<PrivateRoute allowedRoles={["CLIENT"]} />}>
-          <Route path="/dashboard/client" element={<ClientReservationsPage />}>
+          <Route path="/dashboard/client" element={<ClientDashboard  />}>
+            <Route index element={< ClientReservationsPage/>} />
             <Route path="reservations" element={<ClientReservationsPage />} />
             <Route path="messages" element={<ClientMessagesPage />} />
             <Route path="profil" element={<ClientProfilePage />} />

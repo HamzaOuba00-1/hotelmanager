@@ -23,7 +23,7 @@ import {
   type AttendanceDto,
   type DailyCodeResponse,
   type CheckInRequest,
-} from "../../attendance/api/pointage";
+} from "../api/pointage";
 
 const pad2 = (n: number) => String(n).padStart(2, "0");
 const toHM = (d: Date) => `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;

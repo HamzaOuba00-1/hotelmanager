@@ -373,7 +373,7 @@ const EmployeeIssuesPage: React.FC = () => {
               <tr className="text-left text-gray-500 border-b">
                 <th className="py-2 w-10"></th>
                 <th className="py-2 w-1/4">Title</th>
-                <th className="py-2 w-2/5">Description</th>
+                <th className="py-2 w-1/4">Description</th>
                 <th className="py-2 w-28">Status</th>
                 <th className="py-2 w-40">Author</th>
                 <th className="py-2 w-40">Created at</th>

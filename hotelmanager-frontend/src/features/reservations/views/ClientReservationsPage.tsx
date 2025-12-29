@@ -255,7 +255,7 @@ export default function ClientReservationsPage() {
           value={
             <span className="inline-flex items-center gap-1">
               <DoorOpen className="w-4 h-4 text-emerald-600" />
-              {String(r.room.roomNumber).padStart(3, "0")} � {r.room.roomType} (Floor {r.room.floor})
+              {String(r.room.roomNumber).padStart(3, "0")} - {r.room.roomType} (Floor {r.room.floor})
             </span>
           }
         />
@@ -351,9 +351,9 @@ export default function ClientReservationsPage() {
                     {k === "ALL"
                       ? "All dates"
                       : k === "ARRIVALS"
-                      ? "Today�s arrivals"
+                      ? "Today's arrivals"
                       : k === "DEPARTURES"
-                      ? "Today�s departures"
+                      ? "Today's departures"
                       : "Staying today"}
                   </button>
                 )
@@ -456,7 +456,7 @@ export default function ClientReservationsPage() {
               {confirm.label}
             </p>
             <p className="text-sm text-gray-500">
-              {confirm?.res?.guestFirstName} {confirm?.res?.guestLastName} � Room {String(confirm?.res?.room.roomNumber).padStart(3, "0")}
+              {confirm?.res?.guestFirstName} {confirm?.res?.guestLastName} - Room {String(confirm?.res?.room.roomNumber).padStart(3, "0")}
             </p>
             <div className="flex justify-center gap-3">
               <button

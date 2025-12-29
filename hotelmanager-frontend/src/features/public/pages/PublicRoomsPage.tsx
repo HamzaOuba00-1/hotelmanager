@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import { getAvailableRooms, reserveRoom } from "../../reservations/api/publicApi";
+import { getAvailableRooms, reserveRoom } from "../../reservations/api/publiApi";
 import { PublicRoom } from "../../rooms/publicTypes";
 import {
   buildStartISO,

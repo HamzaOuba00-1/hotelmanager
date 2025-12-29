@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getMyHotel, type HotelConfigDTO } from "../../../features/hotel/api/hotelApi";
-import { getAvailableRooms } from "../../reservations/api/publicApi";
+import { getAvailableRooms } from "../../reservations/api/publiApi";
 import { PublicRoom } from "../../../features/rooms/publicTypes";
 import {
   buildStartISO,
