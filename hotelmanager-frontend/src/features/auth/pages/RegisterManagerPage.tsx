@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   User,
   Mail,
@@ -9,6 +9,7 @@ import {
   Loader2,
   CheckCircle2,
   ArrowRight,
+  ArrowLeft,
 } from "lucide-react";
 import { registerManager } from "../api/authApi";
 
@@ -80,7 +81,7 @@ const RegisterManagerPage: React.FC = () => {
       localStorage.setItem("hotelName", res.hotelName);
       localStorage.setItem("email", res.email.toLowerCase());
 
-      setSuccess(true); // ✅ affiche la popup
+      setSuccess(true);
     } catch (err: any) {
       setError(
         err?.response?.data?.message ||
@@ -94,11 +95,24 @@ const RegisterManagerPage: React.FC = () => {
 
   return (
     <>
+      {/* 🔙 BACK TO HOME */}
+      <Link
+        to="/"
+        className="fixed top-6 left-6 z-50 inline-flex items-center gap-2 px-4 py-2
+                   rounded-xl bg-white/80 backdrop-blur-md
+                   border border-gray-200
+                   text-emerald-700 text-sm font-medium
+                   shadow-md hover:bg-white transition"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back to home
+      </Link>
+
       {/* PAGE */}
       <div className="min-h-screen flex items-center justify-center bg-[#F6F8F7] px-4 py-10 font-sans">
         <div className="w-full max-w-4xl bg-white rounded-3xl shadow-lg overflow-hidden grid lg:grid-cols-2">
           {/* VISUEL GAUCHE */}
-          <div className="hidden lg:block relative overflow-hidden bg-emerald-600/10">
+          <div className="hidden lg:block relative overflow-hidden bg-emerald-600/10 pointer-events-none">
             <img
               src="/hy.png"
               alt="Hotel illustration"
@@ -201,7 +215,10 @@ const RegisterManagerPage: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="mt-2 inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-lg transition disabled:opacity-50"
+              className="mt-2 inline-flex items-center justify-center gap-2
+                         bg-emerald-600 hover:bg-emerald-700
+                         text-white font-medium py-2.5 rounded-lg transition
+                         disabled:opacity-50"
             >
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
               Sign up
@@ -210,10 +227,10 @@ const RegisterManagerPage: React.FC = () => {
         </div>
       </div>
 
-      {/* ✅ SUCCESS MODAL */}
+      {/* SUCCESS MODAL */}
       {success && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4">
-          <div className="bg-white/70 backdrop-blur-xl border border-white/40 rounded-3xl shadow-2xl p-8 max-w-md w-full text-center animate-fadeIn">
+          <div className="bg-white/70 backdrop-blur-xl border border-white/40 rounded-3xl shadow-2xl p-8 max-w-md w-full text-center">
             <CheckCircle2 className="h-14 w-14 text-emerald-600 mx-auto mb-4" />
             <h3 className="text-2xl font-semibold text-gray-800 mb-2">
               Registration successful
@@ -223,7 +240,9 @@ const RegisterManagerPage: React.FC = () => {
             </p>
             <button
               onClick={() => navigate("/dashboard/manager")}
-              className="inline-flex items-center justify-center gap-2 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 rounded-xl transition"
+              className="inline-flex items-center justify-center gap-2 w-full
+                         bg-emerald-600 hover:bg-emerald-700
+                         text-white font-medium py-3 rounded-xl transition"
             >
               Go to dashboard
               <ArrowRight className="h-4 w-4" />
@@ -244,7 +263,10 @@ const Input: React.FC<InputProps> = ({ icon: Icon, className, ...props }) => (
     <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
     <input
       {...props}
-      className={`w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 ${className ?? ""}`}
+      className={`w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg
+                  text-sm placeholder-gray-400
+                  focus:outline-none focus:ring-2 focus:ring-emerald-500
+                  ${className ?? ""}`}
     />
   </div>
 );

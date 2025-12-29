@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Navigate, Link } from "react-router-dom";
-import { Mail, Lock, Loader2 } from "lucide-react";
+import { Mail, Lock, Loader2, ArrowLeft } from "lucide-react";
 import { login as loginApi } from "../../auth/api/authApi";
 import { useAuth } from "../../auth/context/authContext";
 
@@ -48,7 +48,6 @@ const LoginPage: React.FC = () => {
       localStorage.setItem("hotelId", String(hotelId));
       localStorage.setItem("hotelName", hotelName ?? "");
       localStorage.setItem("email", credentials.email.toLowerCase());
-
     } catch (err) {
       console.error(err);
       setError("Login failed. Please check your credentials.");
@@ -59,6 +58,19 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-emerald-100 overflow-hidden font-sans">
+      {/* === Retour accueil === */}
+      <Link
+        to="/"
+        className="absolute top-6 left-6 z-50 inline-flex items-center gap-2 px-4 py-2 rounded-xl
+             bg-white/70 backdrop-blur-md border border-white/40
+             text-emerald-700 text-sm font-medium shadow-lg
+             hover:bg-white transition"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back to home
+      </Link>
+
+      {/* === Background blobs === */}
       <div className="absolute -top-20 -left-20 h-96 w-96 rounded-full bg-emerald-200 opacity-30 blur-3xl" />
       <div className="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-emerald-300 opacity-20 blur-2xl" />
 
@@ -129,7 +141,9 @@ const Input: React.FC<InputProps> = ({ icon: Icon, className, ...props }) => (
     <Icon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-600" />
     <input
       {...props}
-      className={`w-full pl-11 pr-3 py-3 bg-white/60 backdrop-blur-md border border-white/40 rounded-xl text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 ${className ?? ""}`}
+      className={`w-full pl-11 pr-3 py-3 bg-white/60 backdrop-blur-md border border-white/40 rounded-xl text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+        className ?? ""
+      }`}
     />
   </div>
 );

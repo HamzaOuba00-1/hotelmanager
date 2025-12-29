@@ -4,18 +4,7 @@ import { createCrew } from "../api/crewApi";
 import { User } from "../User";
 import { ServiceType } from "../Crew";
 import {
-  Users,
   UserRound,
-  UsersRound,
-  Hotel,
-  Wrench,
-  Utensils,
-  Coffee,
-  ConciergeBell,
-  Bath,
-  Shield,
-  Cpu,
-  HandCoins,
   UserRoundPlus,
 } from "lucide-react";
 
@@ -41,6 +30,12 @@ const serviceOptions: { value: ServiceType; label: string }[] = [
 ];
 
 const roleLabel = (r?: string) => r ?? "MEMBER";
+
+/** base tile without conflicting colors */
+const tileBase =
+  "flex flex-col items-center justify-center w-36 h-36 p-5 rounded-3xl " +
+  "backdrop-blur-xl shadow-[0_8px_24px_rgba(0,0,0,0.08)] " +
+  "transition-all duration-200 hover:scale-105 hover:shadow-xl";
 
 const AddCrewModal: React.FC<Props> = ({ onClose, onSuccess, allUsers }) => {
   const [name, setName] = useState("");
@@ -68,7 +63,11 @@ const AddCrewModal: React.FC<Props> = ({ onClose, onSuccess, allUsers }) => {
     setError(null);
 
     try {
-      await createCrew({ name: name.trim(), service, memberIds: selectedIds });
+      await createCrew({
+        name: name.trim(),
+        service,
+        memberIds: selectedIds,
+      });
       onSuccess();
       onClose();
     } catch {
@@ -90,7 +89,7 @@ const AddCrewModal: React.FC<Props> = ({ onClose, onSuccess, allUsers }) => {
       >
         {/* Title */}
         <div className="flex items-center justify-center gap-2 mb-4">
-          <UserRoundPlus className="h-6 w-6 text-[#47B881]" />
+          <UserRoundPlus className="h-6 w-6 text-emerald-600" />
           <h2 className="text-2xl font-semibold text-gray-800">
             Add a Crew
           </h2>
@@ -127,7 +126,8 @@ const AddCrewModal: React.FC<Props> = ({ onClose, onSuccess, allUsers }) => {
           <div className="text-sm text-gray-600">
             Select members
             <span className="ml-2 text-xs text-gray-400">
-              ({selectedIds.length} selected{selectedIds.length > 1 ? "s" : ""})
+              ({selectedIds.length} selected
+              {selectedIds.length > 1 ? "s" : ""})
             </span>
           </div>
 
@@ -143,23 +143,19 @@ const AddCrewModal: React.FC<Props> = ({ onClose, onSuccess, allUsers }) => {
                     key={uid}
                     onClick={() => toggle(uid)}
                     aria-pressed={active}
-                    className={clsx(
-                      "flex flex-col items-center justify-center w-36 h-36 p-5 rounded-3xl",
-                      "border bg-white/50 backdrop-blur-xl",
-                      "shadow-[0_8px_24px_rgba(0,0,0,0.08)]",
-                      "ring-1 ring-white/20",
-                      "transition-all duration-200 hover:scale-105 hover:shadow-xl",
-                      "m-0.5",
-                      active
-                        ? "bg-emerald-50 border-emerald-300 ring-2 ring-emerald-200"
-                        : "border-white/30"
-                    )}
                     title={`${u.firstName} ${u.lastName}`}
+                    className={clsx(
+                      tileBase,
+                      "border ring-2 m-0.5",
+                      active
+                        ? "bg-emerald-100 border-emerald-400 ring-emerald-300"
+                        : "bg-white/70 border-white/40 ring-white/20"
+                    )}
                   >
                     <UserRound
                       className={clsx(
                         "h-8 w-8 mb-2",
-                        active ? "text-emerald-700" : "text-[#47B881]"
+                        active ? "text-emerald-700" : "text-emerald-500"
                       )}
                     />
                     <div className="text-sm font-semibold text-gray-800 text-center">
@@ -175,7 +171,7 @@ const AddCrewModal: React.FC<Props> = ({ onClose, onSuccess, allUsers }) => {
           </div>
         </div>
 
-        {/* Footer (sticky-like) */}
+        {/* Footer */}
         <div className="flex justify-end gap-4 pt-6 mt-6 border-t border-white/30">
           <button
             type="button"
@@ -187,7 +183,10 @@ const AddCrewModal: React.FC<Props> = ({ onClose, onSuccess, allUsers }) => {
           <button
             type="submit"
             disabled={loading}
-            className="px-6 py-2.5 rounded-xl bg-gradient-to-br from-[#47B881] to-[#3da36f] text-white shadow-md hover:shadow-lg transition disabled:opacity-60"
+            className="px-6 py-2.5 rounded-xl
+                       bg-gradient-to-br from-emerald-600 to-emerald-500
+                       text-white shadow-md hover:shadow-lg transition
+                       disabled:opacity-60"
           >
             {loading ? "Creating…" : "Create"}
           </button>

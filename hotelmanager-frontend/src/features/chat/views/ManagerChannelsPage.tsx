@@ -109,8 +109,7 @@ const crewTileServiceIcon = (service?: string) => {
 
 const tileBase =
   "flex flex-col items-center justify-center w-36 h-36 p-5 rounded-3xl " +
-  "bg-white/60 backdrop-blur-xl border border-white/30 shadow ring-1 ring-white/20 " +
-  "transition hover:scale-105";
+  "backdrop-blur-xl shadow transition hover:scale-105";
 
 const SelectTile: React.FC<{
   title: string;
@@ -126,10 +125,10 @@ const SelectTile: React.FC<{
     onKeyDown={(e) => e.key === "Enter" && onClick?.()}
     className={clsx(
       tileBase,
-      "cursor-pointer m-0.5",
+      "cursor-pointer m-0.5 border ring-2",
       active
-        ? "bg-emerald-50 border-emerald-300 ring-2 ring-emerald-200"
-        : ""
+        ? "bg-emerald-100 border-emerald-400 ring-emerald-300"
+        : "bg-white/70 border-white/40 ring-white/20"
     )}
     title={title}
   >
@@ -475,10 +474,10 @@ const ChannelSettingsModal: React.FC<{
                       onKeyDown={(e) => e.key === "Enter" && toggle(u.id)}
                       className={clsx(
                         tileBase,
-                        "cursor-pointer m-0.5",
+                        "cursor-pointer m-0.5 border ring-2",
                         active
-                          ? "bg-emerald-50 border-emerald-300 ring-2 ring-emerald-200"
-                          : ""
+                          ? "bg-emerald-100 border-emerald-400 ring-emerald-300"
+                          : "bg-white/70 border-white/40 ring-white/20"
                       )}
                       title={`${u.firstName} ${u.lastName}`}
                     >
@@ -516,8 +515,7 @@ const ChannelSettingsModal: React.FC<{
                 onClick={() => setConfirmSave(true)}
                 disabled={!name.trim() || saving}
               >
-                <Edit2 className="w-4 h-4" />{" "}
-                {saving ? "Saving…" : "Save"}
+                <Edit2 className="w-4 h-4" /> {saving ? "Saving…" : "Save"}
               </button>
             </div>
           </div>
@@ -571,7 +569,7 @@ const ChannelSettingsModal: React.FC<{
         onClose={() => setConfirmDelete(false)}
         onConfirm={async () => {
           if (!channel) return;
-          await deleteChannel(channel.id); 
+          await deleteChannel(channel.id);
           setConfirmDelete(false);
           onDeleted();
           onClose();
@@ -789,9 +787,7 @@ const ChannelsPage: React.FC = () => {
 
               <div className="flex-1 overflow-y-auto space-y-2 pr-1 max-h-[60vh]">
                 {loadingMsgs ? (
-                  <div className="text-sm text-gray-500">
-                    Loading messages…
-                  </div>
+                  <div className="text-sm text-gray-500">Loading messages…</div>
                 ) : messages.length ? (
                   messages.map((m) => (
                     <div
@@ -814,9 +810,7 @@ const ChannelsPage: React.FC = () => {
                     </div>
                   ))
                 ) : (
-                  <div className="text-sm text-gray-500">
-                    No messages yet.
-                  </div>
+                  <div className="text-sm text-gray-500">No messages yet.</div>
                 )}
               </div>
 
