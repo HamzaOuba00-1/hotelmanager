@@ -80,7 +80,7 @@ It enables hotels to efficiently manage **rooms, reservations, staff, planning, 
 
 ### Frontend
 
-* React 18
+* React 
 * TypeScript
 * React Router
 * Tailwind CSS
@@ -145,5 +145,6 @@ http://localhost:5173
 
 ---
 
+📜 License
 
-
+This project is a personal project - You are free to explore
