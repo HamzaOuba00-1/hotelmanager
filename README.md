@@ -145,6 +145,6 @@ http://localhost:5173
 
 ---
 
-📜 License
+## 📜 License
 
 This project is a personal project - You are free to explore
