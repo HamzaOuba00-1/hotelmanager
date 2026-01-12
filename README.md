@@ -6,6 +6,11 @@ HotelFlow is a **modern full-stack web application** designed for **hotel manage
 It enables hotels to efficiently manage **rooms, reservations, staff, planning, attendance, and communication**, while providing clients with a **secure and user-friendly public booking interface**.
 
 
+## 🎥 Demo Video
+
+[![Time2bUS Demo](https://img.youtube.com/vi/beIzHXRxwyo/0.jpg)](https://www.youtube.com/watch?v=beIzHXRxwyo)
+
+
 ---
 
 ## 🎯 Project Goals
