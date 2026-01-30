@@ -118,7 +118,7 @@ It enables hotels to efficiently manage **rooms, reservations, staff, planning, 
 ### Backend
 
 ```bash
-cd hotelmanager-api
+cd hotelmanager-backend
 mvn spring-boot:run
 ```
 
