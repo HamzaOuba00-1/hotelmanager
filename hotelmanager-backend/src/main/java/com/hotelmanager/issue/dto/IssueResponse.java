@@ -1,7 +1,7 @@
 package com.hotelmanager.issue.dto;
 
-import com.hotelmanager.issue.Issue;
-import com.hotelmanager.issue.IssueStatus;
+import com.hotelmanager.issue.entity.Issue;
+import com.hotelmanager.issue.entity.IssueStatus;
 
 import java.time.LocalDateTime;
 

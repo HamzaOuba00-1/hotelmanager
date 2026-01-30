@@ -1,6 +1,6 @@
 package com.hotelmanager.issue.dto;
 
-import com.hotelmanager.issue.IssueStatus;
+import com.hotelmanager.issue.entity.IssueStatus;
 
 public class IssueStatusUpdateRequest {
 
