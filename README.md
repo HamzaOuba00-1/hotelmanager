@@ -138,6 +138,47 @@ http://localhost:5173
 
 ---
 
+## 🐳 Running with Docker
+
+The project can be started using Docker and Docker Compose for a fully containerized environment.
+
+### Requirements
+
+* Docker
+* Docker Compose
+
+### Start the application
+
+From the root of the project:
+
+```bash
+docker-compose up --build
+```
+
+This command will:
+
+* Build backend and frontend containers
+* Start the PostgreSQL database
+* Launch all services in a single environment
+
+### Stop the application
+
+```bash
+docker-compose down
+```
+
+### Access the application
+
+After startup, the application will be available at:
+
+```
+http://localhost:5173
+```
+
+Docker allows you to run the full stack without installing Java, Node.js, or PostgreSQL locally.
+
+---
+
 ## 📈 Future Improvements
 
 * Online payments (Stripe)
