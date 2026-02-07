@@ -8,7 +8,7 @@ It enables hotels to efficiently manage **rooms, reservations, staff, planning, 
 
 ## 🎥 Demo Video
 
-[![Time2bUS Demo](https://img.youtube.com/vi/beIzHXRxwyo/0.jpg)](https://www.youtube.com/watch?v=beIzHXRxwyo)
+[![Demo](https://img.youtube.com/vi/beIzHXRxwyo/0.jpg)](https://www.youtube.com/watch?v=beIzHXRxwyo)
 
 
 ---

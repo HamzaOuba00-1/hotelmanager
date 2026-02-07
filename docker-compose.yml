@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: hotel_db
+      POSTGRES_USER: hotel
+      POSTGRES_PASSWORD: hotel123
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      # Optionnel: exposer la DB sur ton PC en 5433 comme ton config locale
+      - "5433:5432"
+
+  backend:
+    build:
+      context: ./hotelmanager-backend
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: hotel_db
+      DB_USER: hotel
+      DB_PASSWORD: hotel123
+      JWT_SECRET: "CHANGE_ME_FOR_REAL_SECURITY"
+    volumes:
+      # Persistance des fichiers uploadés
+      - ./hotelmanager-backend/uploads:/app/uploads
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./hotelmanager-frontend:/app
+      - /app/node_modules
+    environment:
+      # CRA: active le polling si hot reload capricieux sur Windows/WSL
+      CHOKIDAR_USEPOLLING: "true"
+      REACT_APP_API_URL: "http://localhost:8080"
+    command: sh -c "npm ci && npm start"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  db-data:
